@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'gosu'
 
-# TODO Skies
 # TODO Player
 # TODO More Objects
 # TODO Game Logic
@@ -26,6 +25,7 @@ end
 require 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 %w(const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection states/game
+   objects/object_def objects/game_object objects/living_object
    ini_file level_info map).each &method(:require)
 
 # Not yet part of gosu-preview
@@ -33,7 +33,7 @@ Gosu::enable_undocumented_retrofication rescue nil
 
 WIDTH, HEIGHT = 640, 480
 
-# Simple implementation of the Gosu "State-Based" pattern
+# Simple implementation of the Gosu "State-Based" game pattern
 class Window < Gosu::Window
   def initialize
     super WIDTH*3/2, HEIGHT*3/2
