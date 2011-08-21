@@ -1,0 +1,166 @@
+Steuerung - Editor
+
+Kartenteilmodus ("Kartenteile" ausgewählt)
+ Linke Maustaste:           Teil platzieren
+ Linke Maustaste + Shift:   Viele Teile platzieren
+ Rechte Maustaste (Karte):  Teil an Mausposition auswählen
+ Rechte Maustaste (Leiste): Teil bearbeiten
+
+Objektmodus ("Objekte" oder "Lebewesen" ausgewählt)
+ Linke Maustaste:           Objekt platzieren
+ Linke Maustaste + Shift:   Objekt auf dem Boden platzieren
+ Rechte Maustaste:          Objekt auswählen (Eigenschaften anzeigen)
+ Rechte Maustaste + Shift:  Objekt löschen
+
+Beide Modi:
+ Linke Maustaste + Strg:    Skriptereignis der Zeile bearbeiten
+ Rechte Maustaste + Strg:   Mausposition in hexadezimal anzeigen
+
+Hebel stellt man ein, indem man sie auswählt und dann die Ziele bearbeitet. Hebel können maximal 15 Ziele haben, oder alternativ ein Skript. Türen führen immer zur nächsten Tür auf gleicher horizontaler Position.
+
+Achtung: Alle Kartenteile über der Leveldecke und unter der Lava werden beim Speichern abgeschnitten. Wer sein Level zum Spaß mit Leveldecke auf 1000 testet und speichert, verliert alles darüber gebaute.
+
+---
+
+PMScript-Dokumentation
+
+In Peter Morphose können an einigen Stellen im Leveleditor Skripte eingebaut werden: Bei Hebeln, in jeder Kartenzeile und in den Timer-Skripts eines jeden Levels.
+
+do(always):message Hallo Welt!\do(ammo>star):add var5 +0001
+
+So könnte das Skript eines Hebels aussehen. Jede Anweisung eines Skripts besteht in PMScript aus dem Ziel (hier und immer in Hebeln und Timern "do"), der Bedingung ("always"), dem Befehl ("message") und den Parametern ("Hallo Welt!"). Mehrere Anweisungen werden durch \ getrennt.
+
+Also:
+ziel(bedingung):befehl parameter1 parameter2 ...\ziel(bedingung):befehl ...
+
+Außerdem kann man mehrere Befehle mit _ verbinden. Beispiel:
+do(var0=0001):message Hallo!\_add $Ppy -0004
+Wenn var0 "1" ist, wird eine Message ausgegeben und der Spieler nach oben gezogen. Wenn var0 nicht "1" ist, wird der zweite Befehl auch nicht ausgeführt.
+
+Um einige Dinge zu vereinfachen, stehen im Spiel stets var0-varF zur Verfügung, in die man Werte speichern und aus ihnen auslesen kann.
+
+Die 10 Timer-Skripte lassen sich im PeterM-Editor unter "Anderes" einstellen. Jedes Skript kann mehrere Anweisungen enthalten, die durch \ getrennt werden. Jedes Bild wird ein Skript aufgerufen: In Bild 1 das erste, in Bild 2 das zweite...in Bild 11 wieder das erste, usw. Der Timer X wird jedes Frame aufgerufen.
+
+
+Ziele:
+Möglich sind do, player und lava. In den Skripts von Levelzeilen muss vor jede Anweisung lava oder player geschrieben werden. Erreicht der Spieler eine bestimmte Zeile des Levels, werden alle Skripte der Zeile, die mit player beginnen, ausgeführt (und andersrum mit der Lava). In Hebeln und Timer-Skripts wird immer "do" verwendet.
+
+
+Bedingungen und Spielvariablen:
+Eine Bedingung besteht immer aus 3 Teilen: XXXXyZZZZ. y ist ein Operator ("=" gleich, "!" ungleich, "<" kleiner und ">" größer als, " Differenz kleiner oder gleich 16, ' Differenz größer als 16, { für kleiner oder gleich und } für größer oder gleich als), der die beiden Seiten XXXX und ZZZZ vergleicht. XXXX und ZZZZ können sein:
+
+0000 bis FFFF    (beliebige positive hexadezimale Zahlen mit 4 Stellen)
+?000 bis ?FFF    (Zufallszahl von 0 bis angegebene Zahl)
+var0 bis varF    (die 16 Skriptvariablen)
+keys, ammo, bomb (Schlüssel, Munition, Bomben)
+star, scor       (eingesammelte Sterne, Punkte)
+lpos, lspd, lmod (Lavaposition, Lavageschwindigkeit, Lavamodus)
+time, tspd       (restliche Spezialpeterzeit (Frames), restliche Turbozeit
+tjmp, tfly       (restliche Supersprungzeit, restliche Flugzeit)
+$Opx, $Opy, $Ovx, $Ovy (Horizontale/vertikale Position/Geschwindigkeit des Objekts O)
+$Oid, $Oac, $Olf, $Odr (ID, Aktion, Lebensenergie und Richtung des Objekts O)
+$Oex             (1 wenn das Objekt existiert, sonst 0)
+
+Hinweis: IDs eines Objekts zu ändern kann unvorhersehbare Folgen haben, wenn sich die Kategorie des Objektes dadurch ändert (Spieler zu Stern usw.)!
+
+
+Objektvariablen können sein:
+$0-$F (die 16 Objektvariablen, denen man selbst Objekte zuweisen kann)
+$P (der Spieler)
+
+Wenn keine Bedingung verwendet werden soll, kann man anstelle einer XXXXyZZZZ-Bedingung auch einfach "always" schreiben.
+Um mehrere Bedingungen zu verknüpfen, kann man das Zeichen & verwenden. Also XXXXyZZZZ&XXXXyZZZZ&XXXXyZZZZ...
+Hinweis: & nicht mit always verwenden! (Macht sowieso keinen Sinn...)
+
+Die oben aufgelisteten Variablen (var0-F, ammo, $Ppx usw.) sind "Spielvariablen", die per set, add etc. verändert werden können. Außerdem kann man sie überall einsetzen, wo vierstellige Zahlen gefordert sind. (Bei vierstelligen Zahlen mit Vorzeichen: einfach + oder - vor die Variable setzen.) Alle normalen Parameter in PMScript sind vierstellige Zahlen. Oft kann es aber sein, dass es keinen Sinn macht, alle vier Stellen zu nutzen. Der TILE-Parameter von changetile z. B. sollte immer mit 00 beginnen, weil es nur 256 Tiles gibt.
+
+
+Befehle:
+Alle Befehle in PMScript erwarten hexadezimale Parameter. Es gibt folgende Befehle:
+
+message Hallo Welt!
+Gibt alles nach "message" bis zum Ende der Anweisung auf dem Bildschirm aus.
+
+message2 Du hast ^star Scherben.
+Wie message, ersetzt aber ^ABCD im Text durch den Wert der Spielvariablen ABCD.
+
+sound HealthCollect
+Spielt den Sound mit dem Namen "HealthCollect" ab.
+Liste der Soundnamen: Jump, Arg, Arg2, Death, Help, Help2, Jeepee, StarCollect, HealthCollect, PointCollect, AmmoCollect, FreezeCollect, KeyCollect, Morph, Eat, Slime, Slime2, Slime3, Door, Door2, Stairs, StairsRnd, Break, Break2, Water, Water2, Lava, Shshsh, Explosion, Turbo, Lever, SwordWoosh, BlockerBreak, Bow, ArrowHit.
+
+createobject OBID XXXX YYYY OV
+Erstellt ein Objekt der angegebenen Objekt-ID bei XXXX/YYYY und speichert das Objekt in die Objektvariable OV, falls OV nicht "no" ist.
+Beispiel:
+createobject 0020 0100 2000 $4
+Erstellt einen Schlüssel (ID 20) bei 256/8192 und speichert ihn in die Objektvariable 4.
+
+casteffects SMKN FLMN SPKN XXXX YYYY
+Erzeugt SMKN Rauchwolken, FLMN Flammen und SPKN Funken an XXXX/YYYY.
+Beispiel:
+casteffects 0010 0020 0000 0050 5000
+Erstellt 16 Rauchwolken, 32 Flammen und 0 Funken bei 80/20480.
+
+casteffects2 SMKN FLMN SPKN XXXX YYYY WWWW HHHH zXLVL zYLVL RAND
+Erzeugt SMKN Rauchwolken, FLMN Flammen und SPKN Funken an XXXX/YYYY. WWWW und HHHH sind die Breite und Höhe des Rechtecks, in dem die Effekte erstellt werden (XXXX|YYYY ist Mittelpunkt). zXLVL und zYLVL geben die Standardgeschwindigkeit der Effektobjekte in horizontaler und vertikaler Richtung an. z ist bei beiden ein Vorzeichen (entweder + oder -). Mit zXLVL=-004 und zYLVL=+010 werden die Effekte z. B. nach links unten geschleudert. RAND gibt an, wie stark diese Werte (zXLVL und zYLVL) maximal durch den Zufall beeinflusst werden.
+Beispiel:
+casteffects2 0010 0020 0000 0050 5000 0100 0100 +0000 -0010 0010
+Erstellt 16 Rauchwolken, 32 Flammen und 0 Funken in einem 256x256 Pixel großen Rechteck um 80/20480, die alle mit 16 Pixel/Bild nach oben fliegen - mit einer Abweichung von 16 Pixeln/Bild.
+
+changetile XXXX YYYY TILE
+Ersetzt das Kartenteil XXXX/YYYY durch das Tile.
+Beispiel:
+changetile 0012 015A 0008
+Ersetzt Kartentile 18/346 durch eine Fackel.
+
+explosion XXXX YYYY RADS
+Erzeugt an Punkt XXXX/YYYY eine Explosion mit dem Radius RADS Pixel.
+
+add ABCD zEFGH
+Addiert zEFGH zur Spielvariablen ABCD, wobei z ein Vorzeichen ist.
+Beispiel:
+add $Pvy -0010
+Lässt den Spieler mit 16 Pixeln/Bild nach oben sausen.
+
+set ABCD zEFGH
+Setzt die Spielvariable ABCD auf zEFGH, wobei z ein Vorzeichen ist.
+Beispiele:
+set var5 -6235
+Setzt die Spielvariable 5 auf -25141.
+set $Ppx +0105
+Setzt die horizontale Position des Spielers auf 261.
+
+mul ABCD zEFGH
+div ABCD zEFGH
+Multipliziert bzw. dividiert die Spielvariable ABCD mit dem Wert zEFGH, wobei z ein Vorzeichen ist.
+
+mapsolid ABCD XXXX YYYY
+Setzt die Variable ABCD auf 1, wenn die Karte an der Stelle XXXX/YYYY solide ist, ansonsten auf 0. Angaben in Pixeln.
+
+hit $O
+hurt $O
+Verletzt Objektvariable O leicht/stark.
+
+kill $O
+Löscht das Objekt O.
+
+find $O MIID MAID XXXX YYYY BRTE HÖHE
+Findet das erste Objekt mit ID >= MIID und ID <= MAAD im Rechteck XXXX YYYY BRTE HÖHE und speichert es in $O.
+
+setxd $O Abc123Blah
+Setzt den ExtraData-Wert des Objekts O auf 'Abc123Blah'. ExtraData ist ein Wert, den jedes Objekt besitzt, um spezielle Informationen zu speichern. Hier eine Liste der ExtraData-Daten bestimmter Objekte:
+
+Gegner:
+"x|y" - beide 0 oder 1, "springt über Abgründe" und "benutzt Türen und Spezialteile"
+Bombe:
+"12" - wird jedes Frame um eins erhöht, bei 25 explodiert die Bombe
+Einsammelbare Objekte
+"x" - 0 oder 1, "wird von Schwerkraft beeinflusst"
+Geisel, Glückskeks
+"x|Abc" - x siehe einsammelbare Objekte, Abc ist Name/Text
+Effektobjekte "Text" und "langsamer Text"
+"Abcdefg" - Text, der ausfadet
+Hebel:
+"z|abc" - z ist normalerweise die Anzahl der Hebelziele. Wenn z "x" ist, heißt das, dass hinter dem | ein Skript folgt. Wenn es 0 ist, heißt es, dass der Hebel keine Funktion hat. 1-F gibt ansonsten die Anzahl der Hebelziele an.
+
+
+Außerdem ist noch anzumerken, dass einige Fehler im Skript in der Datei PeterM.log beschrieben werden, um Entwicklern bei der Fehlersuche zu helfen (allerdings halt nicht alle...).

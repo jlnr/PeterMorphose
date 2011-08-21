@@ -1,0 +1,422 @@
+Versionsübersicht von Peter Morphose
+
+---
+
+1.02
+Neuerungen
+- Peter Morphose unterstützt Gamepads.
+- 
+Behobene Fehler
+- Einige Tippfehler beseitigt.
+
+1.01
+Neuerungen
+- Zwei neue leichte Level.
+Behobene Fehler
+- Ändern der Objekteigenschaften und Timerscripts im PME wird als Änderung des Levels registriert.
+- Das Spiel erzeugt keinen Stack-Overflow mehr, wenn zwei Runden mit dem Namen "Gemütlicher Aufstieg" vorhanden sind.
+- Der Skriptbefehl mapsolid funktioniert endlich korrekt.
+
+1.00
+Anmerkung
+- Die Datei PME.log wird nicht mehr gebraucht und kann ohne Bedenken gelöscht werden.
+Neuerungen
+- Installer! Der registriert auch gleich die PMLs, deshalb gibts die Einstellungen im Editor nimmer.
+- Einige neue Level.
+- Levelauswahlbildschirm verändert.
+- Ein Timer X, der jedes Frame ausgeführt wird.
+- Gelogt wird nur noch, wenn Log=1 in PeterM.ini steht.
+- Zwei Himmel verschönert, drei neue sind dazugekommen (Dank an flgr/Florian Groß und KaiserBiddy/Holger Biermann)
+- Alle Icons jetzt auch in einer 256-Farb-Variante.
+- Man sieht im Editor die Position des ausgewählten Hebelziels.
+- Förderbandtiles funktionieren (bringt nix, da sie im Rittertheme nicht vorkommen)
+- Ritterpeter kann im Flug zuschlagen.
+- Drei neue PMScript-Operatoren (", ', {, }), eine neue Objekteigenschaft (ex) und zwei neue Funktionen (find und message2).
+
+Behobene Fehler
+- Hiscores sollten jetzt immer korrekt gespeichert werden.
+- F9 im Editor funktioniert nun auch, wenn ein Leerzeichen im PeterM-Pfad ist. Außerdem, wenn man das Level über das Explorer-Kontextmenü geladen hat.
+- Stirbt man und drückt Enter, geht der Spezialpeter beim nächsten Rundenstart nicht mehr verloren.
+- Kleine Unstimmigkeit zwischen beim Speichern der Spielerposition ausgemerzt.
+- Hilfe überall ohne rosa Ränder.
+- Gefrorene Lava ist jetzt wirklich harmlos...
+- Hebel mit mehr als 12 Zielen funktionieren nun korrekt.
+- Hilfe mit korrekten Bildern.
+- Levelhöhe (für die Leiste links) wird jetzt korrekt bestimmt.
+- Wenn keine Sterne eingesammelt werden müssen, wird jetzt nichts (und kein Herz) angezeigt.
+- Einschalten und ausschalten von "Punkt auf Lava" im PME ändert das Level nun.
+- Feuergegner erzeugen in Feuerschranken keine Feuereffekte mehr.
+- Es ist nun nicht mehr möglich, beim Fliegen an der Decke hängen zu bleiben.
+- Verbrennt der Spieler in der Lava, wird in der Fortschrittsleiste kein blauer Balken mehr angezeigt (war vorher falsch platziert dann).
+
+
+0.90
+Neuerungen
+- Der Hiscore jedes Levels wird nun gespeichert und im Levelauswahlbildschirm angezeigt.
+- Neue Level: Vom Ozean in die Traufe, Aoven (von flgr/Florian Groß).
+- Ausfadende Texte bei eingesammelten Objekten abschaltbar.
+- Die Hilfe umfasst nun 8 Seiten.
+- Planschsounds kommen im Wasser nur noch, wenn man sich auch bewegt.
+- Man kann im PME das Theme des Levels ändern (auch wenns bisher nur eins gibt).
+- Alle Skriptbefehle funktionieren einwandfrei.
+- setxd besser dokumentiert.
+
+
+0.81
+Neuerungen
+- "Gemütlicher Aufstieg" ist in der Levelauswahlliste nun immer ganz oben.
+- Neue Objekte: rote Fische, die Energie wieder auffüllen, eine Uhr, die Spezialpetern 1.5 Sekunden mehr Zeit gibt, und eine große Uhr, die 5 Sekunden gibt.
+- Man kann im PME einstellen, ob es auf die Entfernung zur Lava bei Levelende Punkte geben soll.
+- Neue Tiles (dichter Holzzaun, sprengbarer Felsklotz für Sprengungen außerhalb und ohne Kettenreaktionen)
+- Neues, absolut sinnvolles Dekorationsobjekt: Grabstein.
+- Neues Level: Hoch hinaus.
+Behobene Fehler
+- Wenn man bei einem geänderten Level auf "Datei\Neu" klickt, wird man jetzt auch gefragt, ob man speichern will.
+- Geiseln dürfen nicht mehr verbrennen. (Ugh, peinlicher Fehler...)
+
+
+0.80
+Neuerungen
+- Neues Level: Gruselgrotte.
+- Wasser-Kartenteile, mit passenden Fischen, Seeminen und Luftblasen.
+- Fehlermeldungssichereres PMScript.
+- Sounds sind nun weiter hörbar.
+- Sounds in PMS-Datei ausgelagert. Editing.txt jetzt mit Soundnamenliste.
+- Zweite Seite im Optionsmenü. Dazu auch zwei neue Optionen: Eine Leiste, die links den Fortschritt anzeigt, und eine Option, die den "Rosa Ränder"-Fehler immerhin im Editor und einigen Seiten der Hilfe behebt.
+
+
+0.77
+Neuerungen
+- PML-Dateien, die mit PeterM oder dem Editor verknüpft wurden, haben nun ein schöneres Symbol. Wer sie mit 0.76 verknüpft hat, sollte sie neu verknüpfen, damit das Symbol aktualisiert wird.
+- Wenn der Abstand zwischen Leveloberkante und Lava zu knapp wird, wird der restliche Platz jetzt nicht mehr mit Schwarz, sondern mehr Lava gefüllt. Dafür wurde die Grafik der Lava auch verändert.
+- Musik ist abstellbar.
+- Wenn man Level vom Explorer oder Editor aus startet, wird nun gleich die Spielmusik, nicht erst die Menümusik gespielt.
+- Das Pfeil-nach-Oben-Tile jetzt auch auf Gras- und Erdhintergrund.
+- Wer an seinen Spielzeiten interessiert ist, kann diese jetzt im Log nachlesen/rechnen.
+Behobene Fehler
+- Während man fliegt bewegen sich Gegner weiter.
+- Kleiner Fehler bei der Objektauswahl im PME behoben.
+- Geiseln und Glückskekse mit Text fallen nun korrekt, wenn man es im PME eingestellt hat.
+
+
+0.76b
+Neuerungen
+- MUSIK! Danke an Steffen Wenz.
+- Neues Level: Grünhügelshausen. (Wird wohl noch verändert...)
+
+
+0.76
+Neuerungen
+- Der PME speichert nun ohne viele Abfragen. Da es auch hier zu Bugs kommen kann, lieber ein Backup zu viel als zu wenig anfertigen...
+- Im PME kann man nun PML-Dateien mit entweder dem Spiel selbst oder dem Editor verknüpfen. In der nächsten Version bekommen die Level ein schöneres Symbol im Explorer, wer nicht warten kann, kann aber jetzt schon damit rumspielen. :)
+- Außerdem kann man im PME nun über Datei->Autoreninformation einen Namen samt eMail angeben. (Wird im Spiel (noch?) nirgends angezeigt.)
+- Hilfepfeil, den man über wichtige Objekt in einem Level platzieren kann, die schnell übersehen werden. Verschwindet, wenn der Spieler das Feld unter dem Pfeil betritt.
+- Geschwindigkeits-Powerup, das Peter für etwa 15 Sekunden schneller rennen lässt.
+- Höher-Springen-Powerup, das Peter für etwa 15 Sekunden höher springen lässt.
+- Flügel-Powerup, das Peter für etwa 4 Sekunden fliegen lässt.
+- Neues Punkteobjekt: Die Vase.
+- Schöneres Hauptmenü.
+- Viele verbesserte Objektgrafiken.
+- Ein paar verbesserte Sounds.
+- Glückskekse lassen ihren Inhaltstext jetzt langsamer ausfaden, damit man auch längere Botschaften lesen kann.
+
+Behobene Fehler
+- PMScript funktioniert nun problemlos. Ein paar dokumentierte Funktionen, besonders im Zusammenhang mit Objektzeigern, waren nicht fertig. Außerdem sind ein paar neue Spielvariablen hinzugekommen.
+- Gegner, die sich vor einem Abgrund entschließen, erstmal eine Pause einzulegen, hüpfen nicht mehr wild auf der Stelle.
+
+
+0.75
+Anmerkung:
+- Der PME speichert jetzt bei jedem Beenden eine Datei namens PME.log. Wenn der PME beim Beenden eine komische Fehlermeldung ausgibt, bitte erst auf "OK" klicken, nachdem das aktuelle PME.log an mich gemailt/geICQt/wasauchimmer wurde.
+
+Neuerungen
+- Optionsmenü für alle wichtigen Einstellungen.
+- Wieder (viel) mehr Sounds.
+- Die Datei Editing.txt wurde repariert.
+- Glückskekse. Man kann ihnen im PME einen Text zuweisen, denn sie dann bei Einsammlung über sich anzeigen. Damit man es in der kurzen Zeit lesen kann, die man hat, sollten die Texte kurz sein.
+- Vier neue Objekte: Steine (nur Dekoration).
+- Zwei Tiles haben sich verschoben (dunkle Hintergrundmauer mit Gras und zerbrochene Hintergrundmauer). Die Originalteile sind noch an der alten Stelle, haben aber einen rosa Punkt. Wer solche in seinem Level sieht, sollte schnell die Tiles gegen die neuen austauschen, in ein paar Versionen werden es dann vollständig andere sein. :)
+  (Ich gehe davon aus, dass nicht viele Leute die alten Tiles verwendet haben. Man sollte sie einfach durch Tile #01 und #02 ersetzen.)
+- Neuer Skriptbefehl: sound (ohne Soundnamenliste noch recht unnütz)
+
+Behobene Fehler
+- Fehler, der das Spielen von PeterM manchmal vollständig verhindert hat, behoben.
+- Gegner verhalten sich auf Schleim wieder normal.
+
+
+0.74
+Neuerungen
+- Neues Menüsystem! Mit Hilfe und Mitwirkendenliste.
+- Verbesserungen in den Bereichen Sound und Effekte.
+- Es gibt nun zwei (statt einem) Kartenteile, die entstehen, wenn brüchige Mauern einbrechen, um die Bruchstellen nicht so langweilig aussehen zu lassen.
+- Und drei neue Wand-Kartenteile, die nach unten hin abgeschlossen sind.
+
+
+0.73
+Neuerungen
+- Neues Objekt: Sanduhr (verlangsamt die Lava)
+- Man kann nun mehrere Geiseln pro Level platzieren und ihre Namen per Editor verändern (Rechtsklick).
+- Auf gesprengte Gegner gibt es Punkte.
+- Veränderte Grafik von Feuerpeter.
+
+
+0.72
+Neuerungen
+- Neues Level: Die zwei Bäume (mittel)
+- Wieder Verbesserungen im Soundbereich.
+- Auf verbrannte Gegner gibt es jetzt Punkte.
+- Neue Einstellungsmöglichkeit in PeterM.ini (Sprungsteuerung). Siehe ReadMe.
+- Feuerteufel werden nicht mehr von Feuerschranken verletzt.
+Behobene Fehler
+- Man wird beim Treppensteigen nicht mehr abgeschossen. (Gegner auch nicht.)
+- Man kommt beim Treppensteigen nicht mehr aus verschlossenen Türen raus.
+
+
+0.71c
+Neuerungen
+- Neues Level: Gemütlicher Aufstieg (sehr einfach).
+- Wenn genug Sterne eingesammelt sind, wird in der Leiste nur noch ein Häkchen dargestellt.
+
+Behobene Fehler
+- Fehler bei der Anzeige der Geiseln im Editor behoben.
+
+
+0.71b
+Neuerungen
+- Ein paar neue Soundeffekte.
+- Im Editor wird beim Tilespeichern ein ".bmp" an den Dateinamen gehängt, sofern es nocht fehlt.
+
+Behobene Fehler
+- Mit etwas Glück stellt PeterM jetzt beim Beenden immer die Auflösung wieder richtig um (ging nur in 0.71 nicht, davor schon).
+
+
+0.71
+Neuerungen
+- Sound! Zwar noch alle in der Hauptprogrammdatei und damit in jedem Theme gleich, aber bei der jetzigen Anzahl an Themes ist das ja kein Problem. ;)
+  Natürlich fehlen noch sehr viele (brutzelnde Lava, Kampfgeräusche, Treppensteigen usw.), aber es ist ein Anfang.
+- "Weg durchs Feuer" wurde an einigen Stellen stark verändert.
+- Namen der Geiseln werden nun angezeigt. (In der nächsten Version editierbar.)
+
+Behobene Fehler
+- Beide mitgelieferten Level haben nun korrekte Zieleinstellungen.
+
+
+0.70
+Neuerungen
+- Man kann (muss nicht) nun pro Level eine Geisel platzieren, die man dann retten muss. Stirbt sie, ist das Level sofort verloren.
+- Was damals Scherben waren, sind nun Sterne, die in jedem Level eingesammelt werden müssen.
+- Feuerteufel, ein neuer Gegner. Brennt und ist sehr schnell. Kann nur durch Pfeile oder Bomben ohne Verluste besiegt werden.
+- Feuerobjekt (nahezu mit den Stachel-Kartenteilen identisch)
+- Zwei neue Tiles (Hintergrundmauer mit Gras unten und zerstörte Hintergrundmauer).
+
+Behobene Fehler
+- Noch ein kleiner Fehler mit den Himmeln im Editor.
+
+
+0.61
+Neuerungen
+- Feuerpeter. Kann einfach durch Gegner rennen, ist schnell und praktisch unverwundbar. Dafür ist die Zeit sehr begrenzt.
+- Auch Spinnennetze können mit Bomben zerstört werden.
+Behobene Fehler
+- Richtige Namen für die Morphobjekte
+- Fehler beim Speichern im Editor (Himmel)
+
+
+0.60
+Neuerungen
+- Bombenlegerpeter!
+- Der Pause-Modus (P) wird nun auch durch einen Schriftzug angezeigt.
+- Zusammenfassungsbildschirm beim erfolgreichen Beenden eines Levels eingebaut.
+- Man kann Tiles im PME nicht nur überladen und wiederherstellen, sondern auch exportieren.
+- Der Löschen-Button ist nun ausgegraut, wenn das Tile nicht überladen wurde.
+- Man kann im Editor nun mit Strg+0 bis Strg+9 die 10 Timerskripte bearbeiten.
+- Der Editor lässt nun Scrolling per Mausrad zu.
+
+Behobene Fehler
+- Wenn man den Spieler im PME ausgewählt hat und verschiebt, wurden die Werte unten nicht aktualisiert.
+- Nach dem Starten und Beenden eines Levels im PME ist der PME nicht mehr schwarz.
+- Wenn man in die Lava sprang, wurde ein Frame eine falsche Lebensenergieanzeige eingeblendet.
+- Editorbug gefixt, der zu ungültigen Himmeln führen konnte.
+- Wenn man den PME startet, ist das Level nicht mehr "verändert".
+- Man kann keine ungespeicherten Level mehr per F9 starten.
+- Wenn man ein neues Level begann, hatte der Spieler 0 Startlebensenergie.
+
+
+0.53
+Neuerungen
+- Neue Runde (Weg durchs Feuer)
+- Blut! (Standardmäßig deaktiviert - siehe ReadMe)
+
+Behobene Fehler
+- Im PME erzeugen überladene Tiles nun keine schwarzen Ränder in der Tilemap mehr.
+- Der PME erzeugt beim Laden keine leere "Laden.txt" mehr im Arbeitsverzeichnis (kann gelöscht werden)
+- Der PME sollte bei anderen Scrollbarbreiten als 13 nun alles korrekt anzeigen.
+
+
+0.52c
+Neuerungen
+- Es gibt nun Bomben, die man einsammeln kann. (Haben noch keinen Sinn, geben aber schon Punkte.)
+
+Behobene Fehler
+- Der PME verfälscht die Farben überladener Tiles nicht mehr.
+- Die roten Ränder um veränderte Tiles im Editor (die nur zu Grafikfehlern und Verwirrung führten) wurden entfernt.
+- Die Kollisionsbox der Hebel und Schalter wurde korrigiert.
+- Es ist nun problemlos möglich, mehrere Tiles pro Level zu überladen.
+- Feuerschranken verletzen Peter nicht mehr beim Treppensteigen.
+- Im PME kann man nun viiieeel schneller zeichnen. :)
+- Der PME erstellt nun keine unnötige temporäre Datei beim Speichern mehr (die teilweise nichtmals gelöscht wurde).
+
+
+0.52b
+Behobene Fehler
+- Kein Fehler, wenn die Lavageschwindigkeit auf 0 gesetzt wird mehr
+- Absturzbug beim Starten von Runden mit überladenen Tiles gefixt
+- Falschfarbenbug beim Laden der Tiles eliminiert
+- Kleinere Malbugs im Editor beseitigt
+
+
+0.52
+Neuerungen
+- Man kann nun im PME Tiles bearbeiten (Rechtsklick in Leiste)
+- Objektvariablen in PMScript
+- Neue Scriptbefehle: hit, hurt, kill, setxd
+- scor-Spielvariable (Punktestand)
+- Leider sind ein paar Kartenteile rausgeflogen, weil man sie mittlerweile problemlos durch Objekte ersetzen kann (Wandmorpher). Bitte Level ändern!
+
+Behobene Fehler
+- Fehlermeldung bei 6 Leveln im Verzeichnis beseitigt
+- Kleiner Fehler bei der Anzeige der Objektnamen im PME
+
+
+0.51
+Neuerungen
+- mul, div und mapsolid in PMScript
+- lmod als neue PMScript-Spielvariable
+- _ als Verbindung mehrerer Befehle möglich
+
+Behobene Fehler
+- Obergrenzenbug in den Zufallszahlen
+
+
+0.50c
+Neuerungen
+- Zufallszahlen in PMScript
+- Auf der Flucht fertig
+
+Behobene Fehler
+- Man kann jetzt problemlos alle 10 Timerskripte bearbeiten.
+
+
+0.50b
+Neuerungen
+- Die Sprache PMScript wurde stark verändert. Alte Skripte sollten sich trotzdem relativ einfach umwandeln lassen.
+
+Behobene Fehler
+- Wieder ein paar kleine Bugfixes beim Endpunktestand.
+
+
+0.50
+Neuerungen
+- "Nach oben verschieben" und "Nach unten verschieben" sind nicht mehr im PME vorhanden. Als Ersatz dafür kann man nun die Levelhöhe einstellen. (Im PME, bei den Lavaeinstellungen) Dadurch ist das beiliegende Level "Auf der Flucht" nun vollständig spielbar (wird aber noch erweitert). Wer eine (im Spiel noch nicht angezeigte) genauere Auswertung seiner Punkte will, kann diese in der Datei PeterM.log nachlesen, nachdem er das Level geschafft hat.
+- Beim Laden eines Levels wird der Bildschirm schwarz.
+- Im Editor bewirkt Quality=0 nun auch schnellere Schrift.
+- Skriptbefehl: explosion
+- PMScript-Bedingungen lassen sich durch & verknüpfen
+
+Behobene Fehler
+- Energiewerte von über 99 werden nun immer korrekt dargestellt.
+- Auf erschossene Gegner gibt es jetzt Punkte.
+- Kleiner Bugfix in Verbindung mit dem Endpunktestand und Scherben.
+
+
+0.46
+Neuerungen
+- Wieder einmal Skriptbefehle (setvar, addvar). Außerdem kann man nun im PME (Menü, unter "Anderes") jedem Level 10 Skripte zuweisen, die alle 10 Frames ausgeführt werden. Zusätzlich gibt es jetzt auch andere Bedingungen als "always". Näheres dazu in der neuen PMScript-Dokumentation (PMScript.txt).
+
+Behobene Fehler
+- Pfeilpakete erzeugen beim Einsammeln nun den Text "+3", nicht mehr "+2".
+
+
+0.45b
+Neuerungen
+- Ein paar Skriptbefehle: addlavatime, setlavaspeed, addlavaspeed, casteffects2
+
+Behobene Fehler
+- Wenn man ein Level über F9 im Editor startet und stirbt, wird das aktuelle Level noch einmal gespielt (nicht irgendein anderes).
+- Ändern der Levelskripte wurde vorher nicht als "Veränderung" des Levels gezählt (und führte dadurch zu unlogischen Fehlern).
+- Lava führt jetzt nicht mehr zu viele Skripte aus, wenn sie auf "Jedes x. Frame steigen" gestellt ist.
+
+
+0.45
+Neuerungen
+- Es gibt nun das passende böse Gegenstück zu Flitzebogenpeter: Den Bogenbayer. Er läuft, wie andere Gegner auch, hin und her und schießt auf Peter, sobald er ihn sieht.
+- Neuer Scriptbefehl: warpplayer.
+- Hebel, die man nur einmal und dann nicht wieder zurückumlegen kann, existieren nun. Zu finden links von den alten.
+- Außerdem kann man Hebeln nun ein Script statt der alten Zielliste zuweisen.
+- Um die Scriptprogrammierung zu vereinfachen, kann man sich mit Strg+Linksklick im Editor die aktuelle Mausposition in hexadezimal anzeigen lassen.
+- Die Kollisionsabfrage der Pfeile wurde noch einmal verbessert.
+- Schleim: Es gibt nun drei neue Kartenteile, auf denen man langsam läuft und kaum springen kann.
+- Die horizontale Sprungstärke von Flitzebogenpeter wurde verringert.
+
+Behobene Fehler
+- Skripts mit "player" werden nicht mehr von der Lava aufgerufen und andersrum.
+- Feuerschranken haben nun im Editor einen Namen und korrektes Rechteck. (Strg+B)
+
+
+0.44b
+Neuerungen
+- 2. Feuerschranke wurde um 90° gedreht
+
+Behobene Fehler
+- Umwandlungsfehler im Zusammenhang mit der Feuerschranke wurden gefixt (Editor und eventuell auch Spiel)
+
+
+0.44
+Neuerungen
+- Der Flitzebogenpeter funktioniert nun (einigermaßen) und kann ohne Bedenken in selbstgebauten Levels eingesetzt werden.
+- Neues Objekt (in 2 Varianten): Die Feuerschranke. Wird im Editor automatisch an den Kartenteilen ausgerichtet und verbrennt vorbeilaufende Lebewesen.
+- Man kann nun mehrere Scriptbefehle pro Zeile eingeben. Getrennt werden diese durch \ (ohne Leerzeichen davor und dahinter!).
+
+
+0.43
+Neuerungen
+- Der Gravitationsball ist aus technischen Gründen wieder rausgeflogen. Als kleinen Trost gibts das neue Objekt "Zaubermaske" (gibt 20 Punkte)
+- Neue Einstellungen in PeterM.ini (siehe ReadMe)
+- 3 neue Scriptbefehle sind hinzugekommen: createobject, casteffects, changetile XX YYY TL
+- Außerdem gibt es neben lava(always) nun auch player(always). Wird aufgerufen, sobald der Spieler die Levelzeile zum ersten Mal betritt.
+- Um einige Umrechnungen ins Hexadezimale zu ersparen, werden im Editor nun auch ein paar Werte zusätzlich hexadezimal angezeigt. (Positionen sind nicht... kommt aber bestimmt noch)
+
+
+0.42
+Neuerungen
+- Endlich ein erstes PM-Menüsystem: Der alte Windows-Öffnendialog wurde durch eine schicke Levelliste ersetzt, in der auch gleich einige Angaben zum Level angezeigt werden. Diese vormals unwichtigen Angaben sollten nun bei jedem Level ausgefüllt werden.
+- Erste Formen der primitiven Skriptsprache PMScript werden ausgewertet. Die Zeilen des Levels, die eine Anweisung enthalten, werden im Editor hervorgehoben, indem die Zeilennummer heller gemalt wird. Mit Strg+Linksklick kann man die Anweisung ändern. Anweisungen werden ausgeführt, sobald die Lava die entsprechende Zeile erreicht. Die einzige Anweisung, die bisher funktioniert, ist: "lava(always):message Nachricht, die erscheinen soll" (ohne "")
+- Erste Version des Gravitationsballs. Funktioniert im Moment kaum, muss zur nächsten Version noch stark verbessert werden. (Grafisch und technisch.)
+- Die Kamikazehonks nehmen jetzt 3 statt vorher einem Energiepunkt weg. Außerdem ist zu beachten, dass man, wenn man von einem vorigen Treffer noch "unverwundbar" (transparent) ist, immer noch einen Punkt abgezogen bekommt. Ich würde keinem Rudel dieser Biester begegnen wollen...
+
+Behobene Fehler
+- Editor speichert Schwierigkeitsgrad und Beschreibung korrekt ab
+
+
+0.41
+Neuerungen
+- Die Terrorviecher wurden in Kamikazehonks umbenannt und explodieren nun beim Kontakt mit dem Spieler. Sie sind dadurch eine Art Einweg-Kinderschrecks.
+- Man kann nun im Editor das Level nach oben und unten verschieben (wie aus alten Versionen bekannt). Außerdem kann man sich eine kurze Zusammenfassung über die Objekte der Runde anzeigen lassen (Strg+I).
+
+Behobene Fehler
+- Alt+Tab und Alt+Enter im Titelbild öffnen nun nicht mehr den Levelauswahldialog
+- Im Editor war ein Bug, der manchmal alle Objekte eins Levels verdoppelte (sehr schwer zu reparieren)
+
+
+0.40
+Neuerungen (nur die wichtigsten)
+- Totale Umstellung des Objektsystems; keine Begrenzungen der Objekteanzahl mehr, schnelleres Laden der Leveldateien, Platz für viele neue Features (z. B. mehrere Ziele für einen Hebel)
+- Änderung des Levelformats: Alte Level müssen konvertiert werden
+
+Behobene Fehler
+- Alle bekannten und störenden Bugs sind verschwunden
+
+---
+
+Julian Raschke - julian@raschke.de
+Peter Morphose - http://www.petermorphose.de
