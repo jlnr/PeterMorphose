@@ -1,13 +1,18 @@
 require 'rubygems'
 require 'gosu'
 
-# TODO Menu
+# TODO LevelSelect
+# TODO Music
 # TODO Game
 # TODO High Scores
-# TODO SCript
+# TODO Script
+# TODO Remaining Menu
 # TODO Proper scaling
 # TODO Packaging as gem
 # TODO Deployment tasks
+# TODO "Gosu" splash screen
+# TODO Support for editor quick-starting
+# TODO Better resource handling
 
 # What is a better way to do this?
 File.dirname(File.dirname(__FILE__)).tap do |root|
@@ -16,8 +21,9 @@ File.dirname(File.dirname(__FILE__)).tap do |root|
 end
 
 require 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
-require 'const'
-require 'title'
+%w(const helpers/graphics helpers/audio helpers/input
+   states/state states/title states/menu states/level_selection
+   level_info).each &method(:require)
 
 # Not yet part of gosu-preview
 Gosu::enable_undocumented_retrofication rescue nil
@@ -31,12 +37,6 @@ class Window < Gosu::Window
   #   PlayerTopPos, LavaTopPos, LevelBottom: Integer;
   #   MessageText: string;
   #   MessageOpacity: Integer;
-  #   Data: TPMData;
-  #   CurrentTheme: string;
-  #   LevelList: TList;
-  #   SelectedLevel: Integer;
-  #   LevelListTop: Integer;
-  #   SelectedMenuItem: Integer;
   #   SelectedOptionItem: Integer;
   #   PseudoMusic: Integer;
   #   OldHiscore: Integer;
@@ -46,7 +46,7 @@ class Window < Gosu::Window
     
     self.caption = "Peter Morphose"
     
-    @state = Title.new
+    State.current = Title.new
     
     # TODO convert to states
     # // Log erstellen
@@ -82,7 +82,6 @@ class Window < Gosu::Window
     # // Data initialisieren
     # Data.Images := DXImageListPack.Items;
     # Data.Waves := DXWaveListPack.Items;
-    # Data.FontPic := DXImageList.Items[Image_Font];
     # Data.DXDraw := DXDraw;
     # Data.Input := DXInput;
     # Data.Map := TPMMap.Create;
@@ -97,19 +96,6 @@ class Window < Gosu::Window
     # Data.ObjPlayers := TPMObjBreak.Create(Data.ObjEnemies, 'Spieler', ID_Break, 0, 0, 0, 0);
     # Data.ObjEffects := TPMObjBreak.Create(Data.ObjPlayers, 'Effekte', ID_Break, 0, 0, 0, 0);
     # Data.ExecuteScript := ES;
-    # 
-    # // Quickstart?
-    # if ParamStr(1) <> '' then begin
-    #   QuickStart := True;
-    #   StartGame(ParamStr(1));
-    #   if Data.OptMusic = 1 then begin
-    #     MediaPlayer.FileName := ExtractFileDir(ParamStr(0)) + '\' + CurrentTheme + '.mid';
-    #     MediaPlayer.Open;
-    #     MediaPlayer.Play;
-    #   end;
-    #   Log.Add('Schnellstart von ' + ParamStr(1));
-    #   Exit;
-    # end else Data.State := State_Welcome;
     # 
     # // Wenn nicht, dann Levelinfoliste erstellen
     # LevelList := TList.Create;
@@ -157,39 +143,6 @@ class Window < Gosu::Window
     # end;
     # // Rest
     # case Data.State of
-    #   State_Welcome: begin
-    #     // Introbild malen
-    #     if not (DXDraw.CanDraw and Application.Active) then Exit;
-    #     DXImageList.Items[Image_Title].Draw(DXDraw.Surface, 0, 0, 0);
-    #     DrawBMPText('Version: 1.02.     http://www.petermorphose.de/', 109, 440, 255, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
-    #     DXDraw.Flip;
-    #   end;
-    #   State_MainMenu: begin
-    #     if not (DXDraw.CanDraw and Application.Active) then Exit;
-    #     DXImageList.Items[Image_TitleDark].Draw(DXDraw.Surface, 0, 0, 0);
-    # 
-    #     DXImageList.Items[Image_Buttons].Draw(DXDraw.Surface, 120,  20, 0 + Integer(SelectedMenuItem = 0));
-    #     DXImageList.Items[Image_Buttons].Draw(DXDraw.Surface, 120,  90, 2 + Integer(SelectedMenuItem = 1));
-    #     DXImageList.Items[Image_Buttons].Draw(DXDraw.Surface, 120, 160, 4 + Integer(SelectedMenuItem = 2));
-    #     DXImageList.Items[Image_Buttons].Draw(DXDraw.Surface, 120, 230, 6 + Integer(SelectedMenuItem = 3));
-    #     DXImageList.Items[Image_Buttons].Draw(DXDraw.Surface, 120, 300, 8 + Integer(SelectedMenuItem = 4));
-    # 
-    #     DrawBMPText('W‰hle mit den Pfeiltasten aus, was du tun willst und dr¸cke Enter.', 23, 435, 0, DXImageList.Items[Image_Font], DXDraw.Surface, 0);
-    #     DXDraw.Flip;
-    #   end;
-    #   State_LevelSelection: begin
-    #     // Levelauswahl anzeigen
-    #     if not (DXDraw.CanDraw and Application.Active) then Exit;
-    #     DXImageList.Items[Image_TitleDark].Draw(DXDraw.Surface, 0, 0, 0);
-    #     for LoopY := 0 to Min(4, LevelList.Count) - 1 do
-    #       TPMLevelInfo(LevelList.Items[LoopY + LevelListTop]).Draw(LoopY * 100, LoopY + LevelListTop = SelectedLevel, DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality);
-    #     DXDraw.Surface.FillRect(Bounds(631, 0,  1, 400), DXDraw.Surface.ColorMatch($003010));
-    #     DXDraw.Surface.FillRect(Bounds(632, 0, 16, 400), DXDraw.Surface.ColorMatch($004020));
-    #     if LevelList.Count > 4 then DXImageList.Items[Image_Font].DrawAdd(DXDraw.Surface, Bounds(632, Round(384 * ((LevelListTop) / (LevelList.Count - 4))), 8, 16), 95, 128);
-    #     DrawBMPText('W‰hle mit den Pfeiltasten ein Level aus und starte es mit Enter.', 32, 424, 0, DXImageList.Items[Image_Font], DXDraw.Surface, 0);
-    #     DrawBMPText('Willst du zur¸ck zum Hauptmen¸, dr¸cke Escape.', 113, 446, 0, DXImageList.Items[Image_Font], DXDraw.Surface, 0);
-    #     DXDraw.Flip;
-    #   end;
     #   State_WonInfo: begin
     #     if not (DXDraw.CanDraw and Application.Active) then Exit;
     #     DXDraw.Surface.Fill(0);
@@ -371,7 +324,11 @@ class Window < Gosu::Window
     #       end;
     #     end;
     
-    @state.update
+    if State.current then
+      State.current.update
+    else
+      close
+    end
   end
   
   def draw
@@ -529,7 +486,7 @@ class Window < Gosu::Window
     # DXDraw.Flip;
     
     scale(1.5) do
-      @state.draw
+      State.current.draw if State.current
     end
   end
   
@@ -541,11 +498,6 @@ class Window < Gosu::Window
     # begin
     #   // Escape: Beenden oder Status wechseln
     #   if Key = VK_Escape then begin
-    #     if Data.State in [State_LevelSelection, State_Credits, State_ReadMe1..State_ReadMe8] then begin
-    #       DXWaveList.Items[Sound_WooshBack].Play(False);
-    #       Data.State := State_MainMenu;
-    #       Exit;
-    #     end;
     #     if Data.State in [State_Game, State_Paused, State_Dead] then begin
     #       if Data.State in [State_Game, State_Paused] then Log.Add('Level abgebrochen.');
     #       if QuickStart then Close else DXWaveList.Items[Sound_WooshBack].Play(False);
@@ -577,18 +529,6 @@ class Window < Gosu::Window
     # 
     #   // Andere Knˆpfe je nach Status auswerten
     #   case Data.State of
-    #     State_Welcome: if not (ssAlt in Shift) then begin Data.State := State_MainMenu; DXWaveList.Items[Sound_Woosh].Play(False); end;
-    #     State_MainMenu: case Key of
-    #       VK_Up, VK_Left: if SelectedMenuItem > 0 then Dec(SelectedMenuItem);
-    #       VK_Down, VK_Right: if SelectedMenuItem < 4 then Inc(SelectedMenuItem);
-    #       VK_Return, VK_Space: if not (ssAlt in Shift) then case SelectedMenuItem of
-    #                                                           0: begin Data.State := State_LevelSelection; DXWaveList.Items[Sound_Woosh].Play(False); end;
-    #                                                           1: begin DXWaveList.Items[Sound_Woosh].Play(False); DXDraw.Surface.Fill(0); DrawBMPText('Hilfe wird geladen...', 225, 230, 255, DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality); DXDraw.Flip; DXImageListPack.Items.LoadFromFile(ExtractFileDir(ParamStr(0)) + '\Ritter.pmt'); Data.State := State_ReadMe1; end;
-    #                                                           2: begin Data.State := State_Options; DXWaveList.Items[Sound_Woosh].Play(False); end;
-    #                                                           3: begin Data.State := State_Credits; DXWaveList.Items[Sound_Woosh].Play(False); end;
-    #                                                           4: begin DXWaveList.Items[Sound_WooshBack].Play(True); Close; end;
-    #                                                         end;
-    #                     end;
     #     State_Options: case Key of
     #       VK_Up: if SelectedOptionItem > 0 then Dec(SelectedOptionItem);
     #       VK_Down: if SelectedOptionItem < 4 then Inc(SelectedOptionItem);
@@ -627,16 +567,6 @@ class Window < Gosu::Window
     #       VK_Up, VK_Left: if Data.State > State_ReadMe1 then Dec(Data.State);
     #       VK_Down, VK_Right: if Data.State < State_ReadMe8 then Inc(Data.State);
     #                                   end;
-    #     State_LevelSelection: case Key of
-    #       VK_Up, VK_Left: if SelectedLevel > 0 then begin
-    #                         Dec(SelectedLevel);
-    #                         if SelectedLevel < LevelListTop then Dec(LevelListTop);
-    #                       end;
-    #       VK_Down, VK_Right: if SelectedLevel < LevelList.Count - 1 then begin
-    #                         Inc(SelectedLevel);
-    #                         if SelectedLevel > LevelListTop + 3 then Inc(LevelListTop);
-    #                       end;
-    #       VK_Return, VK_Space: if not (ssAlt in Shift) then begin DXWaveList.Items[Sound_Woosh].Play(False); DXDraw.Surface.Fill(0); DrawBMPText('Level wird geladen...', 225, 230, 255, DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality); DXDraw.Flip; StartGame(TPMLevelInfo(LevelList.Items[SelectedLevel]).Location); end;
     #     end;
     #     State_Game: case Key of
     #       VK_Up:    if Data.FlyTimeLeft = 0 then TPMLiving(Data.ObjPlayers.Next).Jump;
@@ -670,15 +600,15 @@ class Window < Gosu::Window
     #   end;
     # end;
     
-    @state.button_down id
+    State.current.button_down id if State.current
   end
   
   def button_up id
-    @state.button_up id
+    State.current.button_up id if State.current
   end
   
   def needs_cursor?
-    @state.needs_cursor?
+    State.current.needs_cursor? if State.current
   end
 end
 

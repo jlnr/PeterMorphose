@@ -1365,26 +1365,6 @@ end;
 // Andere Funktionen //
 ///////////////////////
 
-procedure DrawBMPText(Text: string; X, Y: Integer; Alpha: Byte; SrcPic: TPictureCollectionItem; DestSrf: TDirectDrawSurface; Quality: Integer);
-var
-  LoopX: Integer;
-begin
-  if Quality = 0 then begin
-    if Text <> '' then for LoopX := 0 to Length(Text) do
-      SrcPic.Draw(DestSrf, X + LoopX * 9, Y, Ord(Text[LoopX + 1]) - 32)
-  end else
-    if Text <> '' then for LoopX := 0 to Length(Text) do
-      SrcPic.DrawAdd(DestSrf, Bounds(X + LoopX * 9, Y, 8, 16), Ord(Text[LoopX + 1]) - 32, Alpha);
-end;
-
-procedure MyStretchDraw(DestSrf: TDirectDrawSurface; SrcPic: TPictureCollectionItem; Pattern: Integer; DestRect: TRect; ATI: Boolean);
-begin
-  if ATI then
-    SrcPic.DrawRotate(DestSrf, DestRect.Left, DestRect.Top, DestRect.Right - DestRect.Left, DestRect.Bottom - DestRect.Top, Pattern, 0, 0, 0)
-  else
-    SrcPic.StretchDraw(DestSrf, DestRect, Pattern);
-end;
-
 procedure CastFX(SmokeNum, FlameNum, SparkNum, X, Y, Width, Height, XLvl, YLvl, Rnd, Level: Integer; FXObj: TPMObjBreak);
 var
   Loop: Integer;

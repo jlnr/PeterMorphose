@@ -3,6 +3,9 @@ class LevelInfo
   attr_accessor :difficulty, :stars_goal, :hostage, :hostage_name
   attr_accessor :highscore
   
+  def initialize filename
+  end
+  
   def draw y, active, font
   end
 end
