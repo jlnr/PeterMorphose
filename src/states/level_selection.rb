@@ -1,3 +1,5 @@
+# Encoding: UTF-8
+
 class LevelSelection < State
   LEVELS_ON_SCREEN = 4
   

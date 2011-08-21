@@ -1,3 +1,3 @@
 #!/usr/bin/ruby
 
-require "#{File.dirname(__FILE__)}/../src/main"
+require File.expand_path("#{__FILE__}/../../src/main")

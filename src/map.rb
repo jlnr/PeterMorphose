@@ -1,4 +1,8 @@
 class Map
+  def inspect
+    "#<Map>"
+  end
+
   def initialize game, ini_file
     @@tiles ||= Gosu::Image.load_tiles 'media/tiles.bmp', -16, -16
     @@skies ||= Gosu::Image.load_tiles 'media/skies.png', -4, -2

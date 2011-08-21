@@ -5,6 +5,10 @@ class Object
     define_method "#{direction}?" do |id|
       id == kb_id or id == gp_id
     end
+    
+    define_method "#{direction}_pressed?" do
+      $window.button_down? kb_id or $window.button_down? gp_id
+    end
   end
 end
 

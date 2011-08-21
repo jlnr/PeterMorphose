@@ -1,5 +1,10 @@
-require 'rubygems'
+if RUBY_VERSION < '1.9' then
+  require 'rubygems'
+  require 'require_relative'
+end
+
 require 'gosu'
+require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
 # TODO Player
 # TODO More Objects
@@ -16,17 +21,18 @@ require 'gosu'
 # TODO Localization
 # TODO Better resource handling
 
-# What is a better way to do this?
-File.dirname(File.dirname(__FILE__)).tap do |root|
-  Dir.chdir root
-  $LOAD_PATH << "#{root}/src"
+def debug binding
+  require 'pry'
+  Pry.start binding
 end
 
-require 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
+# For resource loading.
+Dir.chdir File.expand_path("#{__FILE__}/../..")
+
 %w(const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection states/game
    objects/object_def objects/game_object objects/living_object
-   ini_file level_info map).each &method(:require)
+   ini_file level_info map).each { |fn| require_relative fn }
 
 # Not yet part of gosu-preview
 Gosu::enable_undocumented_retrofication rescue nil
@@ -36,7 +42,7 @@ WIDTH, HEIGHT = 640, 480
 # Simple implementation of the Gosu "State-Based" game pattern
 class Window < Gosu::Window
   def initialize
-    super WIDTH*3/2, HEIGHT*3/2
+    super WIDTH*3/2, HEIGHT*3/2, :update_interval => 33.33
     
     self.caption = "Peter Morphose"
     

@@ -1,5 +1,6 @@
 class Game < State
-  attr_reader :view_pos
+  attr_reader :view_pos, :map
+  attr_reader :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
   
   def initialize level_info
     @view_pos = TILES_Y * TILE_SIZE - HEIGHT # TODO
@@ -102,6 +103,8 @@ class Game < State
   end
   
   def update
+    @objects.each &:update
+    
     #   State_Paused, State_Game, State_Dead, State_Won: begin
     #     // W‰re State_Dead nicht doch passender?
     #     if (Data.State = State_Game) and ((Data.ObjPlayers.Next = Data.ObjEffects) or (TPMLiving(Data.ObjPlayers.Next).Action = Act_Dead)) then
@@ -178,20 +181,29 @@ class Game < State
     #       // Steuerung f¸r normalen Peter
     #       if (Data.FlyTimeLeft = 0) and (not Data.ObjPlayers.Next.InWater) then begin
     #         // Nach links bewegen
-    #         if isLeft in DXInput.States then with TPMLiving(Data.ObjPlayers.Next) do begin
-    #           if (not Busy) and (VelX > -Round(Data.Defs[ID].Speed * 1.75)) then Dec(VelX, Data.Defs[ID].Speed + Integer(Data.SpeedTimeLeft > 0) * 6);
-    #           if Data.OptOldJumping = 1 then begin
-    #             if (Action = Act_Jump) or (Action = Act_Land)
-    #             or (Action = Act_Pain1) or (Action = Act_Pain2) then begin
-    #               if not Blocked(Dir_Left) then Dec(PosX);
-    #               if not Blocked(Dir_Left) then Dec(PosX);
-    #               if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
-    #               if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
-    #             end;
-    #           end else begin
-    #             if (Action in [Act_Jump, Act_Pain1, Act_Pain2]) and (VelX > -Data.Defs[ID].JumpX - 2) then Dec(VelX);
-    #             if (Action = Act_Land) and (VelX > -Data.Defs[ID].JumpX - 3) then Dec(VelX);
-    #           end;
+
+    if left_pressed? then
+      @player.instance_eval do
+        if not busy? and vx > -ObjectDef[pmid].speed * 1.75 then
+          self.vx -= ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
+        end
+      #           if (not Busy) and (VelX > -Round(Data.Defs[ID].Speed * 1.75)) then
+      #             Dec(VelX, Data.Defs[ID].Speed + Integer(Data.SpeedTimeLeft > 0) * 6);
+      #           if Data.OptOldJumping = 1 then begin
+      #             if (Action = Act_Jump) or (Action = Act_Land)
+      #             or (Action = Act_Pain1) or (Action = Act_Pain2) then begin
+      #               if not Blocked(Dir_Left) then Dec(PosX);
+      #               if not Blocked(Dir_Left) then Dec(PosX);
+      #               if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
+      #               if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
+      #             end;
+      #           end else begin
+      #             if (Action in [Act_Jump, Act_Pain1, Act_Pain2]) and (VelX > -Data.Defs[ID].JumpX - 2) then Dec(VelX);
+      #             if (Action = Act_Land) and (VelX > -Data.Defs[ID].JumpX - 3) then Dec(VelX);
+      #           end;
+      end
+    end
+
     #         end else
     #           if (Data.OptOldJumping = 0) and (Data.Frame mod 3 = 0) and (TPMLiving(Data.ObjPlayers.Next).Action in [Act_Jump, Act_Land]) and (Data.ObjPlayers.Next.VelX < -1) then Inc(Data.ObjPlayers.Next.VelX);
     #         // Nach rechts bewegen
