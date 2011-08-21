@@ -1,12 +1,29 @@
 class LevelInfo
-  attr_accessor :title, :author, :description
+  attr_accessor :filename, :title, :author, :description
   attr_accessor :difficulty, :stars_goal, :hostage, :hostage_name
   attr_accessor :highscore
   
   def initialize filename
+    @filename = filename
+    @title = File.basename(filename)
   end
   
-  def draw y, active, font
+  # DrawBMPText(Title + ' (' + IntToStr(Hiscore) + ' Punkte)', 5, Y + 7, 255, FontPic, Surface, 0)
+  
+  def draw y, active
+    draw_string File.basename(filename), 5, y + 7
+  end
+  
+  FIRST_LEVEL = 'jr_Gemuetlicher_Aufstieg.pml'
+  
+  def <=> other
+    if self.title == FIRST_LEVEL then
+      -1
+    elsif other.title == FIRST_LEVEL then
+      +1
+    else
+      title <=> other.title
+    end
   end
 end
 
@@ -73,14 +90,6 @@ begin
   Surface.FillRect(Bounds(0, Y + 99, 631, 1), Surface.ColorMatch($006000));
   // Aktiven Eintrag highlighten
   if Active then Surface.FillRectAdd(Bounds(0, Y + 1, 631, 98), RGB(96, 48, 0));
-end;
-
-function LevelComp(Item1, Item2: Pointer): Integer;
-begin
-  if TPMLevelInfo(Item1).Title = TPMLevelInfo(Item2).Title then begin Result := 0; Exit; end;
-  if TPMLevelInfo(Item1).Title = 'Gem¸tlicher Aufstieg' then begin Result := -1; Exit; end;
-  if TPMLevelInfo(Item2).Title = 'Gem¸tlicher Aufstieg' then begin Result := +1; Exit; end;
-  Result := CompareText(TPMLevelInfo(Item1).Title, TPMLevelInfo(Item2).Title);
 end;
 
 function Muesli(Int: Integer): string;

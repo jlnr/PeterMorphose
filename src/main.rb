@@ -12,6 +12,7 @@ require 'gosu'
 # TODO Deployment tasks
 # TODO "Gosu" splash screen
 # TODO Support for editor quick-starting
+# TODO Localization
 # TODO Better resource handling
 
 # What is a better way to do this?
@@ -28,6 +29,8 @@ require 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 # Not yet part of gosu-preview
 Gosu::enable_undocumented_retrofication rescue nil
 
+WIDTH, HEIGHT = 640, 480
+
 # Simple implementation of the Gosu "State-Based" pattern
 class Window < Gosu::Window
   # TODO move these variables somewhere
@@ -42,7 +45,7 @@ class Window < Gosu::Window
   #   OldHiscore: Integer;
   
   def initialize
-    super 640*3/2, 480*3/2
+    super WIDTH*3/2, HEIGHT*3/2
     
     self.caption = "Peter Morphose"
     
