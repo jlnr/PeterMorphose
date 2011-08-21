@@ -1,4 +1,25 @@
 class Game < State
+  class ObjectDef < Struct.new(:name, :life, :rect, :speed, :jump_x, :jump_y)
+    def self.[](id)
+      @all ||= begin
+        ini = INIFile.new('objects.ini')
+        (0..ID_MAX).map do |id|
+          ObjectDef.new.tap do |obj_def|
+            hex_id = "%02x" % id
+            obj_def.name = ini['ObjName',  hex_id] || '<no name>'
+            obj_def.life = (ini['ObjLife',  hex_id] || 3).to_i
+            rect_string = ini['ObjRect',  hex_id] || '10102020'
+            obj_def.rect = rect_string.each_char.each_slice(2).map(&:join).map { |str| str.to_i(16) }
+            obj_def.speed = (ini['ObjSpeed', hex_id] || 3).to_i
+            obj_def.jump_x = (ini['ObjJump', "#{hex_id}X"] || 0).to_i
+            obj_def.jump_y = (ini['ObjJump', "#{hex_id}Y"] || 0).to_i
+          end
+        end
+      end
+      @all[id]
+    end
+  end
+  
   attr_reader :view_pos
   
   def initialize level_info
@@ -17,6 +38,7 @@ class Game < State
     @lava_frame = 0
     @lava_time_left = 0
     
+    @objects = []
     @obj_vars = [nil] * 16
     
 =begin
@@ -53,23 +75,8 @@ class Game < State
     
     @map = Map.new(self, level_info.ini_file)
     
+ 
 =begin
-      // Definitionsdatei laden und Definitionen einlesen
-      Theme_def := TIniFile32.Create(ExtractFileDir(ParamStr(0)) + '\' + NewTheme + '.def');
-      if CurrentTheme <> NewTheme then begin
-        for LoopX := 0 to ID_Max do with Data.Defs[LoopX] do begin
-          Name := Theme_def.ReadString('ObjName', IntToHex(LoopX, 2), '<Kein Name>');
-          Life := Theme_def.ReadInteger('ObjLife', IntToHex(LoopX, 2), 3);
-          Rect := Classes.Rect(-StrToIntDef('$' + Copy(Theme_def.ReadString('ObjRect', IntToHex(LoopX, 2), '10102020'), 1, 2), 16),
-                               -StrToIntDef('$' + Copy(Theme_def.ReadString('ObjRect', IntToHex(LoopX, 2), '10102020'), 3, 2), 16),
-                               +StrToIntDef('$' + Copy(Theme_def.ReadString('ObjRect', IntToHex(LoopX, 2), '10102020'), 5, 2), 16),
-                               +StrToIntDef('$' + Copy(Theme_def.ReadString('ObjRect', IntToHex(LoopX, 2), '10102020'), 7, 2), 16));
-          Speed := Theme_def.ReadInteger('ObjSpeed', IntToHex(LoopX, 2), 3);
-          JumpX := Theme_def.ReadInteger('ObjJump', IntToHex(LoopX, 2) + 'X', 0);
-          JumpY := Theme_def.ReadInteger('ObjJump', IntToHex(LoopX, 2) + 'Y', 0);
-        end;
-      end;      
-
       // Spieler einrichten
       with TPMLiving.Create(
                             Data.ObjPlayers,
@@ -276,13 +283,8 @@ class Game < State
   
   def draw
     @map.draw
-    # // Objekte zeichnen
-    # TempObj := Data.ObjCollectibles.Next;
-    # while TempObj <> Data.ObjEnd do begin
-    #   TempObj.Draw;
-    #   TempObj := TempObj.Next;
-    # end;
-    # 
+    @objects.each &:draw
+    
     # // Zum Schluss die bˆhze Gefahr, die von unten aufsteigt
     # for LoopX := -1 to 4 do
     #   DXImageListPack.Items[Image_Danger].Draw(DXDraw.Surface, LoopX * 120 + Data.Map.LavaFrame, Data.Map.LavaPos - Data.ViewPos + Integer(Data.Map.LavaTimeLeft = 0) * ((Data.Frame div 2) mod 2), Min(1, Data.Map.LavaTimeLeft));
