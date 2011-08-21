@@ -7,7 +7,7 @@ File.dirname(File.dirname(__FILE__)).tap do |root|
   $LOAD_PATH << "#{root}/src"
 end
 
-require 'new-gosu'
+require 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 require 'const'
 require 'title'
 
