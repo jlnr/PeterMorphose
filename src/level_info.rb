@@ -1,6 +1,6 @@
 class LevelInfo
   attr_accessor :filename, :title, :ini_file
-    
+  
   def initialize filename
     @filename = filename
     @ini_file = INIFile.new(filename)
@@ -33,14 +33,14 @@ class LevelInfo
     
     # TODO highscore = ...
   end
-    
+  
   def draw y, active
     if active then
       draw_rect 0, y + 1, 631, 98, 0xff603000
     end
     
     draw_rect 0, y, 631, 1, 0x003000
-    # TODO (Highscore) / (noch nicht geschafft)
+    # TODO (Highscore) / (not beaten yet)
     draw_string @title, 5, y + 7, 255
     # TODO right-align
     draw_string @difficulty, 626 - @difficulty.length * 9, y + 7, 255

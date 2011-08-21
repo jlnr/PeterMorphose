@@ -1,7 +1,10 @@
 require 'rubygems'
 require 'gosu'
 
-# TODO Game
+# TODO Skies
+# TODO Player
+# TODO More Objects
+# TODO Game Logic
 # TODO Music
 # TODO High Scores
 # TODO Script

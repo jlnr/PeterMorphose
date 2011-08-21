@@ -1,6 +1,7 @@
 class Map
   def initialize game, ini_file
     @@tiles ||= Gosu::Image.load_tiles 'media/tiles.bmp', -16, -16
+    @@skies ||= Gosu::Image.load_tiles 'media/skies.png', -4, -2
     
     @game = game
     @tiles = []
@@ -66,6 +67,20 @@ class Map
   end
   
   def draw
+    if @sky == 0 then
+      4.times do |y|
+        4.times do |x|
+          @@skies.first.draw x * 144, y * 120, 0
+        end
+      end
+    else
+      5.times do |y|
+        4.times do |x|
+          @@skies.first.draw x * 144, y * 120 - @game.view_pos % 120, 0
+        end
+      end
+    end
+    
     offset = @game.view_pos % TILE_SIZE
     row = @game.view_pos / TILE_SIZE
     (HEIGHT / TILE_SIZE + 1).times do |y|

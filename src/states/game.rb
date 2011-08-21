@@ -276,18 +276,6 @@ class Game < State
   
   def draw
     @map.draw
-    
-    # // Erstmal den Hintergrund
-    # case Data.Map.Sky of
-    #   0: for LoopY := 0 to 3 do
-    #        for LoopX := 0 to 3 do
-    #          DXImageListPack.Items[Image_Sky].Draw(DXDraw.Surface, LoopX * 144, LoopY * 120, Data.Map.Sky);
-    #   else
-    #     for LoopY := 0 to 4 do
-    #       for LoopX := 0 to 3 do
-    #         DXImageListPack.Items[Image_Sky].Draw(DXDraw.Surface, LoopX * 144, LoopY * 120 - Data.ViewPos mod 120, Data.Map.Sky);
-    # end;
-    # 
     # // Objekte zeichnen
     # TempObj := Data.ObjCollectibles.Next;
     # while TempObj <> Data.ObjEnd do begin
