@@ -1,4 +1,17 @@
-class GameObject < Struct.new(:game, :pmid, :xdata, :x, :y, :vx, :vy)
+class GameObject < Struct.new(:game, :pmid, :x, :y, :xdata, :vx, :vy)
+  def initialize *args
+    super *args
+    @last_frame_in_water = in_water?
+  end
+  
+  MAX_SOUND_DISTANCE = 500.0
+  
+  def emit_sound name
+    distance = (y - game.player.y).abs
+    return if distance > MAX_SOUND_DISTANCE
+    sound(name).play 1 - distance / MAX_SOUND_DISTANCE
+  end
+  
   ALL_WATER_TILES = (TILE_WATER..TILE_WATER_4).to_a + [TILE_WATER_5]
   def in_water?
     ALL_WATER_TILES.include? game.map[x / TILE_SIZE, y / TILE_SIZE]
@@ -182,30 +195,8 @@ function CreateObject(DataObj: TPMData; XData: string; InitID, X, Y, VX, VY: Int
 function FindObject(StartObj, EndObj: TPMObject; MinID, MaxID: Integer; Rect: TRect): TPMObject;
 function FindLiving(StartObj, EndObj: TPMObject; MinID, MaxID, MinAction, MaxAction: Integer; Rect: TRect): TPMLiving;
 function LaunchProjectile(X, Y, Direction: Integer; TargetMinObj, TargetMaxObj, FXObj: TPMObject; Data: TPMData): TPMObject;
-function RealDir(Dir: Integer): Integer;
-function OtherDir(Dir: Integer): Integer;
 
 implementation
-
-constructor TPMObject.Create(After: TPMObject; XData: string; InitID, X, Y, VX, VY: Integer);
-begin
-  // TObject erstellen
-  inherited Create;
-  // Eigenschaften setzen
-  ExtraData := XData;
-  ID := InitID;
-  PosX := X; PosY := Y;
-  VelX := VX; VelY := VY;
-  // In die Kette eingliedern
-  if After = nil then Exit;
-  After.Next.Last := Self;
-  Next := After.Next;
-  After.Next := Self;
-  Last := After;
-  // Data vom letzten Objekt übernehmen
-  Data := After.Data;
-  LastFrameInWater := InWater;
-end;
 
 procedure TPMObject.Update;
 var
@@ -426,17 +417,6 @@ begin with Data^ do begin
                       PosY + Defs[ID].Rect.Top  + Defs[ID].Rect.Bottom)
 end; end;
 
-procedure TPMObjBreak.Draw;
-begin
-  // Objekteplatzhalter werden nicht gezeichnet!
-end;
-
-procedure TPMObjBreak.Update;
-begin
-  // Was soll da schon aktualisiert werden?
-end;
-
-
 procedure TPMEffect.Draw;
 begin
   case ID of
@@ -650,17 +630,6 @@ begin
     end;
 end;
 
-procedure DistSound(Y, Sound: Integer; Data: TPMData);
-var
-  Distance: Integer;
-begin
-  Distance := Abs(Y - Data.ObjPlayers.Next.PosY);
-  Distance := Min(Distance * 5, 10000);
-  if Distance > 9000 then Exit;
-  Data.Waves[Sound].Volume := -Distance;
-  Data.Waves[Sound].Play(False);  
-end;
-
 function CreateObject(DataObj: TPMData; XData: string; InitID, X, Y, VX, VY: Integer): TPMObject;
 begin case InitID of
   0..ID_LivingMax:
@@ -737,15 +706,4 @@ begin
   TPMEffect.Create(FXObj, IntToStr(Abs(X - LoopX)), ID_FXLine, Min(X, LoopX), Y, 0, 0);
 end;
 
-function RealDir(Dir: Integer): Integer;
-begin
-  if Dir = Dir_Left then Result := -1 else Result := 1;
-end;
-
-function OtherDir(Dir: Integer): Integer;
-begin
-  if Dir = Dir_Left then Result := Dir_Right else Result := Dir_Left;
-end;
-
-end.
 =end

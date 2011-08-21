@@ -1,7 +1,7 @@
 class LivingObject < GameObject
   attr_accessor :life, :action, :direction
   
-  def initialize game, pmid, xdata = nil
+  def initialize *args
     super
   end
   
@@ -355,7 +355,7 @@ class LivingObject < GameObject
     if pmid <= ID_PLAYER_MAX and game.jump_time_left > 0 then
       self.vy = (ObjectDefs[pmid].jump_y * 1.5).round
       # TODO CastObjects(ID_FXSmoke, 2, 0, 3, 2, Data.OptEffects, GetRect(1, 0), Data.ObjEffects);
-      sound :turbo
+      sound(:turbo).play
       dir = DIR_UP
     else
       self.vy = ObjectDef[pmid].jump_y
@@ -376,11 +376,11 @@ class LivingObject < GameObject
     if in_water? then
       self.vx /= 3
       self.vy = (vy / 1.2).round
-      # TODO DistSound(PosY, Sound_Water + Random(2), Data^);
+      emit_sound :water
     end;
     
     self.action = ACT_JUMP
-    sound :jump if pmid <= ID_PLAYER_MAX
+    sound(:jump).play if pmid <= ID_PLAYER_MAX
   end;
   
   
