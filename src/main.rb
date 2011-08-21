@@ -7,15 +7,19 @@ File.dirname(File.dirname(__FILE__)).tap do |root|
   $LOAD_PATH << "#{root}/src"
 end
 
-require 'menu'
+require 'new-gosu'
+require 'const'
+require 'title'
+
+# Simple implementation of the Gosu "State-Based" pattern
 
 class Window < Gosu::Window
   def initialize
-    super 800, 600, false
+    super 800, 600
     
     self.caption = "Peter Morphose"
     
-    @state = Menu.new
+    @state = Title.new
   end
   
   def update

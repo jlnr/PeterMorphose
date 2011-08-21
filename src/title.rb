@@ -1,4 +1,4 @@
 require 'state'
 
-class Menu < State
+class Title < State
 end
