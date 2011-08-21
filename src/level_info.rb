@@ -1,15 +1,15 @@
 class LevelInfo
-  attr_accessor :filename, :title
+  attr_accessor :filename, :title, :ini_file
     
   def initialize filename
     @filename = filename
-    ini = INIFile.new(filename, %w(Info Objects))
-    @title       = ini['Info', 'Title']  || 'Unbenannte Karte'
-    @difficulty  = ini['Info', 'Skill']  || ''
-    @description = ini['Info', 'Desc']   || ''
-    @author      = ini['Info', 'Author'] || '(Anonym)'
+    @ini_file = INIFile.new(filename)
+    @title       = @ini_file['Info', 'Title']  || 'Unbenannte Karte'
+    @difficulty  = @ini_file['Info', 'Skill']  || ''
+    @description = @ini_file['Info', 'Desc']   || ''
+    @author      = @ini_file['Info', 'Author'] || '(Anonym)'
     
-    stars_goal = (ini['Info', 'StarsGoal'] || 100).to_i
+    stars_goal = (@ini_file['Map', 'StarsGoal'] || 100).to_i
     if stars_goal == 0 then
       @goal = "Durchkommen"
     else
@@ -18,9 +18,9 @@ class LevelInfo
     
     hostages = []
     obj = 0
-    while obj_desc = ini['Objects', obj] do
+    while obj_desc = @ini_file['Objects', obj] do
       if obj_desc[1..2] == ID_CAROLIN.to_s(16) then
-        obj_desc_extended = ini['Objects', "#{obj}Y"] || '|'
+        obj_desc_extended = @ini_file['Objects', "#{obj}Y"] || '|'
         hostages << (obj_desc_extended.split('|').last || 'Carolin')
       end
       obj += 1
