@@ -110,6 +110,16 @@ DIR_RIGHT = 1
 DIR_UP = 2
 DIR_DOWN = 3
 
+class Numeric
+  def dir_to_vx
+    self == DIR_LEFT ? -1 : +1
+  end
+  
+  def other_dir
+    self == DIR_LEFT ? DIR_RIGHT : DIR_LEFT
+  end
+end
+
 # SPEZIALKARTENTEILE
 # MASSIV, ERSTE REIHE
 TILE_ROCKET_UP = 0xC_0

@@ -17,6 +17,10 @@ def confirmation? id
   id == Gosu::KbSpace or id == Gosu::GpButton0
 end
 
+def action? id
+  id == Gosu::KbSpace or id == Gosu::GpButton1
+end
+
 def cancel? id
   id == Gosu::KbEscape or id == Gosu::GpButton2
 end

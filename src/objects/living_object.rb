@@ -209,6 +209,8 @@ class LivingObject < GameObject
     #   Dec(Data.Bombs);
     #   TPMObject.Create(Data.ObjOther, '0', ID_FusingBomb, PosX + RealDir(Direction) * 5, PosY + 2, RealDir(Direction) * 8, -3);
     # end;
+    
+    
 
     if pmid <= ID_PLAYER_MAX and not busy? then
       self.direction = DIR_LEFT  if vx < 0
@@ -332,6 +334,56 @@ class LivingObject < GameObject
     self.action = ACT_STAND
   end
   
+  def jump
+    # Cannot jump when dead
+    return if action >= ACT_DEAD
+    
+    if in_water? then
+      # Cannot jump when in deep water
+      return if ALL_WATER_TILES.include? data.map[x / TILE_SIZE, y / TILE_SIZE]
+    else
+      # Cannot jump when busy
+      return if busy?
+    end
+    
+    dir = DIR_UP
+    if pmid <= ID_PLAYER_MAX then
+      dir = self.direction = DIR_LEFT if left_pressed?
+      dir = self.direction = DIR_RIGHT if right_pressed?
+    end
+    
+    if pmid <= ID_PLAYER_MAX and game.jump_time_left > 0 then
+      self.vy = (ObjectDefs[pmid].jump_y * 1.5).round
+      # TODO CastObjects(ID_FXSmoke, 2, 0, 3, 2, Data.OptEffects, GetRect(1, 0), Data.ObjEffects);
+      sound :turbo
+      dir = DIR_UP
+    else
+      self.vy = ObjectDef[pmid].jump_y
+    end
+    
+    if dir == DIR_UP then
+      self.vx = 0
+    else
+      self.vx = dir.dir_to_vx * [ObjectDef[pmid].jump_x, vx.abs / 2].max
+      
+      # TODO Slime tiles
+      #if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3])
+      #or (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3]) then begin
+      #  VelX := VelX div 3;
+      #  VelY := Round(VelY / 1.5);
+    end
+    
+    if in_water? then
+      self.vx /= 3
+      self.vy = (vy / 1.2).round
+      # TODO DistSound(PosY, Sound_Water + Random(2), Data^);
+    end;
+    
+    self.action = ACT_JUMP
+    sound :jump if pmid <= ID_PLAYER_MAX
+  end;
+  
+  
   private
   
   def break_floor x, y
@@ -360,44 +412,6 @@ begin
           Data.Images[Image_Enemies].Draw(Data.DXDraw.Surface, PosX - 11, PosY - 11 - Data.ViewPos, Act_Num * 5 + Action);
       end;
   end;
-end;
-
-procedure TPMLiving.Jump;
-var
-  DirToJump: Integer;
-begin
-  if Action >= Act_Dead then Exit;
-  if InWater then
-    begin if Data.Map.Tile(PosX, PosY - 3) in [Tile_Water..Tile_Water4, Tile_Water5] then Exit; end
-  else
-    if Busy then Exit;
-  DirToJump := Dir_Up;
-  if ID <= ID_PlayerMax then begin
-    Data.Input.Update;
-    if isLeft in Data.Input.States  then begin DirToJump := Dir_Left;  Direction := DirToJump; end;
-    if isRight in Data.Input.States then begin DirToJump := Dir_Right; Direction := DirToJump; end;
-  end;
-  if (ID <= ID_PlayerMax) and (Data.JumpTimeLeft > 0) then begin
-    VelY := Round(Data.Defs[ID].JumpY * 1.5);
-    CastObjects(ID_FXSmoke, 2, 0, 3, 2, Data.OptEffects, GetRect(1, 0), Data.ObjEffects);
-    Data.Waves[Sound_Turbo].Play(False);
-    DirToJump := Dir_Up;
-  end else VelY := Data.Defs[ID].JumpY;
-  if DirToJump = Dir_Up then VelX := 0 else 
-    VelX := RealDir(DirToJump) * Max(Data.Defs[ID].JumpX, Abs(VelX) div 2);
-  if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3])
-  or (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3]) then begin
-    VelX := VelX div 3;
-    VelY := Round(VelY / 1.5);
-  end;
-  if InWater then begin
-    VelX := VelX div 3;
-    VelY := Round(VelY / 1.2);
-    DistSound(PosY, Sound_Water + Random(2), Data^);
-  end;
-
-  Action := Act_Jump;
-  if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
 end;
 
 procedure TPMLiving.Hit;

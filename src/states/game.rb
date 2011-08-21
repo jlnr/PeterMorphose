@@ -103,8 +103,6 @@ class Game < State
   end
   
   def update
-    @objects.each &:update
-    
     #   State_Paused, State_Game, State_Dead, State_Won: begin
     #     // W‰re State_Dead nicht doch passender?
     #     if (Data.State = State_Game) and ((Data.ObjPlayers.Next = Data.ObjEffects) or (TPMLiving(Data.ObjPlayers.Next).Action = Act_Dead)) then
@@ -175,55 +173,49 @@ class Game < State
     #       // Bestimmen, welcher Teil des Levels angezeigt wird
     #       Data.ViewPos := Max(Min(Min(Data.Map.LavaPos - 432, Data.ObjPlayers.Next.PosY - 240), 24096), Data.Map.LevelTop);
     #     end;
-    #     if Data.State = State_Game then begin
-    #       // Spielersteuerung
-    #       DXInput.Update;
-    #       // Steuerung f¸r normalen Peter
-    #       if (Data.FlyTimeLeft = 0) and (not Data.ObjPlayers.Next.InWater) then begin
-    #         // Nach links bewegen
 
-    if left_pressed? then
-      @player.instance_eval do
-        if not busy? and vx > -ObjectDef[pmid].speed * 1.75 then
-          self.vx -= ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
+    # if Data.State = State_Game then begin
+    if fly_time_left == 0 and not @player.in_water? then
+      if left_pressed? then
+        @player.instance_eval do
+          if not busy? and vx > -ObjectDef[pmid].speed * 1.75 then
+            self.vx -= ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
+          end
+          # if Data.OptOldJumping = 1 then begin
+          #   if (Action = Act_Jump) or (Action = Act_Land)
+          #   or (Action = Act_Pain1) or (Action = Act_Pain2) then begin
+          #     if not Blocked(Dir_Left) then Dec(PosX);
+          #     if not Blocked(Dir_Left) then Dec(PosX);
+          #     if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
+          #     if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
+          #   end;
+          # end else begin
+          #   if (Action in [Act_Jump, Act_Pain1, Act_Pain2]) and (VelX > -Data.Defs[ID].JumpX - 2) then Dec(VelX);
+          #   if (Action = Act_Land) and (VelX > -Data.Defs[ID].JumpX - 3) then Dec(VelX);
+          # end;
         end
-      #           if (not Busy) and (VelX > -Round(Data.Defs[ID].Speed * 1.75)) then
-      #             Dec(VelX, Data.Defs[ID].Speed + Integer(Data.SpeedTimeLeft > 0) * 6);
-      #           if Data.OptOldJumping = 1 then begin
-      #             if (Action = Act_Jump) or (Action = Act_Land)
-      #             or (Action = Act_Pain1) or (Action = Act_Pain2) then begin
-      #               if not Blocked(Dir_Left) then Dec(PosX);
-      #               if not Blocked(Dir_Left) then Dec(PosX);
-      #               if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
-      #               if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
-      #             end;
-      #           end else begin
-      #             if (Action in [Act_Jump, Act_Pain1, Act_Pain2]) and (VelX > -Data.Defs[ID].JumpX - 2) then Dec(VelX);
-      #             if (Action = Act_Land) and (VelX > -Data.Defs[ID].JumpX - 3) then Dec(VelX);
-      #           end;
+      end
+      if right_pressed? then
+        @player.instance_eval do
+          if not busy? and vx < +ObjectDef[pmid].speed * 1.75 then
+            self.vx += ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
+          end
+        end
+        # if Data.OptOldJumping = 1 then begin
+        #   if (Action = Act_Jump) or (Action = Act_Land)
+        #   or (Action = Act_Pain1) or (Action = Act_Pain2) then begin
+        #     if not Blocked(Dir_Right) then Inc(PosX);
+        #     if not Blocked(Dir_Right) then Inc(PosX);
+        #     if not Blocked(Dir_Right) and (Action = Act_Land) then Inc(PosX);
+        #     if not Blocked(Dir_Right) and (Action = Act_Land) then Inc(PosX);
+        #   end;
+        # end else begin
+        #   if (Action in [Act_Jump, Act_Pain1, Act_Pain2]) and (VelX < +Data.Defs[ID].JumpX + 2) then Inc(VelX);
+        #   if (Action = Act_Land) and (VelX < +Data.Defs[ID].JumpX + 3) then Inc(VelX);
+        # end;
       end
     end
-
-    #         end else
-    #           if (Data.OptOldJumping = 0) and (Data.Frame mod 3 = 0) and (TPMLiving(Data.ObjPlayers.Next).Action in [Act_Jump, Act_Land]) and (Data.ObjPlayers.Next.VelX < -1) then Inc(Data.ObjPlayers.Next.VelX);
-    #         // Nach rechts bewegen
-    #         if isRight in DXInput.States then with TPMLiving(Data.ObjPlayers.Next) do begin
-    #           if (not Busy) and (VelX < +Round(Data.Defs[ID].Speed * 1.75)) then Inc(VelX, Data.Defs[ID].Speed + Integer(Data.SpeedTimeLeft > 0) * 6);
-    #           if Data.OptOldJumping = 1 then begin
-    #             if (Action = Act_Jump) or (Action = Act_Land)
-    #             or (Action = Act_Pain1) or (Action = Act_Pain2) then begin
-    #               if not Blocked(Dir_Right) then Inc(PosX);
-    #               if not Blocked(Dir_Right) then Inc(PosX);
-    #               if not Blocked(Dir_Right) and (Action = Act_Land) then Inc(PosX);
-    #               if not Blocked(Dir_Right) and (Action = Act_Land) then Inc(PosX);
-    #             end;
-    #           end else begin
-    #             if (Action in [Act_Jump, Act_Pain1, Act_Pain2]) and (VelX < +Data.Defs[ID].JumpX + 2) then Inc(VelX);
-    #             if (Action = Act_Land) and (VelX < +Data.Defs[ID].JumpX + 3) then Inc(VelX);
-    #           end;
-    #         end else
-    #           if (Data.OptOldJumping = 0) and (Data.Frame mod 3 = 0) and (TPMLiving(Data.ObjPlayers.Next).Action in [Act_Jump, Act_Land]) and (Data.ObjPlayers.Next.VelX > 1) then Dec(Data.ObjPlayers.Next.VelX);
-    #       end else with TPMLiving(Data.ObjPlayers.Next) do begin
+    #       ...else with TPMLiving(Data.ObjPlayers.Next) do begin
     #         if (isUp in DXInput.States)    and (VelY > -5) then Dec(VelY);
     #         if (isUp in DXInput.States)    and (VelY > -5) then Dec(VelY);
     #         if (isDown in DXInput.States)  and (VelY < +5) then Inc(VelY);
@@ -256,27 +248,22 @@ class Game < State
     #         CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
     #         Exit;
     #       end;
-    # 
-    #       // Objekte berechnen
-    #       TempObj := Data.ObjCollectibles.Next;
-    #       while TempObj <> Data.ObjEnd do begin
-    #         TempObj.Update;
-    #         TempObj := TempObj.Next;
-    #       end;
-    #       // Jetzt noch die kaputten lˆschen
-    #       TempObj := Data.ObjCollectibles.Next;
-    #       while TempObj <> nil do begin
-    #         if TempObj.Last.Marked then TempObj.Last.ReallyKill;
-    #         TempObj := TempObj.Next;
-    #       end;
-    #       // Ab und zu mal ein Rauchwˆlkchen und Flammen aus der Lava steigen lassen...
-    #       if Data.Map.LavaTimeLeft = 0 then begin
-    #         CastFX(Random(2) + 1, Random(2) + 1, 0, 288, Data.Map.LavaPos, 576, 8, 1, -4, 1, Data.OptEffects, Data.ObjEffects);
-    #         if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
-    #         if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
-    #         if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
-    #       end;
-    #     end;
+    
+    @objects.each &:update
+    #  // Jetzt noch die kaputten lˆschen
+    #  TempObj := Data.ObjCollectibles.Next;
+    #  while TempObj <> nil do begin
+    #    if TempObj.Last.Marked then TempObj.Last.ReallyKill;
+    #    TempObj := TempObj.Next;
+    #  end;
+       
+    #  // Ab und zu mal ein Rauchwˆlkchen und Flammen aus der Lava steigen lassen...
+    #  if Data.Map.LavaTimeLeft = 0 then begin
+    #    CastFX(Random(2) + 1, Random(2) + 1, 0, 288, Data.Map.LavaPos, 576, 8, 1, -4, 1, Data.OptEffects, Data.ObjEffects);
+    #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
+    #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
+    #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
+    #  end;
     
   end
   
@@ -412,7 +399,7 @@ class Game < State
     # DXDraw.Flip;
   end
   
-  def button_id id
+  def button_down id
     #     if Data.State in [State_Game, State_Paused, State_Dead] then begin
     #       if Data.State in [State_Game, State_Paused] then Log.Add('Level abgebrochen.');
     #       if QuickStart then Close else DXWaveList.Items[Sound_WooshBack].Play(False);
@@ -425,8 +412,9 @@ class Game < State
     #       if Data.State = State_Game then begin Data.State := State_Paused; Exit; end;
     #   end;
     #     State_Game: case Key of
-    #       VK_Up:    if Data.FlyTimeLeft = 0 then TPMLiving(Data.ObjPlayers.Next).Jump;
-    #       VK_Down:  if Data.FlyTimeLeft = 0 then TPMLiving(Data.ObjPlayers.Next).UseTile;
+    @player.jump     if up? id and fly_time_left == 0
+    @player.use_tile if down? id and fly_time_left == 0
+    @player.action   if action? id
     #       VK_Space: TPMLiving(Data.ObjPlayers.Next).Special;
     #       VK_Delete, VK_Return: begin
     #                    if (Data.Frame = -1) or (Data.ObjPlayers.Next.ID = ID_Player) then Exit;

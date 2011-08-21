@@ -27,7 +27,7 @@ class Menu < State
     elsif down? id or right? id then
       @selection += 1 if @selection < ITEMS - 1
     elsif confirmation? id
-      sample(:whoosh).play
+      sound(:whoosh).play
       case @selection
       when 0 then
         State.current = LevelSelection.new

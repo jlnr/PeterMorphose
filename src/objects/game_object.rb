@@ -14,30 +14,45 @@ class GameObject < Struct.new(:game, :pmid, :xdata, :x, :y, :vx, :vy)
     
     self.vy += 1 if (pmid > ID_PLAYER_MAX or game.fly_time_left == 0) and not in_water?
     
-    # // Beschleunigen
-    # if InWater and (VelY > 1) then Dec(VelY);
-    # if InWater and (VelY < 1) then Inc(VelY);
-    # if InWater and (VelX > +2) then Dec(VelX);
-    # if InWater and (VelX < -2) then Inc(VelX);
+    if in_water? then
+      self.vy -= 1 if vy > 1
+      self.vy += 1 if vy < 1
+      self.vx -= 1 if vx > 2
+      self.vx += 1 if vx < 2
+    end
     
     # Velocity is limited to +- TILE_SIZE
-    self.vx = [[vx, -24].max, 24].min
-    self.vy = [[vy, -24].max, 24].min
+    self.vx = [[vx, -TILE_SIZE].max, TILE_SIZE].min
+    self.vy = [[vy, -TILE_SIZE].max, TILE_SIZE].min
     
-    # // Fallen
-    #     if VelY > 0 then for I := 0 to     VelY do if Blocked(Dir_Down) then Break else Inc(PosY);
-    #     if VelY < 0 then for I := 0 downto VelY do if Blocked(Dir_Up)   then Break else Dec(PosY);
-    #     // Aufprallen
-    #     if Blocked(Dir_Down) then begin
-    #       if (ClassType = TPMLiving) and (VelY > 10) and (not TPMLiving(Self).Action in [Act_Dead, Act_Action1..Act_Action2]) then
-    #         TPMLiving(Self).Action := Act_Impact1 + Min(VelY - 11, 4);
-    #       VelY := 0;
-    #       if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) = Tile_PullLeft) and (not Blocked(Dir_Left)) then Dec(PosX);
-    #       if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) = Tile_PullRight) and (not Blocked(Dir_Right)) then Inc(PosX);
-    #       if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) = Tile_PullLeft) and (not Blocked(Dir_Left)) then Dec(PosX);
-    #       if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) = Tile_PullRight) and (not Blocked(Dir_Right)) then Inc(PosX);
-    #     end;
-    #     if Blocked(Dir_Up) and (Data.FlyTimeLeft = 0) then begin VelY := -(VelY div 2); VelX := VelX div 2; end;
+    if vy > 0 then
+      vy.times do
+        break if blocked? DIR_DOWN
+        self.y += 1
+      end
+    elsif vy < 0 then
+      vy.abs.times do
+        break if blocked? DIR_UP
+        self.y -= 1
+      end
+    end
+    
+    if blocked? DIR_DOWN then
+      if is_a? LivingObject and vx > 10 and not [ACT_DEAD, ACT_ACTION, ACT_ACTION_2].include? action then
+        self.action = ACT_IMPACT_1 + [vy - 11, 4].min
+      end
+      self.vy = 0
+      # Conveyor belts are neither implemented nor used
+      # if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) = Tile_PullLeft) and (not Blocked(Dir_Left)) then Dec(PosX);
+      # if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) = Tile_PullRight) and (not Blocked(Dir_Right)) then Inc(PosX);
+      # if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) = Tile_PullLeft) and (not Blocked(Dir_Left)) then Dec(PosX);
+      # if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) = Tile_PullRight) and (not Blocked(Dir_Right)) then Inc(PosX);
+    end
+    
+    if blocked? DIR_UP and game.fly_time_left == 0 then
+      self.vy /= -2
+      self.vx /= +2
+    end
     
     if vx < 0 then
       vx.abs.times do
@@ -59,34 +74,37 @@ class GameObject < Struct.new(:game, :pmid, :xdata, :x, :y, :vx, :vy)
       end
     end
     
-    # // Bremsen
-    #     if (ID > ID_PlayerMax) or (Data.FlyTimeLeft = 0) then if Blocked(Dir_Down) then begin
-    #       if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
-    #       if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
-    #       if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
-    #       if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
-    #       if Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3] then begin
-    #         if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
-    #         if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
-    #         if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
-    #         if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
-    #         if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
-    #         if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
-    #         if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
-    #         if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
-    #         if Data.Frame mod 2 = 0 then begin
-    #           if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
-    #           if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
-    #           if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
-    #           if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
-    #         end;
-    #       end;
-    #     end;
-    # 
-    #     // Zusatzeffekte
-    #     if (Data.OptQuality = 2) and ((Abs(VelX) > 12) or (VelY < -15)) then
-    #       CastFX(Random(5), Random(3), 0, PosX, PosY, 5, 5, 0, -2, 2, Data.OptEffects, Data.ObjEffects);
-    #     end;
+    if (pmid > ID_PLAYER_MAX or game.fly_time_left == 0) and blocked? DIR_DOWN then
+      self.vx -= 1 if vx >  0
+      self.vx -= 1 if vx > +1
+      self.vx -= 1 if pmid <= ID_ENEMY_MAX and vx > +ObjectDef[pmid].speed
+      self.vx += 1 if vx <  0
+      self.vx += 1 if vx < -1
+      self.vx += 1 if pmid <= ID_ENEMY_MAX and vx < -ObjectDef[pmid].speed
+      # TODO Slime tiles
+      #       if Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3] then begin
+      #         if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
+      #         if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
+      #         if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
+      #         if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
+      #         if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
+      #         if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
+      #         if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
+      #         if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
+      #         if Data.Frame mod 2 = 0 then begin
+      #           if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
+      #           if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
+      #           if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
+      #           if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
+      #         end;
+      #       end;
+      #     end;
+    end
+    
+    # Annoying Special FX
+    # if (Data.OptQuality = 2) and ((Abs(VelX) > 12) or (VelY < -15)) then
+    #   CastFX(Random(5), Random(3), 0, PosX, PosY, 5, 5, 0, -2, 2, Data.OptEffects, Data.ObjEffects);
+    # end;
   end
   
   def blocked? direction
