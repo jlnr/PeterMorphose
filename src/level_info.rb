@@ -1,113 +1,64 @@
 class LevelInfo
-  attr_accessor :filename, :title, :author, :description
-  attr_accessor :difficulty, :stars_goal, :hostage, :hostage_name
-  attr_accessor :highscore
-  
+  attr_accessor :filename, :title
+    
   def initialize filename
     @filename = filename
-    @title = File.basename(filename)
+    ini = INIFile.new(filename, %w(Info Objects))
+    @title       = ini['Info', 'Title']  || 'Unbenannte Karte'
+    @difficulty  = ini['Info', 'Skill']  || ''
+    @description = ini['Info', 'Desc']   || ''
+    @author      = ini['Info', 'Author'] || '(Anonym)'
+    
+    stars_goal = (ini['Info', 'StarsGoal'] || 100).to_i
+    if stars_goal == 0 then
+      @goal = "Durchkommen"
+    else
+      @goal = "#{stars_goal} Sterne einsammeln"
+    end
+    
+    hostages = []
+    obj = 0
+    while obj_desc = ini['Objects', obj] do
+      if obj_desc[1..2] == ID_CAROLIN.to_s(16) then
+        obj_desc_extended = ini['Objects', "#{obj}Y"] || '|'
+        hostages << (obj_desc_extended.split('|').last || 'Carolin')
+      end
+      obj += 1
+    end
+    if hostages.size == 1 then
+      @goal += " und #{hostages[0]} Gefangene retten"
+    elsif hostages.size > 1 then
+      @goal += " und #{hostages.size} Gefangene retten"
+    end
+    
+    # TODO highscore = ...
   end
-  
-  # DrawBMPText(Title + ' (' + IntToStr(Hiscore) + ' Punkte)', 5, Y + 7, 255, FontPic, Surface, 0)
-  
+    
   def draw y, active
-    draw_string File.basename(filename), 5, y + 7
+    if active then
+      draw_rect 0, y + 1, 631, 98, 0xff603000
+    end
+    
+    draw_rect 0, y, 631, 1, 0x003000
+    # TODO (Highscore) / (noch nicht geschafft)
+    draw_string @title, 5, y + 7, 255
+    # TODO right-align
+    draw_string @difficulty, 626 - @difficulty.length * 9, y + 7, 255
+    draw_string @description, 5, y + 30, 192
+    draw_string @goal, 5, y + 53, 128
+    draw_string "Von #{@author}", 5, y + 76, 80
+    draw_rect 0, y + 99, 631, 1, 0x006000
   end
   
   FIRST_LEVEL = 'jr_Gemuetlicher_Aufstieg.pml'
   
   def <=> other
-    if self.title == FIRST_LEVEL then
+    if File.basename(self.filename) == FIRST_LEVEL then
       -1
-    elsif other.title == FIRST_LEVEL then
+    elsif File.basename(other.filename) == FIRST_LEVEL then
       +1
     else
       title <=> other.title
     end
   end
 end
-
-# TODO translate more
-
-=begin
-
-constructor TPMLevelInfo.Create(FileName: string);
-var
-  Level, Ini: TIniFile32; I, CarolinCount: Integer; TempStr: string;
-begin
-  Level := TIniFile32.Create(FileName);
-  Title := Level.ReadString('Info', 'Title', 'Unbenannte Karte');
-  Skill := Level.ReadString('Info', 'Skill', '');
-  Desc  := Level.ReadString('Info', 'Desc', '');
-  Theme := Level.ReadString('Info', 'Theme', 'Ritter');
-  Author := Level.ReadString('Info', 'Author', 'Anonym, email@adresse');
-  StarsToGet := Level.ReadInteger('Map', 'StarsGoal', 100);
-  I := 0; CarolinCount := 0; Carolin := False;
-  while True do begin
-    TempStr := Level.ReadString('Objects', IntToStr(I), '');
-    if TempStr = '' then Break;
-    if Copy(TempStr, 1, 2) = IntToHex(ID_Carolin, 2) then begin
-      Carolin := True;
-      TempStr := Level.ReadString('Objects', IntToStr(I) + 'Y', '0|Carolin');
-      if Length(TempStr) <= 2 then CarolinName := 'Carolin' else CarolinName := Copy(TempStr, 3, Length(TempStr) - 2);
-      Inc(CarolinCount);
-    end;
-    Inc(I);
-  end;
-  if CarolinCount > 1 then CarolinName := IntToStr(CarolinCount) + ' Gefangene';
-  Location := FileName;
-  Ini := TIniFile32.Create(ExtractFileDir(ParamStr(0)) + '\PeterM.ini');
-  Hiscore := DeMuesli(Ini.ReadString('Hiscore', ExtractFileName(ExtractShortPathName(Location)), 'Ung¸ltig :('));
-  Ini.Free;
-  Level.Free;
-end;
-
-procedure TPMLevelInfo.Draw(Y: Integer; Active: Boolean; FontPic: TPictureCollectionItem; Surface: TDirectDrawSurface; Quality: Integer);
-begin
-  // Trennlinie oben
-  Surface.FillRect(Bounds(0, Y, 631, 1), Surface.ColorMatch($003000));
-  // Titel und Schwierigkeitsgrad
-  if Hiscore > -1 then
-    DrawBMPText(Title + ' (' + IntToStr(Hiscore) + ' Punkte)', 5, Y + 7, 255, FontPic, Surface, 0)
-  else
-    DrawBMPText(Title + ' (noch nicht geschafft)', 5, Y + 7, 255, FontPic, Surface, 0);
-  DrawBMPText(Skill, 626 - Length(Skill) * 9, Y + 7, 255, FontPic, Surface, 0);
-  // Beschreibungstext
-  DrawBMPText(Desc, 5, Y + 30, 192, FontPic, Surface, Quality);
-  // Einzusammelnde Sterne und evtl. Geiselname und Thema
-  if (StarsToGet = 0) and not Carolin then
-    DrawBMPText('Ziel: Durchkommen', 5, Y + 53, 128, FontPic, Surface, Quality);
-  if (StarsToGet = 0) and Carolin then
-    DrawBMPText('Ziel: ' + CarolinName + ' retten', 5, Y + 53, 128, FontPic, Surface, Quality);
-  if (StarsToGet <> 0) and not Carolin then
-    DrawBMPText('Ziel: ' + IntToStr(StarsToGet) + ' Sterne einsammeln', 5, Y + 53, 128, FontPic, Surface, Quality);
-  if (StarsToGet <> 0) and Carolin then
-    DrawBMPText('Ziel: ' + IntToStr(StarsToGet) + ' Sterne einsammeln und ' + CarolinName + ' retten', 5, Y + 53, 128, FontPic, Surface, Quality);
-  DrawBMPText('Thema: ' + Theme, 626 - Length('Thema: ' + Theme) * 9, Y + 53, 128, FontPic, Surface, Quality);
-  // Author
-  DrawBMPText('Von ' + Author, 5, Y + 76, 80, FontPic, Surface, Quality);
-  // Trennlinie unten
-  Surface.FillRect(Bounds(0, Y + 99, 631, 1), Surface.ColorMatch($006000));
-  // Aktiven Eintrag highlighten
-  if Active then Surface.FillRectAdd(Bounds(0, Y + 1, 631, 98), RGB(96, 48, 0));
-end;
-
-function Muesli(Int: Integer): string;
-var
-  I: Integer;
-begin
-  for I := 1 to Length(IntToStr(Int)) do
-    Result := Result + Char(Integer(IntToStr(Int)[I]) * 2 + 48 + I * 2 - (I mod 2) * 5);
-end;
-
-function DeMuesli(Str: string): Integer;
-var
-  I: Integer;
-  TempStr: string;
-begin
-  for I := 1 to Length(Str) do
-    TempStr := TempStr + Char((Integer(Str[I]) + (I mod 2) * 5 - I * 2 - 48) div 2);
-  Result := StrToIntDef(TempStr, -1);
-end;
-
-=end

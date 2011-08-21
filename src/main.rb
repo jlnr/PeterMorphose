@@ -24,7 +24,7 @@ end
 require 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 %w(const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection
-   level_info).each &method(:require)
+   ini_file level_info map).each &method(:require)
 
 # Not yet part of gosu-preview
 Gosu::enable_undocumented_retrofication rescue nil

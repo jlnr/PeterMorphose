@@ -33,8 +33,7 @@ class LevelSelection < State
       @selection += 1 if @selection < @levels.size - 1
       @top += 1 if @selection >= @top + LEVELS_ON_SCREEN
     elsif confirmation? id then
-      State.current = Game.new @levels[@selection].filename
+      State.current = Game.new(@levels[@selection])
     end
   end
-  
 end
