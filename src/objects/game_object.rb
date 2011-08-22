@@ -2,6 +2,17 @@ class GameObject
   attr_reader :game, :pmid
   attr_accessor :x, :y, :xdata, :vx, :vy
   
+  def marked?
+    @marked
+  end
+  
+  def kill
+    0.upto(game.obj_vars.size) do |i|
+      game.obj_vars[i] = nil if game.obj_vars[i] == self
+    end
+    @marked = true
+  end
+  
   def initialize game, pmid, x, y, xdata
     @game, @pmid, @x, @y, @xdata = game, pmid, x, y, xdata
     @vx = @vy = 0
@@ -357,25 +368,6 @@ begin
                              else DrawBMPText(Copy(ExtraData, 3, Length(ExtraData) - 2), PosX - ((Length(ExtraData) - 2) * 9) div 2, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality);
   end;
 end;
-
-procedure TPMObject.Kill;
-var
-  I: Integer;
-begin
-  // Argh
-  Marked := True;
-  for I := 0 to 15 do
-    if Data.ObjVars[I] = Self then Data.ObjVars[I] := nil;
-end;
-
-procedure TPMObject.ReallyKill;
-begin
-  // Jawollja
-  Next.Last := Last;
-  Last.Next := Next;
-  Free;
-end;
-
 
 procedure TPMObject.Fling(XLvl, YLvl, Rnd: Integer; Fixed, Malign: Boolean);
 begin

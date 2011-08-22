@@ -2,6 +2,7 @@ class Game < State
   attr_reader :player, :map
   attr_reader :view_pos, :frame
   attr_reader :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
+  attr_reader :obj_vars
   
   def initialize level_info
     @view_pos = TILES_Y * TILE_SIZE - HEIGHT # TODO
@@ -85,34 +86,15 @@ class Game < State
     #     // Gewonnen?
     #     if (Data.State = State_Game) and (Data.ObjPlayers.Next.PosY < Data.Map.LevelTop) then
     #       if (Data.Stars >= Data.StarsGoal) and (FindObject(Data.ObjCollectibles, Data.ObjOther, ID_Carolin, ID_Carolin, Bounds(0, 0, 576, 24576)) = nil) then begin
-    #         Data.State := State_Won; Log.Add('Gewonnen!');
-    #         Log.Add('Es ist ' + TimeToStr(Time) + '.');
-    #         Log.Add('‹brige Lebensenergie (je Punkt 5 Punkte):              ' + IntToStr(TPMLiving(Data.ObjPlayers.Next).Life));
-    #         Inc(Data.Score, TPMLiving(Data.ObjPlayers.Next).Life * 5);
-    #         Log.Add('‹brige Schl¸ssel (je Schl¸ssel 25 Punkte):             ' + IntToStr(Data.Keys));
-    #         Inc(Data.Score, Data.Keys * 25);
-    #         Log.Add('‹brige Sterne (je Sterne 3 Punkte):                    ' + IntToStr(Data.Stars - Data.StarsGoal));
-    #         Inc(Data.Score, (Data.Stars - Data.StarsGoal) * 3);
-    #         Log.Add('‹brige Munition (je Schuss 2 Punkte):                  ' + IntToStr(Data.Ammo));
-    #         Inc(Data.Score, Data.Ammo * 2);
-    #         Log.Add('‹brige Bomben (je Bombe 5 Punkte):                     ' + IntToStr(Data.Bombs));
-    #         Inc(Data.Score, Data.Bombs * 5);
-    #         if Data.Map.LavaScore = 1 then begin
-    #           Log.Add('‹brige Lava-Einfrierzeit (pro Bild 1 Punkt):           ' + IntToStr(Data.Map.LavaTimeLeft) + ' Bilder');
-    #           Inc(Data.Score, Data.Map.LavaTimeLeft);
-    #           Log.Add('Abstand zur Lava bei Spielende (pro Pixel 0.1 Punkte): ' + IntToStr(Data.Map.LavaPos - Data.Map.LevelTop) + ' Pixel');
-    #           Inc(Data.Score, (Data.Map.LavaPos - Data.Map.LevelTop) div 10);
-    #         end;
-    #         Log.Add('Gesamtpunktestand:                                     ' + IntToStr(Data.Score) + ' Punkte!');
+    #         Data.State := State_Won;                          ' + IntToStr(Data.Score) + ' Punkte!');
     #       end else begin
     #         Data.State := State_Dead; Log.Add('Zu wenig Sterne oder Geiseln ¸brig - verloren.');
     #       end;
     #     // Normaler Verlauf
     #     if Data.State = State_Game then begin
-    #       // Bildz‰hler erhˆhen
     @frame = (@frame + 1) % 2400
-    #       if MessageOpacity > 0 then Dec(MessageOpacity, 3);
-    # 
+    @message_opacity -= 3 if @message_opacity > 0
+    
     #       // Jetzt schon das Skript ausf¸hren (damit Zeile 0 ber¸cksichtigt wird)
     #       if Data.Map.LavaPos div 24 < LavaTopPos then begin // Hˆchstwert ¸berschritten
     #         LavaTopPos := Data.Map.LavaPos div 24;
@@ -126,15 +108,19 @@ class Game < State
     #       // Und nu die Timerz
     #       ExecuteScript(Data.Map.ScriptTimers[Data.Frame mod 10], 'do');
     #       ExecuteScript(Data.Map.ScriptTimers[10], 'do');
-    # 
-    #       // Lava steigen lassen
-    #       if (Data.Map.LavaTimeLeft = 0) then begin if (Data.Map.LavaSpeed <> 0) then begin
-    #         if (Data.Map.LavaMode = 0) and ((Data.Frame mod Data.Map.LavaSpeed) = 0) then Dec(Data.Map.LavaPos);
-    #         if (Data.Map.LavaMode = 1) then Dec(Data.Map.LavaPos, Data.Map.LavaSpeed);
-    #         Inc(Data.Map.LavaFrame);
-    #         if Data.Map.LavaFrame = 120 then Data.Map.LavaFrame := 0;
-    #         if (Data.Frame mod 10 = 0) and (Random(10) = 0) then DistSound(Data.Map.LavaPos, Sound_Lava, Data);
-    #       end; end else Dec(Data.Map.LavaTimeLeft);
+    
+    # Rising lava
+    if map.lava_time_left == 0 then
+      if map.lava_speed != 0 then
+        map.lava_pos -= 1 if map.lava_mode == 0 and frame % map.lava_speed == 0
+        map.lava_pos -= map.lava_speed if map.lava_mode == 1
+        map.lava_frame = (map.lava_frame + 1) % 120
+        # if (Data.Frame mod 10 = 0) and (Random(10) = 0) then DistSound(Data.Map.LavaPos, Sound_Lava, Data);
+      end
+    else
+      map.lava_time_left -= 1
+    end
+    
     #       // Spezialpeterzeit ablaufen lassen
     #       if Data.ObjPlayers.Next.ID > ID_Player then begin
     #         Dec(Data.TimeLeft);
@@ -205,6 +191,7 @@ class Game < State
     #       end;
     
     @objects.each &:update
+    @objects.reject! &:marked?
     #  // Jetzt noch die kaputten lˆschen
     #  TempObj := Data.ObjCollectibles.Next;
     #  while TempObj <> nil do begin
@@ -226,14 +213,18 @@ class Game < State
     @map.draw
     @objects.each &:draw
     
-    # // Zum Schluss die bˆhze Gefahr, die von unten aufsteigt
-    # for LoopX := -1 to 4 do
-    #   DXImageListPack.Items[Image_Danger].Draw(DXDraw.Surface, LoopX * 120 + Data.Map.LavaFrame, Data.Map.LavaPos - Data.ViewPos + Integer(Data.Map.LavaTimeLeft = 0) * ((Data.Frame div 2) mod 2), Min(1, Data.Map.LavaTimeLeft));
-    # if Data.Map.LavaPos < Data.Map.LevelTop + 432 then
-    #   for LoopX := -1 to 4 do
-    #     for LoopY := 0 to (Data.Map.LevelTop + 432 - Data.Map.LavaPos) div 48 + 1 do
-    #   DXImageListPack.Items[Image_Danger].Draw(DXDraw.Surface, LoopX * 120 + Data.Map.LavaFrame, Data.Map.LavaPos - Data.ViewPos + 48 + LoopY * 48 + Integer(Data.Map.LavaTimeLeft = 0) * ((Data.Frame div 2) mod 2), Min(1, Data.Map.LavaTimeLeft) + 2);
-    # 
+    # Lava
+    @@danger ||= Gosu::Image.load_tiles 'media/danger.png', -2, -2
+    offset = if map.lava_time_left == 0 then frame / 2 % 2 else 0 end
+    -1.upto(4) do |x|
+      @@danger[map.lava_time_left == 0 ? 0 : 1].draw x * 120 + map.lava_frame, map.lava_pos - view_pos + 0, 0
+    end
+    if map.lava_pos < map.level_top + 432 then
+      #   for LoopX := -1 to 4 do
+      #     for LoopY := 0 to (Data.Map.LevelTop + 432 - Data.Map.LavaPos) div 48 + 1 do
+      #   DXImageListPack.Items[Image_Danger].Draw(DXDraw.Surface, LoopX * 120 + Data.Map.LavaFrame, Data.Map.LavaPos - Data.ViewPos + 48 + LoopY * 48 + Integer(Data.Map.LavaTimeLeft = 0) * ((Data.Frame div 2) mod 2), Min(1, Data.Map.LavaTimeLeft) + 2);
+    end
+    
     # // Dann noch die Leiste dr¸ber
     # // Das gˆttliche P
     # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 0, 0);

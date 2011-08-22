@@ -44,22 +44,19 @@ class LivingObject < GameObject
     # Runterfallen
     fall if action < ACT_INV_UP
 
-    # // In Lava verbrennen
-    # if PosY + Data.Defs[ID].Rect.Top +  Data.Defs[ID].Rect.Bottom > Data.Map.LavaPos then begin
-    #   CastFX(8, 8, 0, PosX, PosY, 16, 16, 0, -4, 1, Data.OptEffects, Data.ObjEffects);
-    #   Kill;
-    # 
-    #   DistSound(PosY, Sound_Shshsh, Data^);
-    #   if Action <> Act_Dead then begin
-    #     if ID <= ID_PlayerMax then DistSound(PosY, Sound_PlayerArg, Data^);
-    #     if (ID in [ID_Enemy..ID_EnemyMax]) and (Data.OptBlood = 0)
-    #       then DistSound(PosY, Sound_Arg + Random(2), Data^);
-    #     if (ID in [ID_Enemy..ID_EnemyMax]) and (Data.OptBlood = 1)
-    #       then DistSound(PosY, Sound_Death, Data^);
-    #   end;
-    # end;
-    # 
-
+    # Roasted by lava
+    if y + ObjectDef[pmid].rect.bottom > game.map.lava_pos then
+      # ... CastFX(8, 8, 0, PosX, PosY, 16, 16, 0, -4, 1, Data.OptEffects, Data.ObjEffects);
+      kill
+      emit_sound :shshsh
+      if action != ACT_DEAD then
+        emit_sound :player_arg if pmid <= ID_PLAYER_MAX
+        emit_sound "arg#{rand(2) + 1}" if pmid.between? ID_ENEMY, ID_ENEMY_MAX
+        # TODO bloody: emit_sound :death if pmid.between? ID_ENEMY, ID_ENEMY_MAX
+      end
+      return
+    end
+    
     # Ascending staircase
     if action == ACT_INV_UP then
       except_open_doors = (0..TILE_STAIRS_UP_LOCKED).to_a + [TILE_STAIRS_DOWN_LOCKED]

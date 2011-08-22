@@ -1,5 +1,6 @@
 class Map
-  attr_reader :level_top, :lava_pos
+  attr_reader :level_top, :level_bottom
+  attr_accessor :lava_pos, :lava_time_left, :lava_mode, :lava_speed, :lava_frame
   
   def inspect
     "#<Map>"
@@ -28,12 +29,17 @@ class Map
     SCRIPT_TIMERS.times do |i|
       @timers << ini_file['Scripts', "Timer#{i}"]
     end
+    
     @stars_goal = (ini_file['Map', 'StarsGoal'] || 100).to_i
+    
     @sky = (ini_file['Map', 'Sky'] || 0).to_i
+    
     @lava_speed = (ini_file['Map', 'LavaSpeed'] || 1).to_i
     @lava_mode = (ini_file['Map', 'LavaMode'] || 0).to_i
     @lava_pos = (ini_file['Map', 'LavaPos'] || TILES_Y).to_i * TILE_SIZE
     @lava_score = (ini_file['Map', 'LavaScore'] || 1).to_i
+    @lava_frame = @lava_time_left = 0
+    
     @level_top = (ini_file['Map', 'LevelTop'] || 0).to_i * TILE_SIZE
     @level_bottom = [1024, @lava_pos / TILE_SIZE].min
   end
