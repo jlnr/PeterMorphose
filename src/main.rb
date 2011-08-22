@@ -6,9 +6,9 @@ end
 require 'gosu'
 require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
-# TODO More Objects
-# TODO Game Logic
 # TODO Music
+# TODO Game Logic
+# TODO Remaining FX, explosions, etc
 # TODO High Scores
 # TODO Script
 # TODO Remaining Menu
