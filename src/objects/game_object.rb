@@ -108,11 +108,28 @@ class GameObject
     end
     
     # Get roasted by lava
-    if y + ObjectDef[pmid].bottom > map.lava_pos then
+    if y + ObjectDef[pmid].rect.bottom > game.map.lava_pos then
       # TODO CastFX(4, 4, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects);
       kill
       emit_sound :shshsh
     end
+  end
+  
+  def draw
+    case pmid
+    when ID_FIREWALL_1, ID_FIREWALL_2, ID_FIRE then
+      #   Data.Images[Image_Stuff].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 128 + StrToIntDef(ExtraData, 128));
+      # ID_HelpArrow:
+      #   Data.Images[Image_Stuff].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 128 + ((Data.Frame div 8) mod 2) * 64);
+      # ID_Speed, ID_Jump, ID_Fly:
+      #   Data.Images[Image_Stuff].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 255);
+    # else
+    #   Data.Images[Image_Stuff].Draw(Data.DXDraw.Surface, PosX - 11, PosY - Data.ViewPos - 11, ID - ID_OtherObjectsMin);
+    end;
+    # if ID = ID_Carolin then begin
+    #   if Length(ExtraData) < 3 then DrawBMPText('Carolin', PosX - 31, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality)
+    #                            else DrawBMPText(Copy(ExtraData, 3, Length(ExtraData) - 2), PosX - ((Length(ExtraData) - 2) * 9) div 2, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality);
+    # end;
   end
   
   def fall
@@ -350,24 +367,6 @@ function FindLiving(StartObj, EndObj: TPMObject; MinID, MaxID, MinAction, MaxAct
 function LaunchProjectile(X, Y, Direction: Integer; TargetMinObj, TargetMaxObj, FXObj: TPMObject; Data: TPMData): TPMObject;
 
 implementation
-
-procedure TPMObject.Draw;
-begin
-  case ID of
-    ID_FireWall1, ID_FireWall2, ID_Fire:
-      Data.Images[Image_Stuff].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 128 + StrToIntDef(ExtraData, 128));
-    ID_HelpArrow:
-      Data.Images[Image_Stuff].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 128 + ((Data.Frame div 8) mod 2) * 64);
-    ID_Speed, ID_Jump, ID_Fly:
-      Data.Images[Image_Stuff].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 255);
-  else
-    Data.Images[Image_Stuff].Draw(Data.DXDraw.Surface, PosX - 11, PosY - Data.ViewPos - 11, ID - ID_OtherObjectsMin);
-  end;
-  if ID = ID_Carolin then begin
-    if Length(ExtraData) < 3 then DrawBMPText('Carolin', PosX - 31, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality)
-                             else DrawBMPText(Copy(ExtraData, 3, Length(ExtraData) - 2), PosX - ((Length(ExtraData) - 2) * 9) div 2, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality);
-  end;
-end;
 
 procedure TPMObject.Fling(XLvl, YLvl, Rnd: Integer; Fixed, Malign: Boolean);
 begin

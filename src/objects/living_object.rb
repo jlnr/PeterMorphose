@@ -18,8 +18,6 @@ class LivingObject < GameObject
     
     case pmid
     when ID_PLAYER..ID_PLAYER_BOMBER then
-      @@player_images ||= Gosu::Image.load_tiles 'media/player.bmp', -ACT_NUM, -10
-      
       # TODO wings
       # if (Data.FlyTimeLeft > 0) then case Direction of
       #   Dir_Left: begin
@@ -32,11 +30,20 @@ class LivingObject < GameObject
       #   end;
       # end;
       if game.inv_time_left == 0 or type = ID_PLAYER_BERSERKER then
-        @@player_images[ACT_NUM * (direction + (pmid - ID_PLAYER) * 2) + action].draw x - 11, y - 11 - game.view_pos, 0
+        color = 0xa0ffffff
       else
-        @@player_images[ACT_NUM * (direction + (pmid - ID_PLAYER) * 2) + action].draw x - 11, y - 11 - game.view_pos, 0,
-          1, 1, 0xa0000000
+        color = 0xffffffff
       end
+      @@player_images ||= Gosu::Image.load_tiles 'media/player.bmp', -ACT_NUM, -10
+      @@player_images[ACT_NUM * (direction + (pmid - ID_PLAYER) * 2) + action].draw x - 11, y - 11 - game.view_pos, 0, 1, 1, color
+    when ID_ENEMY..ID_ENEMY_MAX then
+      if pmid == ID_ENEMY_GUN then
+        dir = x > game.player.x ? DIR_LEFT : DIR_RIGHT
+      else
+        dir = direction
+      end
+      @@enemy_images ||= Gosu::Image.load_tiles 'media/enemies.bmp', -ACT_NUM, -10
+      @@enemy_images[ACT_NUM * (direction + (pmid - ID_ENEMY) * 2) + action].draw x - 11, y - 11 - game.view_pos, 0
     end
   end
   
@@ -502,23 +509,6 @@ class LivingObject < GameObject
 end
   
 =begin
-procedure TPMLiving.Draw;
-begin
-  case ID of
-    ID_Enemy..ID_EnemyFighter, ID_EnemyBerserker..ID_EnemyMax:
-      Data.Images[Image_Enemies].Draw(Data.DXDraw.Surface, PosX - 11, PosY - 11 - Data.ViewPos, Act_Num * (Direction + (ID - ID_Enemy) * 2) + Action);
-    ID_EnemyGun:
-      case Action of
-        Act_Dead: Data.Images[Image_Enemies].Draw(Data.DXDraw.Surface, PosX - 11, PosY - 11 - Data.ViewPos, Act_Num * (Direction + 4) + Action);
-      else
-        if PosX > Data.ObjPlayers.Next.PosX then
-          Data.Images[Image_Enemies].Draw(Data.DXDraw.Surface, PosX - 11, PosY - 11 - Data.ViewPos, Act_Num * 4 + Action)
-        else
-          Data.Images[Image_Enemies].Draw(Data.DXDraw.Surface, PosX - 11, PosY - 11 - Data.ViewPos, Act_Num * 5 + Action);
-      end;
-  end;
-end;
-
 procedure TPMLiving.Hit;
 begin
   // Tote und Brenntypen verprügeln bringtz nich

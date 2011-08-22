@@ -62,20 +62,20 @@ class Game < State
     player_x = (level_info.ini_file['Objects', 'PlayerX'] || 288).to_i
     player_y = (level_info.ini_file['Objects', 'PlayerY'] || 24515).to_i
     @player = LivingObject.new(self, ID_PLAYER, player_x, player_y, nil)
-    @player.vx = (level_info.ini_file['Objects', 'PlayerVX'] || 0).to_i
-    @player.vy = (level_info.ini_file['Objects', 'PlayerVY'] || 0).to_i
-    @player.life = (level_info.ini_file['Objects', 'PlayerLife'] || ObjectDef[ID_PLAYER].life).to_i
-    @player.direction = (level_info.ini_file['Objects', 'PlayerDirection'] || rand(2)).to_i
-    @player.action = ACT_STAND
-    @objects << @player
+    player.vx = (level_info.ini_file['Objects', 'PlayerVX'] || 0).to_i
+    player.vy = (level_info.ini_file['Objects', 'PlayerVY'] || 0).to_i
+    player.life = (level_info.ini_file['Objects', 'PlayerLife'] || ObjectDef[ID_PLAYER].life).to_i
+    player.direction = (level_info.ini_file['Objects', 'PlayerDirection'] || rand(2)).to_i
+    player.action = ACT_STAND
+    @objects << player
     
     # If the player starts as a Special Peter, give him some time
-    @time_left = @player.pmid == ID_PLAYER ? 0 : ObjectDef[@player.pmid].life
+    @time_left = player.pmid == ID_PLAYER ? 0 : ObjectDef[player.pmid].life
     
     i = 0
     while obj_string = level_info.ini_file['Objects', i] do
       pmid, x, y = obj_string.split('|').map { |str| str.to_i(16) }
-      GameObject.create self, pmid, x, y, level_info.ini_file['Objects', "#{x}Y"]
+      @objects << GameObject.create(self, pmid, x, y, level_info.ini_file['Objects', "#{x}Y"])
       i += 1
     end
   end
@@ -123,21 +123,21 @@ class Game < State
       map.lava_time_left -= 1
     end
     
-    if @player.pmid != ID_PLAYER then
+    if player.pmid != ID_PLAYER then
       @time_left -= 1
       if @time_left == 0 then
-        @player.pmid = ID_PLAYER
+        player.pmid = ID_PLAYER
         # TODO CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
       end
     end
     @inv_time_left -= 1 if @inv_time_left > 0
-    @view_pos = [[map.lava_pos - 432, @player.y - 240, 24096].min, map.level_top].max
+    @view_pos = [[map.lava_pos - 432, player.y - 240, 24096].min, map.level_top].max
     #     end;
 
     # if Data.State = State_Game then begin
-    if fly_time_left == 0 and not @player.in_water? then
+    if fly_time_left == 0 and not player.in_water? then
       if left_pressed? then
-        @player.instance_eval do
+        player.instance_eval do
           if not busy? and vx > -ObjectDef[pmid].speed * 1.75 then
             self.vx -= ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
           end
@@ -147,7 +147,7 @@ class Game < State
         end
       end
       if right_pressed? then
-        @player.instance_eval do
+        player.instance_eval do
           if not busy? and vx < +ObjectDef[pmid].speed * 1.75 then
             self.vx += ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
           end
@@ -183,10 +183,10 @@ class Game < State
     @jump_time_left -= 1 if @jump_time_left > 0
     @fly_time_left -= 1 if @fly_time_left > 0
     
-    @player.jump     if jump_pressed?
-    @player.use_tile if use_pressed?
-    @player.action   if action_pressed?
-    @player.dispose  if dispose_pressed?
+    player.jump     if jump_pressed?
+    player.use_tile if use_pressed?
+    player.action   if action_pressed?
+    player.dispose  if dispose_pressed?
     
     @objects.each &:update
     @objects.reject! &:marked?
@@ -265,10 +265,10 @@ class Game < State
     #       if Data.State = State_Game then begin Data.State := State_Paused; Exit; end;
     #   end;
     #     State_Game: case Key of
-    @player.jump     if jump?    id and fly_time_left == 0
-    @player.use_tile if use?     id and fly_time_left == 0
-    @player.action   if action?  id
-    @player.dispose  if dispose? id
+    player.jump     if jump?    id and fly_time_left == 0
+    player.use_tile if use?     id and fly_time_left == 0
+    player.action   if action?  id
+    player.dispose  if dispose? id
     #     end;
     #     State_Dead: if Key = VK_Return then
     #       begin if QuickStart then StartGame(ParamStr(1)) else StartGame(TPMLevelInfo(LevelList.Items[SelectedLevel]).Location); DXWaveList.Items[Sound_Woosh].Play(False); end;
@@ -314,7 +314,7 @@ class Game < State
       if true then # TODO player.alive?
         @@gui[8].draw tile_w * 0, tile_h * 2, 0
         @@gui[9].draw tile_w * 1, tile_h * 2, 0
-        draw_digits.call @player.life, 2
+        draw_digits.call player.life, 2
       else
         0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 2, 0 }
       end
@@ -336,7 +336,7 @@ class Game < State
         0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 4, 0 }
       end
       # Remaining special peter time
-      if @player.pmid == ID_PLAYER then
+      if player.pmid == ID_PLAYER then
         0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 5, 0 }
       else
         @@gui[14].draw tile_w * 0, tile_h * 5, 0
