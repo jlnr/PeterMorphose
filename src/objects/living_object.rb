@@ -515,9 +515,9 @@ class LivingObject < GameObject
       if id <= ID_PLAYER_MAX then
         sound(:morph).play
         self.pmid = ID_PLAYER_FIGHTER + map_tile - TILE_MORPH_FIGHTER
-        game.time_left = ObjectDefs[pmid].life unless pmid == ID_PLAYER
+        game.time_left = ObjectDef[pmid].life unless pmid == ID_PLAYER
         game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
-        emit_text "#{ObjectDefs[pmid].name}!"
+        emit_text "#{ObjectDef[pmid].name}!"
         return
       end
     end
@@ -528,7 +528,7 @@ class LivingObject < GameObject
       return if pmid > ID_PLAYER_MAX or game.keys == 0
       game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_UP
       game.keys -= 1
-      sample("door#{rand(2) + 1}").play
+      sound("door#{rand(2) + 1}").play
       use_tile
     when TILE_STAIRS_UP..TILE_STAIRS_UP_2 then
       return if not game.map.stairs_passable? x / TILE_SIZE, y / TILE_SIZE and pmid >= ID_PLAYER_MAX
@@ -541,7 +541,7 @@ class LivingObject < GameObject
       return if pmid > ID_PLAYER_MAX or game.keys == 0
       game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_DOWN
       game.keys -= 1
-      sample("door#{rand(2) + 1}").play
+      sound("door#{rand(2) + 1}").play
       use_tile
     when TILE_STAIRS_DOWN..TILE_STAIRS_DOWN_2 then
       return if not game.map.stairs_passable? x / TILE_SIZE, y / TILE_SIZE

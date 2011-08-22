@@ -49,7 +49,7 @@ class CollectibleObject < GameObject
         kill
       when ID_KEY then
         sound(:collect_key).play
-        game.player.emit_text "#{ObjectDefs[pmid].name}!"
+        game.player.emit_text "#{ObjectDef[pmid].name}!"
         game.cast_objects ID_FX_SPARKLE, 2, 0, 0, 0, rect
         game.score += 2
         game.keys += 1
@@ -149,10 +149,10 @@ class CollectibleObject < GameObject
       when ID_MORPH_FIGHTER..ID_MORPH_MAX then
         sound(:morph).play
         game.player.pmid = ID_PLAYER_FIGHTER + pmid - ID_MORPH_FIGHTER
-        game.player.emit_text "#{ObjectDef[player.pmid].name}!"
+        game.player.emit_text "#{ObjectDef[game.player.pmid].name}!"
         game.player.action = ACT_JUMP
         game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
-        game.time_left = ObjectDef[player.pmid].life
+        game.time_left = ObjectDef[game.player.pmid].life
         game.cast_objects ID_FX_SPARKLE, 5, 0, 0, 0, rect
         kill
       when ID_SPEED, ID_JUMP, ID_FLY then
@@ -165,6 +165,7 @@ class CollectibleObject < GameObject
         end
         game.cast_fx 8, 0, 0, game.player.x, game.player.y - 10, 24, 24, 0, -1, 4
         game.cast_objects ID_FX_SPARKLE, 2, 0, 0, 0, rect
+        kill
       when ID_SEAMINE then
         game.explosion x, y, 50, false
         kill

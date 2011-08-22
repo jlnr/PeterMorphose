@@ -57,49 +57,52 @@ class GameObject
     end
     
     # Hint arrows
-    if pmid == ID_HELP_ARROW and
-      false then #PointInRect(Point(Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY), Bounds(PosX - 11, PosY + 12, 24, 48)) then Kill;
-      kill
-    end
+    kill if pmid == ID_HELP_ARROW and rect(10, 20).include? game.player
     
     # Fish
-    # if ID = ID_Fish then begin
-    #   if not InWater then begin Fall; CheckTile; end else begin
-    #     Dec(PosX, 2);
-    #     if Random(30) = 0 then TPMEffect.Create(Data.ObjEffects, '', ID_FXWaterbubble, PosX, PosY - 3, 0, 0);
-    #     if Blocked(Dir_Left) then ID := ID_Fish2;
-    #   end;
-    # end else if ID = ID_Fish2 then begin
-    #   if not InWater then begin Fall; CheckTile; end else begin
-    #     Inc(PosX, 2);
-    #     if Random(30) = 0 then TPMEffect.Create(Data.ObjEffects, '', ID_FXWaterbubble, PosX, PosY - 3, 0, 0);
-    #     if Blocked(Dir_Right) then ID := ID_Fish;
-    #   end;
-    # end;
+    if pmid == ID_FISH or pmid == ID_FISH_2 then
+      if not in_water? then
+        fall
+        check_tile
+      else
+        if pmid == ID_FISH then
+          self.x -= 2
+          self.pmid = ID_FISH_2 if blocked? DIR_LEFT
+        else
+          self.x += 2
+          self.pmid = ID_FISH if blocked? DIR_RIGHT
+        end
+        if rand(30) == 0 then
+          game.create_object ID_FX_WATER_BUBBLE, x, y - 3, nil
+        end
+      end
+    end
     
     # Fused bomb
-    # if ID = ID_FusingBomb then begin
-    #   // Nach ner Weile hochgehen
-    #   ExtraData := IntToStr(StrToIntDef(ExtraData, 0) + 1);
-    #   if ExtraData = '25' then begin
-    #     Kill;
-    #     Explosion(PosX, PosY, 50, Data^, True);
-    #     Exit;
-    #   end;
-    #   // Bei Gegnerkontakt auch
-    #   BurnObj := Data.ObjEnemies;
-    #   while BurnObj <> Data.ObjPlayers do begin
-    #     if BurnObj.RectCollision(GetRect(1, 1)) and not (TPMLiving(BurnObj).Action in [Act_Dead, Act_InvUp, Act_InvDown]) then begin
-    #       TPMLiving(BurnObj).Hurt(True);
-    #       Kill;
-    #       Explosion(PosX, PosY, 50, Data^, True);
-    #       Exit;
-    #     end;
-    #     BurnObj := BurnObj.Next;
-    #   end;
-    #   // Fallen und so
-    #   Fall; CheckTile;
-    # end;
+    if pmid == ID_FUSING_BOMB then
+      # Count up and possibly explode
+      time = (xdata || 1).to_i + 1
+      self.xdata = time.to_s
+      if time >= 25 then
+        kill
+        game.explosion x, y, 50, true
+        return
+      end
+      
+      # Also explode on touching an enemy
+      game.objects.each do |obj|
+        if obj.pmid >= ID_ENEMY and obj.pmid <= ID_ENEMY_MAX and obj.collide_with? rect(1, 1) and
+            not [ACT_DEAD, ACT_INV_UP, ACT_INV_UP].include? obj.action then
+          obj.hurt true
+          kill
+          game.explosion x, y, 50, true
+          return
+        end
+      end
+      
+      fall
+      check_tile
+    end
     
     # Rocks fall down
     if (ID_TRASH..ID_TRASH_4).include? pmid then
@@ -155,7 +158,11 @@ class GameObject
     end
     
     if pmid <= ID_PLAYER_MAX and not blocked? DIR_DOWN then
-      self.vx = (self.vx / 2.0).to_i
+      if vx.abs < 5 then
+        self.vx = (self.vx / 2.0).to_i
+      else
+        self.vx = (self.vx / 1.03).to_i if game.frame % 3 == 0
+      end
     end
     
     # Velocity is limited to +- TILE_SIZE
@@ -263,12 +270,11 @@ class GameObject
     case game.map[x / TILE_SIZE, y / TILE_SIZE]
     when TILE_AIR_ROCKET_UP, TILE_AIR_ROCKET_UP_2, TILE_AIR_ROCKET_UP_3 then
       emit_sound :turbo
-      #   Fling(0, -20, 0, True, False);
-      #   if not Blocked(Dir_Up) then Dec(PosY);
-      #   PosX := PosX div 24 * 24 + 11;
-      #   if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
-      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, -10, 1, Data.OptEffects, Data.ObjEffects);
-      # end;
+      fling 0, -20, 0, true, false
+      self.y -= 1 unless blocked? DIR_UP
+      self.x = x / 24 * 24 + 11
+      self.vx = direction.dir_to_vx if pmid.between? ID_ENEMY, ID_ENEMY_MAX
+      game.cast_fx 0, 0, 10, x, y, 24, 24, 0, -10, 1
       # Tile_AirRocketUpLeft: begin
       #   DistSound(PosY, Sound_Turbo, Data^);
       #   if not Blocked(Dir_Up) then Dec(PosY);
