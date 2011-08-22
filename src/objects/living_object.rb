@@ -329,8 +329,8 @@ class LivingObject < GameObject
       game.objects.each do |obj|
         if obj.pmid.between? ID_ENEMY, ID_ENEMY_MAX and obj.action < ACT_DEAD and obj.collide_with? rect then
           obj.hurt(false)
-          if target.action == ACT_DEAD then
-            game.score += score = ObjectDef[target.pmid].life * 3
+          if obj.action = ACT_DEAD then
+            game.score += score = ObjectDef[obj.pmid].life * 3
             target.emit_text "#{score} Punkte!"
           end
         end
@@ -372,24 +372,23 @@ class LivingObject < GameObject
     if pmid >= ID_ENEMY and not busy? then
       self.direction = direction.other_dir if blocked? direction
       
-      #   // Die Gegner sind f0l schlau und rennen _nicht_ in Abgründe...
-      #   // Durch die Gegend rennen
-      #   if (((ID = ID_EnemyFighter) and (Data.Frame mod 100 < 70))
-      #   or ((ID = ID_EnemyGun) and (Data.Frame mod 100 > 15))
-      #   or (ID in [ID_Enemy, ID_EnemyBerserker, ID_EnemyBomber]))
-      #   and not Data.Map.Solid(PosX + RealDir(Direction) * 7,
-      #                         PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) then
-      #     if (Length(ExtraData) > 0) and (ExtraData[1] = '1') then Jump
-      #         else Direction := OtherDir(Direction);
-      #   // Spezialtiles aktivieren (manchmal und wenn ExtraData[3] = 1)
-      #   if (Random(100) = 0) and (Length(ExtraData) > 2) and (ExtraData[3] = '1') then begin UseTile; Exit; end;
-      
       # Run around
       if pmid == ID_ENEMY_FIGHTER and game.frame % 100 < 70 or
          pmid == ID_ENEMY_GUN and game.frame % 100 > 15 or
          [ID_ENEMY, ID_ENEMY_BERSERKER, ID_ENEMY_BOMBER].include? pmid then
-        self.vx += ObjectDef[pmid].speed * direction.dir_to_vx
+        if game.map.solid?(x + direction.dir_to_vx * 7, y + ObjectDef[pmid].rect.bottom + 1)
+          self.vx += ObjectDef[pmid].speed * direction.dir_to_vx
+        else
+          if xdata and xdata[0, 1] == '1' then
+            jump
+          else
+            self.direction = direction.other_dir
+          end
+        end
       end
+      
+      # Occasionally use a floor tile
+      return use_tile if rand(100) == 0 and xdata and xdata[2, 1] == '1'
       
       # Ambush player
       if pmid == ID_ENEMY_FIGHTER and
