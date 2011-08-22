@@ -84,7 +84,7 @@ class CollectibleObject < GameObject
         game.player.life += amount
         kill
       when ID_STAR..ID_STAR_3 then
-        sound(:collect_star).play
+        sound(:collect_star).play Gosu::random(0.5, 0.7), Gosu::random(0.9, 1.1)
         game.score += 2
         game.stars += 1
         game.player.emit_text "Nr. #{game.stars}"

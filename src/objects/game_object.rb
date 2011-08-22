@@ -24,12 +24,8 @@ class GameObject
     @last_frame_in_water = in_water?
   end
   
-  MAX_SOUND_DISTANCE = 500.0
-  
   def emit_sound name
-    distance = (y - game.player.y).abs
-    return if distance > MAX_SOUND_DISTANCE
-    sound(name).play 1 - distance / MAX_SOUND_DISTANCE
+    game.emit_sound name, y
   end
   
   ALL_WATER_TILES = (TILE_WATER..TILE_WATER_4).to_a + [TILE_WATER_5]

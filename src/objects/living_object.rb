@@ -331,7 +331,7 @@ class LivingObject < GameObject
           obj.hurt(false)
           if obj.action = ACT_DEAD then
             game.score += score = ObjectDef[obj.pmid].life * 3
-            target.emit_text "#{score} Punkte!"
+            obj.emit_text "#{score} Punkte!"
           end
         end
       end
@@ -517,7 +517,7 @@ class LivingObject < GameObject
     
     if in_water? then
       # Cannot jump when in deep water
-      return if ALL_WATER_TILES.include? data.map[x / TILE_SIZE, y / TILE_SIZE]
+      return if ALL_WATER_TILES.include? game.map[x / TILE_SIZE, y / TILE_SIZE]
     else
       # Cannot jump when busy
       return if busy?
@@ -595,7 +595,7 @@ class LivingObject < GameObject
       # TODO CastFX(0, 0, 10, PosX, PosY, 24, 24, +8, -8, 1, Data.OptEffects, Data.ObjEffects);
       return
     when TILE_MORPH_FIGHTER..TILE_MORPH_MAX
-      if id <= ID_PLAYER_MAX then
+      if pmid <= ID_PLAYER_MAX then
         sound(:morph).play
         self.pmid = ID_PLAYER_FIGHTER + map_tile - TILE_MORPH_FIGHTER
         game.time_left = ObjectDef[pmid].life unless pmid == ID_PLAYER

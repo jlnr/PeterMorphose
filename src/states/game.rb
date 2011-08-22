@@ -59,6 +59,14 @@ class Game < State
     end
   end
   
+  MAX_SOUND_DISTANCE = 500.0
+  
+  def emit_sound name, y
+    distance = (y - player.y).abs
+    return if distance > MAX_SOUND_DISTANCE
+    sound(name).play 1 - distance / MAX_SOUND_DISTANCE
+  end
+  
   def update
     #   State_Paused, State_Game, State_Dead, State_Won: begin
     #     // W‰re State_Dead nicht doch passender?
@@ -96,7 +104,7 @@ class Game < State
         map.lava_pos -= 1 if map.lava_mode == 0 and frame % map.lava_speed == 0
         map.lava_pos -= map.lava_speed if map.lava_mode == 1
         map.lava_frame = (map.lava_frame + 1) % 120
-        # if (Data.Frame mod 10 = 0) and (Random(10) = 0) then DistSound(Data.Map.LavaPos, Sound_Lava, Data);
+        emit_sound :lava, map.lava_pos if frame % 10 == 0 and rand(10) == 0
       end
     else
       map.lava_time_left -= 1
@@ -106,7 +114,7 @@ class Game < State
       @time_left -= 1
       if @time_left == 0 then
         player.pmid = ID_PLAYER
-        # TODO CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
+        cast_fx 8, 0, 0, player.x, player.y, 24, 24, 0, -1, 4
       end
     end
     @inv_time_left -= 1 if @inv_time_left > 0
@@ -118,7 +126,7 @@ class Game < State
       if left_pressed? then
         player.instance_eval do
           if not busy? and vx > -ObjectDef[pmid].speed * 1.75 then
-            self.vx -= ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
+            self.vx -= ObjectDef[pmid].speed + (game.speed_time_left > 0 ? 6 : 0)
           end
           if [ACT_JUMP, ACT_LAND, ACT_PAIN_1, ACT_PAIN_2].include? action then
             (ObjectDef[pmid].jump_x * 2).times { self.x -= 1 unless blocked? DIR_LEFT }
@@ -128,7 +136,7 @@ class Game < State
       if right_pressed? then
         player.instance_eval do
           if not busy? and vx < +ObjectDef[pmid].speed * 1.75 then
-            self.vx += ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
+            self.vx += ObjectDef[pmid].speed + (game.speed_time_left > 0 ? 6 : 0)
           end
           if [ACT_JUMP, ACT_LAND, ACT_PAIN_1, ACT_PAIN_2].include? action then
             (ObjectDef[pmid].jump_x * 2).times { self.x += 1 unless blocked? DIR_RIGHT }
@@ -157,7 +165,7 @@ class Game < State
     
     if @speed_time_left > 0 then
       @speed_time_left -= 1
-      # TODO CastObjects(ID_FXSpark, Random(2), 0, 0, 1, Data.OptEffects, Data.ObjPlayers.Next.GetRect(1, 1), Data.ObjEffects);
+      cast_objects ID_FX_SPARK, rand(2), 0, 0, 1, game.player.rect(1, 1)
     end
     @jump_time_left -= 1 if @jump_time_left > 0
     @fly_time_left -= 1 if @fly_time_left > 0
@@ -270,14 +278,14 @@ class Game < State
   end
   
   def launch_projectile x, y, direction, min_id, max_id
-    # TODO DistSound(Y, Sound_Bow, Data);
+    emit_sound :bow, y
     orig_x = x
     while x > 2 and x < 573 do
       target = find_living(min_id, max_id, 0, ACT_DEAD - 1, ObjectDef::Rect.new(x - 4, y - 2, 8, 4))
       
       if target or map.solid?(x, y) then
         create_object ID_FX_RICOCHET, x, y - 1 + rand(3), direction.to_s
-        # TODO DistSound(Y, Sound_ArrowHit, Data);
+        emit_sound :arrow_hit, y
         return target
       end
       
