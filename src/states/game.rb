@@ -10,6 +10,9 @@ class Game < State
     "#<Game>"
   end
   
+  def lose
+  end
+  
   def initialize level_info
     @view_pos = TILES_Y * TILE_SIZE - HEIGHT # TODO
     

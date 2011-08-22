@@ -10,6 +10,8 @@ class LivingObject < GameObject
   end
   
   def act
+    return if game.frame == -1
+    
     case pmid
     when ID_PLAYER then
       return if busy?
@@ -321,117 +323,106 @@ class LivingObject < GameObject
       end
     end
     
-    # // PlayerGun - bei Act_Action 5 schießen
-    # if (ID = ID_PlayerGun) and (Action = Act_Action5) then begin
-    #   Dec(Data.Ammo);
-    #   TargetLiv := TPMLiving(LaunchProjectile(PosX, PosY + 2, Direction, Data.ObjEnemies, Data.ObjPlayers, Data.ObjEffects, Data^));
-    #   if TargetLiv <> nil then begin
-    #     TargetLiv.Hurt(True);
-    #     TargetLiv.Fling(3 * RealDir(Direction), -3, 1, True, True);
-    #     if TargetLiv.Action = Act_Dead then begin
-    #       Inc(Data.Score, Data.Defs[TargetLiv.ID].Life * 3);
-    #       if Data.OptShowTexts = 1 then TPMEffect.Create(Data.ObjEffects, IntToStr(Data.Defs[TargetLiv.ID].Life * 3) + ' Punkte!', ID_FXText, TargetLiv.PosX, TargetLiv.PosY - 10, 0, -1);
-    #     end;
-    #   end;
-    # end;
-    # // Feuerpeter - BRUZZELN!!!11 >>>>>:::::------))))))999
-    # if ID = ID_PlayerBerserker then begin
-    #   // FX (harlow flekso *rofz)
-    #   CastFX(Random(2), 2 + Random(2), 0, PosX, PosY, 18, 24, 0, -3, 2, Data.OptEffects, Data.ObjEffects);
-    #   // Gegner fer brenen (höhöhö</köps>)
-    #   TargetObj := Data.ObjEnemies.Next;
-    #   while TargetObj <> Data.ObjPlayers do begin
-    #     if (TPMLiving(TargetObj).Action < Act_Dead) and TargetObj.RectCollision(GetRect(2, 2)) then begin
-    #       TPMLiving(TargetObj).Hurt(False);
-    #       if TPMLiving(TargetObj).Action = Act_Dead then begin
-    #         Inc(Data.Score, Data.Defs[TargetObj.ID].Life * 3);
-    #         if Data.OptShowTexts = 1 then TPMEffect.Create(Data.ObjEffects, IntToStr(Data.Defs[TargetObj.ID].Life * 3) + ' Punkte!', ID_FXText, TargetObj.PosX, TargetObj.PosY - 10, 0, -1);
-    #       end;
-    #     end;
-    #     TargetObj := TargetObj.Next;
-    #   end;
-    # end;
-    # 
-    # // Feuergegner - KONTERBRUZZELN!!!!11
-    # if ID = ID_EnemyBerserker then begin
-    #   // EFIX
-    #   CastFX(0, Random(3), 0, PosX, PosY, 18, 24, 0, -2, 3, Data.OptEffects, Data.ObjEffects);
-    #   // Spiler fer brenen (höhöhö</köps>)
-    #   if (TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead) and Data.ObjPlayers.Next.RectCollision(GetRect(5, 2)) then begin
-    #     TPMLiving(Data.ObjPlayers.Next).Hit;
-    #     Data.ObjPlayers.Next.Fling(8 * RealDir(Direction), -3, 0, True, True);
-    #     Fling(-8 * RealDir(Direction), -4, 0, True, False);
-    #     Exit;
-    #   end;
-    # end;
-    # 
-    # // Bombenleger - bei Act_Action4 Bombe hinlegen =)))))9999
-    # if (ID = ID_PlayerBomber) and (Action = Act_Action4) and (Data.Frame mod 3 = 0) then begin
-    #   Dec(Data.Bombs);
-    #   TPMObject.Create(Data.ObjOther, '0', ID_FusingBomb, PosX + RealDir(Direction) * 5, PosY + 2, RealDir(Direction) * 8, -3);
-    # end;
+    if pmid == ID_PLAYER_BERSERKER then
+      game.cast_fx rand(2), 2 + rand(2), 0, x, y, 18, 24, 0, -3, 2
+      rect = self.rect(2, 2)
+      game.objects.each do |obj|
+        if obj.pmid.between? ID_ENEMY, ID_ENEMY_MAX and obj.action < ACT_DEAD and obj.collide_with? rect then
+          obj.hurt(false)
+          if target.action == ACT_DEAD then
+            game.score += score = ObjectDef[target.pmid].life * 3
+            target.emit_text "#{score} Punkte!"
+          end
+        end
+      end
+    end
+    
+    if pmid == ID_ENEMY_BERSERKER then
+      game.cast_fx 0, rand(3), 0, x, y, 18, 24, 0, -2, 3
+      if game.player.action < ACT_DEAD and game.player.collide_with? rect(5, 2) then
+        game.player.hit
+        game.player.fling 8 * direction.dir_to_vx * 8, -3, 0, true, true
+        self.fling -8 * direction.dir_to_vx * 8, -4, 0, true, false
+        return
+      end
+    end
+    
+    if pmid == ID_PLAYER_BOMBER and action == ACT_ACTION_4 and game.frame % 3 == 0 then
+      game.bombs -= 1
+      bomb = game.create_object(ID_FUSING_BOMB, x + direction.dir_to_vx * 5, y + 2, '0')
+      bomb.vx = direction.dir_to_vx * 8
+      bomb.vy = -3
+    end
     
     if pmid <= ID_PLAYER_MAX and not busy? then
       self.direction = DIR_LEFT  if vx < 0
       self.direction = DIR_RIGHT if vx > 0
     end;
-
-    # // Schießen bei Enemy_Gun
-    # if (ID = ID_EnemyGun) and (Action = Act_Action5) then begin
-    #   if PosX <= Data.ObjPlayers.Next.PosX then TempDir := Dir_Right else TempDir := Dir_Left;
-    #   TargetLiv := TPMLiving(LaunchProjectile(PosX, PosY + 2, TempDir, Data.ObjPlayers, Data.ObjEffects, Data.ObjEffects, Data^));
-    #   if TargetLiv <> nil then begin
-    #     TargetLiv.Hit;
-    #     TargetLiv.Fling(3 * RealDir(TempDir), -3, 1, True, True);
-    #   end;
-    # end;
-    # 
-    # // Gegner-"KI"
-    # if (ID > ID_PlayerMax) and not Busy then begin
-    #   // Wände = Hindernis; Hindernis = Umdrehen
-    #   if Blocked(Direction) then Direction := OtherDir(Direction);
-    #   // Die Gegner sind f0l schlau und rennen _nicht_ in Abgründe...
-    #   // Durch die Gegend rennen
-    #   if (((ID = ID_EnemyFighter) and (Data.Frame mod 100 < 70))
-    #   or ((ID = ID_EnemyGun) and (Data.Frame mod 100 > 15))
-    #   or (ID in [ID_Enemy, ID_EnemyBerserker, ID_EnemyBomber]))
-    #   and not Data.Map.Solid(PosX + RealDir(Direction) * 7,
-    #                         PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) then
-    #     if (Length(ExtraData) > 0) and (ExtraData[1] = '1') then Jump
-    #         else Direction := OtherDir(Direction);
-    #   // Spezialtiles aktivieren (manchmal und wenn ExtraData[3] = 1)
-    #   if (Random(100) = 0) and (Length(ExtraData) > 2) and (ExtraData[3] = '1') then begin UseTile; Exit; end;
-    #   // Durch die Gegend rennen
-    #   if ((ID = ID_EnemyFighter) and (Data.Frame mod 100 < 70))
-    #   or ((ID = ID_EnemyGun) and (Data.Frame mod 100 > 15))
-    #   or (ID in [ID_Enemy, ID_EnemyBerserker, ID_EnemyBomber])
-    #     then Inc(VelX, Data.Defs[ID].Speed * RealDir(Direction));
-    #   // Spieler in Sicht, ATTACKKKÄÄÄÄHHH!
-    #   if (ID = ID_EnemyFighter) and Data.ObjPlayers.Next.RectCollision(Bounds(PosX - 120 + (Ord(Direction) * 120), PosY - 24, 120, 48))
-    #     and Data.Map.Solid(PosX + RealDir(Direction) * 7, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) and (TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead)
-    #       then VelX := Data.Defs[ID].Speed * 2 * RealDir(Direction);
-    #   // Spieler in Sicht, TOTSNIPEX0RN !!!11
-    #   if (ID = ID_EnemyGun) and PointInRect(Point(Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY), GetRect(320, 1)) and (TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead)then begin
-    #     Target := 1;
-    #     for Loop := 0 to Abs(Data.ObjPlayers.Next.PosX - PosX) div 24 do
-    #       if Data.Map.Solid(Loop * 24 + Min(Data.ObjPlayers.Next.PosX, PosX), PosY) then Target := 0;
-    #     if Target = 1 then begin Action := Act_Action1; Exit; end;
-    #   end;
-    #   // Spieler umrempeln
-    #   if RectCollision(Data.ObjPlayers.Next.GetRect(1, -1))
-    #     and not (TPMLiving(Data.ObjPlayers.Next).Action in [Act_Pain1, Act_Pain2, Act_Dead, Act_InvUp, Act_InvDown]) then begin
-    #       if ID = ID_EnemyBomber then TPMLiving(Data.ObjPlayers.Next).Hurt(True)
-    #                                 else TPMLiving(Data.ObjPlayers.Next).Hit;
-    #       Data.ObjPlayers.Next.Fling(8 * RealDir(Direction), -3, 0, True, True);
-    #       Fling(-6 * RealDir(Direction), -2, 0, True, False);
-    #       if ID = ID_EnemyBomber then begin
-    #         Kill;
-    #         CastFX(10, 30, 10, PosX, PosY, 10, 10, 0, -10, 5, Data.OptEffects, Data.ObjEffects);
-    #       end;
-    #       Exit;
-    #     end;
-    # end;
-    # 
+    
+    if pmid == ID_ENEMY_GUN and action == ACT_ACTION_5 then
+      #   if PosX <= Data.ObjPlayers.Next.PosX then TempDir := Dir_Right else TempDir := Dir_Left;
+      #   TargetLiv := TPMLiving(LaunchProjectile(PosX, PosY + 2, TempDir, Data.ObjPlayers, Data.ObjEffects, Data.ObjEffects, Data^));
+      #   if TargetLiv <> nil then begin
+      #     TargetLiv.Hit;
+      #     TargetLiv.Fling(3 * RealDir(TempDir), -3, 1, True, True);
+      #   end;
+    end
+    
+    # "AI"
+    if pmid >= ID_ENEMY and not busy? then
+      self.direction = direction.other_dir if blocked? direction
+      
+      #   // Die Gegner sind f0l schlau und rennen _nicht_ in Abgründe...
+      #   // Durch die Gegend rennen
+      #   if (((ID = ID_EnemyFighter) and (Data.Frame mod 100 < 70))
+      #   or ((ID = ID_EnemyGun) and (Data.Frame mod 100 > 15))
+      #   or (ID in [ID_Enemy, ID_EnemyBerserker, ID_EnemyBomber]))
+      #   and not Data.Map.Solid(PosX + RealDir(Direction) * 7,
+      #                         PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) then
+      #     if (Length(ExtraData) > 0) and (ExtraData[1] = '1') then Jump
+      #         else Direction := OtherDir(Direction);
+      #   // Spezialtiles aktivieren (manchmal und wenn ExtraData[3] = 1)
+      #   if (Random(100) = 0) and (Length(ExtraData) > 2) and (ExtraData[3] = '1') then begin UseTile; Exit; end;
+      
+      # Run around
+      if pmid == ID_ENEMY_FIGHTER and game.frame % 100 < 70 or
+         pmid == ID_ENEMY_GUN and game.frame % 100 > 15 or
+         [ID_ENEMY, ID_ENEMY_BERSERKER, ID_ENEMY_BOMBER].include? pmid then
+        self.vx += ObjectDef[pmid].speed * direction.dir_to_vx
+      end
+      
+      # Ambush player
+      if pmid == ID_ENEMY_FIGHTER and
+         game.player.action < ACT_DEAD and
+         game.player.collide_with? ObjectDef::Rect.new(x - 120 + direction * 120, y - 24, 120, 48) and
+         game.map.solid?(x + direction.dir_to_vx * 7, y + ObjectDef[pmid].rect.bottom + 1) then
+        self.vx = ObjectDef[pmid].speed * 2 * direction.dir_to_vx
+      end
+      
+      # Shoot player
+      # if pmid == ID_ENEMY_GUN and 
+      #   // Spieler in Sicht, TOTSNIPEX0RN !!!11
+      #   if (ID = ID_EnemyGun) and PointInRect(Point(Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY), GetRect(320, 1)) and (TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead)then begin
+      #     Target := 1;
+      #     for Loop := 0 to Abs(Data.ObjPlayers.Next.PosX - PosX) div 24 do
+      #       if Data.Map.Solid(Loop * 24 + Min(Data.ObjPlayers.Next.PosX, PosX), PosY) then Target := 0;
+      #     if Target = 1 then begin Action := Act_Action1; Exit; end;
+      #   end;
+      
+      if game.player.action < ACT_PAIN_1 and collide_with? game.player.rect(1, -1) then
+        if pmid == ID_ENEMY_BOMBER then
+          game.player.hurt(true)
+          game.cast_fx 10, 30, 10, x, y, 10, 0, -10, 5
+          kill
+        else
+          game.player.hit
+          fling -6 * direction.dir_to_vx, -2, 0, true, false
+        end
+        game.player.fling 8 * direction.dir_to_vx, -3, 0, true, true
+        return
+      end
+    end
+    
     # // Spieler auch im Sprung umrempeln
     # if (ID > ID_PlayerMax) and (Action in [Act_Jump, Act_Land]) and RectCollision(Data.ObjPlayers.Next.GetRect(0, -1))
     #   and not (TPMLiving(Data.ObjPlayers.Next).Action in [Act_Pain1, Act_Pain2, Act_Dead, Act_InvUp, Act_InvDown]) then begin
@@ -519,7 +510,7 @@ class LivingObject < GameObject
     return if game.frame == -1 or pmid > ID_PLAYER_MAX
     @pmid = ID_PLAYER
     @action = ACT_JUMP unless action == ACT_DEAD
-    # TODO CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
+    game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
   end
   
   def jump
@@ -565,11 +556,11 @@ class LivingObject < GameObject
       self.vx /= 3
       self.vy = (vy / 1.2).round
       emit_sound :water
-    end;
+    end
     
     self.action = ACT_JUMP
     sound(:jump).play if pmid <= ID_PLAYER_MAX
-  end;
+  end
   
   def use_tile
     return if busy?
