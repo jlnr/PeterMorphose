@@ -26,15 +26,15 @@ class LevelSelection < State
   end
   
   def button_down(id)
-    if cancel? id then
+    if menu_cancel? id then
       State.current = Menu.new
-    elsif up? id or left? id then
+    elsif menu_prev? id then
       @selection -= 1 if @selection > 0
       @top -= 1 if @selection < @top
-    elsif down? id or right? id then
+    elsif menu_next? id then
       @selection += 1 if @selection < @levels.size - 1
       @top += 1 if @selection >= @top + LEVELS_ON_SCREEN
-    elsif confirmation? id then
+    elsif menu_confirm? id then
       State.current = Game.new(@levels[@selection])
     end
   end

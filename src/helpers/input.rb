@@ -1,26 +1,27 @@
+CONTROLS = {
+  :menu_prev => [:KbUp, :GpUp, :KbLeft, :GpLeft],
+  :menu_next => [:KbDown, :GpDown, :KbRight, :GpRight],
+  :menu_confirm => [:KbEnter, :KbReturn, :KbSpace, :GpButton0],
+  :menu_cancel => [:KbEscape, :GpButton2],
+  
+  :left => [:KbLeft, :GpLeft],
+  :right => [:KbRight, :GpRight],
+  :jump => [:KbUp, :GpButton0],
+  :action => [:KbSpace, :GpButton1],
+  :use => [:KbDown, :GpDown],
+  :dispose => [:KbEnter, :KbReturn, :GpButton2]
+}
+
 class Object
-  %w(up down left right).each do |direction|
-    kb_id = Gosu.const_get("Kb#{direction.capitalize}")
-    gp_id = Gosu.const_get("Gp#{direction.capitalize}")
-    define_method "#{direction}?" do |id|
-      id == kb_id or id == gp_id
+  CONTROLS.keys.each do |key|
+    ids = CONTROLS[key].map &Gosu.method(:const_get)
+    
+    define_method "#{key}?" do |id|
+      ids.include? id
     end
     
-    define_method "#{direction}_pressed?" do
-      $window.button_down? kb_id or $window.button_down? gp_id
+    define_method "#{key}_pressed?" do
+      ids.any? { |id| $window.button_down? id }
     end
   end
-end
-
-def confirmation? id
-  id == Gosu::KbReturn or id == Gosu::KbEnter or
-  id == Gosu::KbSpace or id == Gosu::GpButton0
-end
-
-def action? id
-  id == Gosu::KbSpace or id == Gosu::GpButton1
-end
-
-def cancel? id
-  id == Gosu::KbEscape or id == Gosu::GpButton2
 end

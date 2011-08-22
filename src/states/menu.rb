@@ -22,11 +22,11 @@ class Menu < State
   end
   
   def button_down id
-    if up? id or left? id then
+    if menu_prev? id then
       @selection -= 1 if @selection > 0
-    elsif down? id or right? id then
+    elsif menu_next? id then
       @selection += 1 if @selection < ITEMS - 1
-    elsif confirmation? id
+    elsif menu_confirm? id
       sound(:whoosh).play
       case @selection
       when 0 then

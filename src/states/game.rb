@@ -121,14 +121,13 @@ class Game < State
       map.lava_time_left -= 1
     end
     
-    #       // Spezialpeterzeit ablaufen lassen
-    #       if Data.ObjPlayers.Next.ID > ID_Player then begin
-    #         Dec(Data.TimeLeft);
-    #         if Data.TimeLeft = 0 then begin
-    #           Data.ObjPlayers.Next.ID := ID_Player;
-    #           CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
-    #         end;
-    #       end;
+    if @player.pmid != ID_PLAYER then
+      @time_left -= 1
+      if @time_left == 0 then
+        @player.pmid = ID_PLAYER
+        # TODO CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
+      end
+    end
     @inv_time_left -= 1 if @inv_time_left > 0
     @view_pos = [[map.lava_pos - 432, @player.y - 240, 24096].min, map.level_top].max
     #     end;
@@ -156,6 +155,7 @@ class Game < State
         end
       end
     end
+    # Water and flying controls
     #       ...else with TPMLiving(Data.ObjPlayers.Next) do begin
     #         if (isUp in DXInput.States)    and (VelY > -5) then Dec(VelY);
     #         if (isUp in DXInput.States)    and (VelY > -5) then Dec(VelY);
@@ -173,12 +173,19 @@ class Game < State
     #         if VelX < 0 then Direction := Dir_Left;
     #         if VelX > 0 then Direction := Dir_Right;
     #       end;
-    #       if Data.SpeedTimeLeft > 0 then begin
-    #         Dec(Data.SpeedTimeLeft);
-    #         CastObjects(ID_FXSpark, Random(2), 0, 0, 1, Data.OptEffects, Data.ObjPlayers.Next.GetRect(1, 1), Data.ObjEffects);
-    #       end;
-    #       if Data.JumpTimeLeft > 0 then Dec(Data.JumpTimeLeft);
-    #       if Data.FlyTimeLeft > 0 then Dec(Data.FlyTimeLeft);
+    
+    if @speed_time_left > 0 then
+      @speed_time_left -= 1
+      # TODO CastObjects(ID_FXSpark, Random(2), 0, 0, 1, Data.OptEffects, Data.ObjPlayers.Next.GetRect(1, 1), Data.ObjEffects);
+    end
+    @jump_time_left -= 1 if @jump_time_left > 0
+    @fly_time_left -= 1 if @fly_time_left > 0
+    
+    @player.jump     if jump_pressed?
+    @player.use_tile if use_pressed?
+    @player.action   if action_pressed?
+    
+    
     #       if DXInput.Keyboard.Keys[VK_Up] or DXInput.Joystick.Buttons[0] and (Data.FlyTimeLeft = 0) then TPMLiving(Data.ObjPlayers.Next).Jump;
     #       if DXInput.Keyboard.Keys[VK_Down] or DXInput.Joystick.Buttons[2] and (Data.FlyTimeLeft = 0) then TPMLiving(Data.ObjPlayers.Next).UseTile;
     #       if DXInput.Keyboard.Keys[VK_Space] or DXInput.Joystick.Buttons[1] then TPMLiving(Data.ObjPlayers.Next).Special;
@@ -358,8 +365,8 @@ class Game < State
     #       if Data.State = State_Game then begin Data.State := State_Paused; Exit; end;
     #   end;
     #     State_Game: case Key of
-    @player.jump     if up? id and fly_time_left == 0
-    @player.use_tile if down? id and fly_time_left == 0
+    @player.jump     if jump?   id and fly_time_left == 0
+    @player.use_tile if use?    id and fly_time_left == 0
     @player.action   if action? id
     #       VK_Space: TPMLiving(Data.ObjPlayers.Next).Special;
     #       VK_Delete, VK_Return: begin

@@ -9,7 +9,7 @@ class Title < State
   end
   
   def button_down id
-    if confirmation? id or cancel? id then
+    if menu_confirm? id or menu_cancel? id then
       sound(:whoosh).play
       State.current = Menu.new
     end
