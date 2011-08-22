@@ -147,14 +147,17 @@ class CollectibleObject < GameObject
         game.cast_objects ID_FX_SPARKLE, 4, 0, 0, 0, rect
         kill
       when ID_MORPH_FIGHTER..ID_MORPH_MAX then
-        sound(:morph).play
-        game.player.pmid = ID_PLAYER_FIGHTER + pmid - ID_MORPH_FIGHTER
-        game.player.emit_text "#{ObjectDef[game.player.pmid].name}!"
-        game.player.action = ACT_JUMP
-        game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
-        game.time_left = ObjectDef[game.player.pmid].life
-        game.cast_objects ID_FX_SPARKLE, 5, 0, 0, 0, rect
-        kill
+        target_id = ID_PLAYER_FIGHTER + pmid - ID_MORPH_FIGHTER
+        if game.player.pmid != target_id then
+          sound(:morph).play
+          game.player.pmid = target_id
+          game.player.emit_text "#{ObjectDef[game.player.pmid].name}!"
+          game.player.action = ACT_JUMP
+          game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
+          game.time_left = ObjectDef[game.player.pmid].life
+          game.cast_objects ID_FX_SPARKLE, 5, 0, 0, 0, rect
+          kill
+        end
       when ID_SPEED, ID_JUMP, ID_FLY then
         sound(:morph).play
         game.player.emit_text "#{ObjectDef[pmid].name}!", :slow

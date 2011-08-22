@@ -48,7 +48,7 @@ class Game < State
     i = 0
     while obj_string = level_info.ini_file['Objects', i] do
       pmid, x, y = obj_string.split('|').map { |str| str.to_i(16) }
-      create_object pmid, x, y, level_info.ini_file['Objects', "#{x}Y"]
+      create_object pmid, x, y, level_info.ini_file['Objects', "#{i}Y"]
       i += 1
     end
   end
@@ -158,7 +158,7 @@ class Game < State
     
     player.jump     if jump_pressed?
     player.use_tile if use_pressed?
-    player.action   if action_pressed?
+    player.act      if action_pressed?
     player.dispose  if dispose_pressed?
     
     @objects.each &:update
@@ -240,7 +240,7 @@ class Game < State
     #     State_Game: case Key of
     player.jump     if jump?    id and fly_time_left == 0
     player.use_tile if use?     id and fly_time_left == 0
-    player.action   if action?  id
+    player.act      if action?  id
     player.dispose  if dispose? id
     #     end;
     #     State_Dead: if Key = VK_Return then
@@ -263,6 +263,24 @@ class Game < State
     
   end
   
+  def launch_projectile x, y, direction, min_id, max_id
+    # TODO DistSound(Y, Sound_Bow, Data);
+    orig_x = x
+    while x > 2 and x < 573 do
+      target = find_living(min_id, max_id, 0, ACT_DEAD - 1, ObjectDef::Rect.new(x - 4, y - 2, 8, 4))
+      
+      if target or map.solid?(x, y) then
+        create_object ID_FX_RICOCHET, x, y - 1 + rand(3), direction.to_s
+        # TODO DistSound(Y, Sound_ArrowHit, Data);
+        return target
+      end
+      
+      x += direction.dir_to_vx * 4
+    end
+  ensure
+    create_object ID_FX_LINE, [x, orig_x].min, y, (x - orig_x).abs.to_s
+  end
+
   def cast_objects pmid, num, vx, vy, randomness, rect
     num.times do
       obj = create_object pmid, rect.left + rand(rect.width), rect.top + rand(rect.height), nil
@@ -294,6 +312,12 @@ class Game < State
   
   def find_object min_id, max_id, rect
     @objects.find { |o| o.pmid >= min_id and o.pmid <= max_id and rect.include? o }
+  end
+  
+  def find_living min_id, max_id, min_act, max_act, rect
+    objects.find do |obj|
+      obj.pmid.between? min_id, max_id and obj.action.between? min_act, max_act and obj.collide_with? rect
+    end
   end
   
   private

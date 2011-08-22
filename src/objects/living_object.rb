@@ -9,12 +9,43 @@ class LivingObject < GameObject
     @direction = rand(2)
   end
   
+  def act
+    case pmid
+    when ID_PLAYER then
+      return if busy?
+      if game.find_object ID_LEVER, ID_LEVER_RIGHT, rect(10, 3) then
+        self.action = ACT_ACTION_1
+        self.vx = 0
+      end
+    when ID_PLAYER_FIGHTER then
+      return if action > ACT_LAND
+      sound(:sword_whoosh).play
+      self.action = ACT_ACTION_1
+      tile_x = (x + 10 * direction.dir_to_vx) / TILE_SIZE
+      tile_y = y / TILE_SIZE
+      if game.map[tile_x, tile_y].between? TILE_BLOCKER, TILE_BLOCKER_3 then
+        if game.map[tile_x, tile_y] != TILE_BLOCKER_3 then
+          game.map[tile_x, tile_y] = TILE_BLOCKER_BROKEN
+        else
+          game.map[tile_x, tile_y] = TILE_BLOCKER_3_BROKEN
+        end
+        game.cast_objects ID_FX_BLOCKER_PARTS, 10, 0, -2, 5,
+          ObjectDef::Rect.new(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+        sound(:blocker_break).play
+      end
+    when ID_PLAYER_GUN
+      self.action = ACT_ACTION_1 if action < ACT_LAND and game.ammo > 0
+    when ID_PLAYER_BOMBER
+      self.action = ACT_ACTION_1 if action < ACT_LAND and game.bombs > 0
+    end;
+  end
+  
   def busy?
     not blocked? DIR_DOWN or not action.between? ACT_STAND, ACT_WALK_4
   end
   
   def draw
-    return if [ACT_INV_UP, ACT_INV_UP].include? action
+    return if [ACT_INV_UP, ACT_INV_DOWN].include? action
     
     case pmid
     when ID_PLAYER..ID_PLAYER_BOMBER then
@@ -85,13 +116,46 @@ class LivingObject < GameObject
     end
   end
   
+  def hit
+    return if action == ACT_DEAD or pmid == ID_PLAYER_BERSERKER
+    return if ID_PLAYER_FIGHTER and rand(2) == 0
+    
+    if pmid <= ID_PLAYER_MAX then
+      return if game.inv_time_left > 0
+      game.inv_time_left = [25, game.inv_time_left].max
+    end
+    
+    self.life -= 1
+    
+    if life < 1 then
+      self.action = ACT_DEAD
+      self.life = 0
+    else
+      self.action = ACT_PAIN_1 + rand(2)
+    end
+    case pmid
+      when ID_PLAYER..ID_PLAYER_MAX then
+        sound(:player_arg).play
+      when ID_ENEMY..ID_ENEMY_MAX then
+        emit_sound "arg#{rand(2) + 1}"
+        # TODO or Death sound
+    end
+    
+    # if Data.OptBlood = 1 then CastObjects(ID_FXBlood, 8, 0, 2, 2, Data.OptEffects, GetRect(0, 0), Data.ObjEffects);
+    
+    if pmid == ID_ENEMY_BOMBER and action == ACT_DEAD then
+      kill
+      game.cast_fx 10, 30, 10, x, y, 10, 10, 0, -10, 5
+    end
+  end
+  
   def update
     # Runterfallen
     fall if action < ACT_INV_UP
     
     # Roasted by lava
     if y + ObjectDef[pmid].rect.bottom > game.map.lava_pos then
-      cast_fx 8, 8, 0, x, y, 16, 16, 0, -4, 1
+      game.cast_fx 8, 8, 0, x, y, 16, 16, 0, -4, 1
       kill
       emit_sound :shshsh
       if action != ACT_DEAD then
@@ -164,79 +228,99 @@ class LivingObject < GameObject
       end
     end
     
-    # // Türen aufschließen
-    # if (ID <= ID_PlayerMax) and (Data.Keys > 0) then with Data^ do begin
-    #   // Nach links
-    #   Target := Map.Tile(PosX + Defs[ID].Rect.Left - 1, PosY);
-    #   if (Target >= Tile_ClosedDoor) and (Target <= Tile_ClosedDoor3) then begin
-    #     Map.Tiles[(PosX + Defs[ID].Rect.Left - 1) div 24, PosY div 24]
-    #       := Tile_OpenDoor + Target - Tile_ClosedDoor;
-    #     Dec(Data.Keys);
-    #     Data.Waves[Sound_Door + Random(2)].Play(False);
-    #   end;
-    #   // Nach rechts
-    #   Target := Map.Tile(PosX + Defs[ID].Rect.Left + Defs[ID].Rect.Right + 1, PosY);
-    #   if (Target >= Tile_ClosedDoor) and (Target <= Tile_ClosedDoor3) then begin
-    #     Map.Tiles[(PosX + Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right + 1) div 24, PosY div 24]
-    #       := Tile_OpenDoor + Target - Tile_ClosedDoor;
-    #     Dec(Data.Keys);
-    #     Data.Waves[Sound_Door + Random(2)].Play(False);
-    #   end;
-    #   // Nach Oben
-    #   Target := Map.Tile(PosX, PosY + Defs[ID].Rect.Top - 1);
-    #   if (Target >= Tile_ClosedDoor) and (Target <= Tile_ClosedDoor3) then begin
-    #     Map.Tiles[PosX div 24, (PosY + Defs[ID].Rect.Top -1) div 24]
-    #       := Tile_OpenDoor + Target - Tile_ClosedDoor;
-    #     Dec(Keys);
-    #     Data.Waves[Sound_Door + Random(2)].Play(False);
-    #   end;
-    #   // Nach unten
-    #   Target := Map.Tile(PosX, PosY + Defs[ID].Rect.Top + Defs[ID].Rect.Bottom + 1);
-    #   if (Target >= Tile_ClosedDoor) and (Target <= Tile_ClosedDoor3) then begin
-    #     Map.Tiles[PosX div 24, (PosY + Defs[ID].Rect.Top + Defs[ID].Rect.Bottom + 1) div 24]
-    #       := Tile_OpenDoor + Target - Tile_ClosedDoor;
-    #     Dec(Keys);
-    #     Data.Waves[Sound_Door + Random(2)].Play(False);
-    #   end;
-    # end;
-    # 
-    # // Spezialaktionen von Peter
-    # // Player - bei Act_Action3 Schalter umlegen
-    # if (ID = ID_Player) and (Action = Act_Action3) and (Data.Frame mod 2 = 0) then begin
-    #   TargetObj := FindObject(Data.ObjOther, Data.ObjEnemies, ID_Lever, ID_LeverRight, GetRect(12, 3));
-    #   if TargetObj <> nil then begin
-    #     Data.Waves[Sound_Lever].Play(False);
-    #     case TargetObj.ID of
-    #       ID_Lever:      TargetObj.ID := ID_LeverDown;
-    #       ID_LeverLeft:  TargetObj.ID := ID_LeverRight;
-    #       ID_LeverRight: TargetObj.ID := ID_LeverLeft;
-    #     end;
-    #     if Length(TargetObj.ExtraData) < 1 then Exit;
-    #     if TargetObj.ExtraData[1] in ['0'..'9', 'A'..'F'] then
-    #       for Loop := 0 to StrToIntDef('$' + TargetObj.ExtraData[1], 0) - 1 do begin
-    #         Target := Data.Map.Tiles[StrToInt('$' + Copy(TargetObj.ExtraData, 3 + Loop * 10, 2)), StrToInt('$' + Copy(TargetObj.ExtraData, 6 + Loop * 10, 3))];
-    #         Data.Map.Tiles[StrToInt('$' + Copy(TargetObj.ExtraData, 3 + Loop * 10, 2)), StrToInt('$' + Copy(TargetObj.ExtraData, 6 + Loop * 10, 3))]
-    #           := StrToInt('$' + Copy(TargetObj.ExtraData, 10 + Loop * 10, 2));
-    #         TargetObj.ExtraData[10 + Loop * 10] := IntToHex(Target, 2)[1];
-    #         TargetObj.ExtraData[11 + Loop * 10] := IntToHex(Target, 2)[2];
-    #         CastFX(8, 0, 0, StrToInt('$' + Copy(TargetObj.ExtraData, 3 + Loop * 10, 2)) * 24 + 10, StrToInt('$' + Copy(TargetObj.ExtraData, 6 + Loop * 10, 3)) * 24 + 12, 24, 24, 0, 0, 2, Data.OptEffects, Data.ObjEffects);
-    #       end
-    #     else Data.ExecuteScript(Copy(TargetObj.ExtraData, 3, Length(TargetObj.ExtraData) - 2), 'do');
-    #   end;
-    # end;
-    # // Kampfpeter - zuschlagen
-    # if (ID = ID_PlayerFighter) and (Action in [Act_Action1..Act_Action5]) then begin
-    #   if Direction = Dir_Left then TargetLiv := FindLiving(Data.ObjEnemies, Data.ObjPlayers, ID_Enemy, ID_EnemyMax, 0, Act_Pain1 - 1, Bounds(PosX - 17, PosY - 16, 22, 32))
-    #                           else TargetLiv := FindLiving(Data.ObjEnemies, Data.ObjPlayers, ID_Enemy, ID_EnemyMax, 0, Act_Pain1 - 1, Bounds(PosX -  5, PosY - 16, 22, 32));
-    #   if TargetLiv <> nil then begin
-    #     TargetLiv.Hit;
-    #     TargetLiv.Fling(5 * RealDir(Direction), -4, 1, True, True);
-    #     if TargetLiv.Action = Act_Dead then begin
-    #       Inc(Data.Score, Data.Defs[TargetLiv.ID].Life * 3);
-    #       if Data.OptShowTexts = 1 then TPMEffect.Create(Data.ObjEffects, IntToStr(Data.Defs[TargetLiv.ID].Life * 3) + ' Punkte!', ID_FXText, TargetLiv.PosX, TargetLiv.PosY - 10, 0, -1);
-    #     end;
-    #   end;
-    # end;
+    # Open doors
+    if pmid <= ID_PLAYER_MAX and game.keys > 0 then
+      # Left
+      tile_x, tile_y = (x + ObjectDef[pmid].rect.left - 1) / TILE_SIZE, y / TILE_SIZE
+      if game.map[tile_x, tile_y].between? TILE_CLOSED_DOOR, TILE_CLOSED_DOOR_3 then
+        game.map[tile_x, tile_y] -= (TILE_CLOSED_DOOR - TILE_OPEN_DOOR)
+        game.keys -= 1
+        sound("door#{rand(2) + 1}").play
+      end
+
+      # Right
+      tile_x, tile_y = (x + ObjectDef[pmid].rect.right + 1) / TILE_SIZE, y / TILE_SIZE
+      if game.map[tile_x, tile_y].between? TILE_CLOSED_DOOR, TILE_CLOSED_DOOR_3 then
+        game.map[tile_x, tile_y] -= (TILE_CLOSED_DOOR - TILE_OPEN_DOOR)
+        game.keys -= 1
+        sound("door#{rand(2) + 1}").play
+      end
+
+      # Up
+      tile_x, tile_y = x / TILE_SIZE, (y + ObjectDef[pmid].rect.top - 1) / TILE_SIZE
+      if game.map[tile_x, tile_y].between? TILE_CLOSED_DOOR, TILE_CLOSED_DOOR_3 then
+        game.map[tile_x, tile_y] -= (TILE_CLOSED_DOOR - TILE_OPEN_DOOR)
+        game.keys -= 1
+        sound("door#{rand(2) + 1}").play
+      end
+
+      # Down
+      tile_x, tile_y = x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE
+      if game.map[tile_x, tile_y].between? TILE_CLOSED_DOOR, TILE_CLOSED_DOOR_3 then
+        game.map[tile_x, tile_y] -= (TILE_CLOSED_DOOR - TILE_OPEN_DOOR)
+        game.keys -= 1
+        sound("door#{rand(2) + 1}").play
+      end
+    end
+    
+    # Special actions
+    
+    # Plain Peter: Use levers
+    if pmid == ID_PLAYER and action == ACT_ACTION_3 and game.frame % 2 == 0 then
+      if target = game.find_object(ID_LEVER, ID_LEVER_RIGHT, rect(12, 3)) then
+        sound(:lever).play
+        target.pmid =
+          case target.pmid
+          when ID_LEVER then ID_LEVER_DOWN
+          when ID_LEVER_LEFT then ID_LEVER_RIGHT
+          when ID_LEVER_RIGHT then ID_LEVER_LEFT
+          end
+        
+        if not target.xdata.nil? and not target.xdata.empty? then
+          if target.xdata =~ /^[0-9A-F]/ then
+            target.xdata[0, 1].to_i(16).times do |i|
+              tile_x   = target.xdata[2 + i * 10, 2].to_i(16)
+              tile_y   = target.xdata[5 + i * 10, 3].to_i(16)
+              new_tile = target.xdata[9 + i * 10, 2].to_i(16)
+              old_tile = game.map[tile_x, tile_y]
+              game.map[tile_x, tile_y] = new_tile
+              target.xdata[9 + i * 10, 2] = '%02X' % old_tile
+              game.cast_fx 8, 0, 0, tile_x * TILE_SIZE + 10, tile_y * TILE_SIZE + 12, 24, 24, 0, 0, 2
+            end
+          else
+            game.execute_script xdata[2..-1], 'do'
+          end
+        end
+      end
+    end
+    
+    # Lord Peter: Stab
+    if pmid == ID_PLAYER_FIGHTER and action.between? ACT_ACTION_1, ACT_ACTION_5 then
+      rect = ObjectDef::Rect.new(x - 11 + direction.dir_to_vx * 6, y - 16, 22, 32)
+      if target = game.find_living(ID_ENEMY, ID_ENEMY_MAX, 0, ACT_PAIN_1 - 1, rect) then
+        target.hit
+        target.fling 5 * direction.dir_to_vx * 5, -4, 1, true, true
+        if target.action == ACT_DEAD then
+          game.score += score = ObjectDef[target.pmid].life * 3
+          target.emit_text "#{score} Punkte!"
+        end
+      end
+    end
+    
+    # Archer Peter: Shoot at ACT_ACTION_5
+    # TODO or better 4, because the "action progress" code translation below is FUBAR
+    if pmid == ID_PLAYER_GUN and action == ACT_ACTION_4 and game.frame % 2 == 0 then
+      game.ammo -= 1
+      if target = game.launch_projectile(x, y + 2, direction, ID_ENEMY, ID_ENEMY_MAX) then
+        target.hurt(true)
+        target.fling 3 * direction.dir_to_vx * 3, -3, 1, true, true
+        if target.action == ACT_DEAD then
+          game.score += score = ObjectDef[target.pmid].life * 3
+          target.emit_text "#{score} Punkte!"
+        end
+      end
+    end
+    
     # // PlayerGun - bei Act_Action 5 schießen
     # if (ID = ID_PlayerGun) and (Action = Act_Action5) then begin
     #   Dec(Data.Ammo);
@@ -372,23 +456,33 @@ class LivingObject < GameObject
     # Hurt player cannot recover until on the ground
     return if [ACT_PAIN_1, ACT_PAIN_2].include? action and not blocked? DIR_DOWN and not in_water?
     
-    # // Hingefallen, weiter aufstehen
-    # if (Action >= Act_Impact1) and (Action <= Act_Impact5) and (Data.Frame mod 2 = 0) then Exit;
-    # if (Action >  Act_Impact1) and (Action <= Act_Impact5) then begin Dec(Action); Exit; end;
-    # // Spezialaktion - einfach weitermachen... (Player + PlayerGun nur alle 2 Frames!)
-    # if (Action >= Act_Action1) and (Action < Act_Action5)
-    #   and (ID in [ID_Player, ID_PlayerGun, ID_EnemyFighter]) and (Data.Frame mod 2 = 0) then Exit;
-    # if (Action >= Act_Action1) and (Action < Act_Action5)
-    #   and (ID = ID_PlayerBomber) and (Data.Frame mod 3 <> 0) then Exit;
-    # if (Action >= Act_Action1) and (Action < Act_Action5)
-    #   and (ID = ID_EnemyGun) and (Data.Frame mod 5 <> 0) then Exit;
-    # if (Action >= Act_Action1) and (Action < Act_Action5) then begin Inc(Action); Exit; end;
+    # Hingefallen, weiter aufstehen
+    if action.between? ACT_IMPACT_1, ACT_IMPACT_5 then
+      self.action -= 1 unless game.frame % 2 == 0
+      return unless action == ACT_IMPACT_1 and game.frame % 2 == 1
+    end
+    
+    # Continue with special action
+    if action.between? ACT_ACTION_1, ACT_ACTION_5 then
+      case pmid
+      when ID_PLAYER, ID_PLAYER_GUN, ID_ENEMY_FIGHTER then slowness = 2
+      when ID_ENEMY_GUN then slowness = 5
+      when ID_PLAYER_BOMBER then slowness = 3
+      else
+        slowness = 1
+      end
+      
+      return if game.frame % slowness != 0
+      self.action += 1
+      return unless action == ACT_ACTION_5
+    end
     
     if not blocked? DIR_DOWN then
       self.action = vy < 0 ? ACT_JUMP : ACT_LAND
       return
     end
     
+    # TODO slime
     # // Auf Schleim laufen / Spieler
     # if (ID <= ID_PlayerMax) and Blocked(Dir_Down) and (Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3])
     #   and ((isLeft in Data.Input.States) or (isRight in Data.Input.States))
@@ -447,12 +541,12 @@ class LivingObject < GameObject
     end
     
     if pmid <= ID_PLAYER_MAX and game.jump_time_left > 0 then
-      self.vy = (ObjectDef[pmid].jump_y * 1.5).round
-      # TODO CastObjects(ID_FXSmoke, 2, 0, 3, 2, Data.OptEffects, GetRect(1, 0), Data.ObjEffects);
+      self.vy = (ObjectDef[pmid].jump_y * 1.5).round - 1
+      game.cast_objects ID_FX_SMOKE, 2, 0, 3, 2, rect(1, 0)
       sound(:turbo).play
       dir = DIR_UP
     else
-      self.vy = ObjectDef[pmid].jump_y
+      self.vy = ObjectDef[pmid].jump_y - 1
     end
     
     if dir == DIR_UP then
@@ -536,7 +630,6 @@ class LivingObject < GameObject
       self.action = ACT_INV_UP
       self.vx = self.vy = 0
       emit_sound :stairs
-
     when TILE_STAIRS_DOWN_LOCKED then
       return if pmid > ID_PLAYER_MAX or game.keys == 0
       game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_DOWN
@@ -566,67 +659,3 @@ class LivingObject < GameObject
     end
   end
 end
-  
-=begin
-procedure TPMLiving.Hit;
-begin
-  // Tote und Brenntypen verprügeln bringtz nich
-  if (Action = Act_Dead) or (ID = ID_PlayerBerserker) then Exit;
-  // Ritter kommen manchmal mit dem Schrecken davon
-  if (ID = ID_PlayerFighter) and (Random(2) = 0) then Exit;
-  // Keinen Spieler hauen, wenn er noch unverwundbar ist || Unverwundbar machen
-  if ID <= ID_PlayerMax then begin
-    if Data.InvTimeLeft > 0 then Exit;
-    Data.InvTimeLeft := Max(25, Data.InvTimeLeft);
-  end;
-  // Immer druff da
-  Dec(Life);
-  // Action setzen
-  if Life < 1 then begin
-    Action := Act_Dead; Life := 0;
-    if ID <= ID_PlayerMax then Data.Waves.Items[Sound_PlayerArg].Play(False);
-    if (ID in [ID_Enemy..ID_EnemyMax]) and (Data.OptBlood = 0)
-      then DistSound(PosY, Sound_Arg + Random(2), Data^);
-    if (ID in [ID_Enemy..ID_EnemyMax]) and (Data.OptBlood = 1)
-      then DistSound(PosY, Sound_Death, Data^);
-  end else begin
-    Action := Act_Pain1 + Random(2);
-    if ID <= ID_PlayerMax then Data.Waves.Items[Sound_PlayerArg].Play(False);
-    if ID in [ID_Enemy..ID_EnemyMax] then DistSound(PosY, Sound_Arg + Random(2), Data^);
-  end;
-  // B1U7F15CH r0lz
-  if Data.OptBlood = 1 then CastObjects(ID_FXBlood, 8, 0, 2, 2, Data.OptEffects, GetRect(0, 0), Data.ObjEffects);
-  // Kamikazehonks: Explodieren
-  if (ID = ID_EnemyBomber) and (Action = Act_Dead) then begin
-    Kill;
-    CastFX(10, 30, 10, PosX, PosY, 10, 10, 0, -10, 5, Data.OptEffects, Data.ObjEffects);
-  end;
-end;
-
-procedure TPMLiving.Special;
-var
-  Target: TPMObject;
-begin
-  case ID of
-    ID_Player: begin
-      if Busy then Exit;
-      Target := FindObject(Data.ObjOther, Data.ObjEnemies, ID_Lever, ID_LeverRight, GetRect(10, 3));
-      if Target <> nil then begin Action := Act_Action1; VelX := 0; end;
-    end;
-    ID_PlayerFighter: begin
-      if Action > Act_Land then Exit;
-      Data.Waves[Sound_SwordWoosh].Play(False);
-      Action := Act_Action1;
-      if Data.Map.Tile(PosX + (10 * RealDir(Direction)), PosY) in [Tile_Blocker..Tile_Blocker3] then begin
-        if Data.Map.Tiles[(PosX + (10  * RealDir(Direction))) div 24, PosY div 24] in [Tile_Blocker, Tile_Blocker2]
-          then Data.Map.Tiles[(PosX + (10  * RealDir(Direction))) div 24, PosY div 24] := Tile_BlockerBroken
-          else Data.Map.Tiles[(PosX + (10  * RealDir(Direction))) div 24, PosY div 24] := Tile_Blocker3Broken;
-        CastObjects(ID_FXBlockerParts, 10, 0, -2, 5, Data.OptEffects, Bounds((PosX + (10 * RealDir(Direction))) div 24 * 24, PosY div 24 * 24, 24, 24), Data.ObjEffects);
-        Data.Waves[Sound_BlockerBreak].Play(False);
-      end;
-    end;
-    ID_PlayerGun: if (Action <= Act_Land) and (Data.Ammo > 0) then Action := Act_Action1;
-    ID_PlayerBomber: if (Action <= Act_Land) and (Data.Bombs > 0) then Action := Act_Action1;
-  end;
-end;
-=end

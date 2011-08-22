@@ -132,7 +132,7 @@ class GameObject
     @@stuff_images[pmid - ID_OTHER_OBJECTS_MIN].draw x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode
     if pmid == ID_CAROLIN then
       if xdata and xdata.length > 2 then
-        name = xdata.split[2..-1]
+        name = xdata[2..-1]
       else
         name = 'Carolin'
       end
@@ -246,6 +246,28 @@ class GameObject
     end
   end
   
+  def fling vx, vy, randomness, fixed, malign
+    # TODO the "randomness" here smells because it's only towards the bottom right?!
+    
+    exit if pmid <= ID_PLAYER_MAX and malign and (game.inv_time_left > 0 or pmid == ID_PLAYER_BERSERKER)
+    
+    randomness += 1 # what
+    
+    if fixed then
+      self.vx = vx + rand(randomness)
+      self.vy = vy + rand(randomness)
+    else
+      self.vx += vx + rand(randomness)
+      self.vy += vy + rand(randomness)
+    end
+  end
+  
+  def stuck?
+    rect = self.rect
+    map.solid?(rect.left, rect.top) or map.solid?(rect.right, rect.top) or
+      map.solid?(rect.left, rect.bottom) or map.solid?(rect.right, rect.bottom)
+  end
+  
   def blocked? direction
     rect = ObjectDef[pmid].rect
     case direction
@@ -263,8 +285,6 @@ class GameObject
       game.map.solid? x + rect.right, y + rect.bottom + 1
     end
   end
-  
-  protected
   
   def check_tile
     case game.map[x / TILE_SIZE, y / TILE_SIZE]
@@ -348,34 +368,6 @@ end
 # TODO split into proper classes
 
 =begin
-procedure TPMObject.Fling(XLvl, YLvl, Rnd: Integer; Fixed, Malign: Boolean);
-begin
-  // Wehrlose Objekte nur, wenn Malign=False
-  if (ID <= ID_PlayerMax) and (Malign = True) and ((Data.InvTimeLeft > 0) or (ID = ID_PlayerBerserker))then Exit;
-  // Zufall + 1
-  Inc(Rnd);
-  // Schleudern
-  if Fixed then begin
-    VelX := XLvl + Random(Rnd); VelY := YLvl + Random(Rnd);
-  end else begin
-    Inc(VelX, XLvl + Random(Rnd));
-    Inc(VelY, YLvl + Random(Rnd));
-  end;
-end;
-
-function TPMObject.Stuck: Boolean;
-begin with Data^ do begin
-  Result := Map.Solid(PosX + Defs[ID].Rect.Left,
-                      PosY + Defs[ID].Rect.Top)
-         or Map.Solid(PosX + Defs[ID].Rect.Left + Defs[ID].Rect.Right,
-                      PosY + Defs[ID].Rect.Top)
-         or Map.Solid(PosX + Defs[ID].Rect.Left,
-                      PosY + Defs[ID].Rect.Top  + Defs[ID].Rect.Bottom)
-         or Map.Solid(PosX + Defs[ID].Rect.Left + Defs[ID].Rect.Right,
-                      PosY + Defs[ID].Rect.Top  + Defs[ID].Rect.Bottom)
-end; end;
-
-
 ///////////////////////
 // Andere Funktionen //
 ///////////////////////
@@ -428,52 +420,6 @@ begin
     end;
 end;
 
-function FindLiving(StartObj, EndObj: TPMObject; MinID, MaxID, MinAction, MaxAction: Integer; Rect: TRect): TPMLiving;
-var
-  TempObj: TPMObject;
-begin
-  Result := nil;
-  TempObj := StartObj;
-  while True do begin
-    TempObj := TempObj.Next;
-    if TempObj = EndObj then Exit;
-    if (TempObj.ClassType = TPMLiving)
-    and (TempObj.ID in [MinID..MaxID])
-    and (TPMLiving(TempObj).Action in [MinAction..MaxAction])
-    and PointInRect(Point(TempObj.PosX, TempObj.PosY), Rect) then begin Result := TPMLiving(TempObj); Exit; end;
-  end;
-end;
 
-function LaunchProjectile(X, Y, Direction: Integer; TargetMinObj, TargetMaxObj, FXObj: TPMObject; Data: TPMData): TPMObject;
-var
-  LoopX: Integer;
-  TempObj: TPMObject;
-begin
-  Result := nil; // noch nix gefunden
-  LoopX := X;    // Suchpunkt: Noch der Ursprung
-  DistSound(Y, Sound_Bow, Data);
-  while (Result = nil) and (LoopX > 2) and (LoopX < 573) do begin
-    if Data.Map.Solid(LoopX, Y) then begin
-      Result := nil;
-      TPMEffect.Create(FXObj, IntToStr(Direction), ID_FXRicochet, LoopX div 24 * 24 + 24 * Integer(not(Boolean(Direction))) - 6 * RealDir(Direction), Y - 1 + Random(3), 0, 0);
-      TPMEffect.Create(FXObj, IntToStr(Abs(X - LoopX)), ID_FXLine, Min(X, LoopX), Y, 0, 0);
-      DistSound(Y, Sound_ArrowHit, Data);
-      Exit;
-    end;
-    TempObj := TargetMinObj;
-    while TempObj <> TargetMaxObj do
-      if TempObj.RectCollision(Rect(LoopX, Y - 2, LoopX + 8, Y + 2))
-      and ((TempObj.ClassType <> TPMLiving) or (not (TPMLiving(TempObj).Action in [Act_Dead, Act_InvUp, Act_InvDown]))) then begin
-        Result := TempObj;
-        TPMEffect.Create(FXObj, IntToStr(Direction), ID_FXRicochet, LoopX - 6 * RealDir(Direction), Y - 1 + Random(3), 0, 0);
-        TPMEffect.Create(FXObj, IntToStr(Abs(X - LoopX)), ID_FXLine, Min(X, LoopX), Y, 0, 0);
-        DistSound(Y, Sound_ArrowHit, Data);
-        Exit;
-      end else
-        TempObj := TempObj.Next;
-    Inc(LoopX, 4 * RealDir(Direction));
-  end;
-  TPMEffect.Create(FXObj, IntToStr(Abs(X - LoopX)), ID_FXLine, Min(X, LoopX), Y, 0, 0);
-end;
 
 =end
