@@ -1,7 +1,9 @@
 class Game < State
   attr_reader :player, :map
   attr_reader :view_pos, :frame
-  attr_reader :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
+  attr_reader :time_left, :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
+  attr_reader :keys, :stars, :ammo, :bombs
+  attr_reader :stars_goal
   attr_reader :obj_vars
   
   def initialize level_info
@@ -13,7 +15,7 @@ class Game < State
     @message_opacity = 0
     @frame = -1
     @frame_fading_box = 16
-    @inv_time_left = @speed_time_left = @jump_time_left = @fly_time_left = 0
+    @time_left = @inv_time_left = @speed_time_left = @jump_time_left = @fly_time_left = 0
     @keys = @stars = @ammo = @bombs = 0
     @score = 0
     
@@ -56,6 +58,7 @@ class Game < State
 =end
     
     @map = Map.new(self, level_info.ini_file)
+    @stars_goal = (level_info.ini_file['Map', 'StarsGoal'] || 100).to_i
     
     player_x = (level_info.ini_file['Objects', 'PlayerX'] || 288).to_i
     player_y = (level_info.ini_file['Objects', 'PlayerY'] || 24515).to_i
@@ -232,90 +235,8 @@ class Game < State
       #   DXImageListPack.Items[Image_Danger].Draw(DXDraw.Surface, LoopX * 120 + Data.Map.LavaFrame, Data.Map.LavaPos - Data.ViewPos + 48 + LoopY * 48 + Integer(Data.Map.LavaTimeLeft = 0) * ((Data.Frame div 2) mod 2), Min(1, Data.Map.LavaTimeLeft) + 2);
     end
     
-    # // Dann noch die Leiste dr¸ber
-    # // Das gˆttliche P
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 0, 0);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 0, 1);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 0, 2);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 0, 3);
-    # // Leerzeile
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 48, 4);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 48, 5);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 48, 6);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 48, 7);
-    # // Energie
-    # if Data.ObjPlayers.Next <> Data.ObjEffects then begin
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 96, 8);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 96, 9);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 96, Min(TPMLiving(Data.ObjPlayers.Next).Life, 99) div 10 * 2 + 20);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 96, Min(TPMLiving(Data.ObjPlayers.Next).Life, 99) mod 10 * 2 + 21);
-    # end else begin
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 96, 8);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 96, 9);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 96, 20);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 96, 21);
-    # end;
-    # // Schl¸ssel
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 144, 10);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 144, 11);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 144, Min(Data.Keys, 99) div 10 * 2 + 20);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 144, Min(Data.Keys, 99) mod 10 * 2 + 21);
-    # // Sterne
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 192, 12);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 192, 13);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 192, Min(Data.Stars, 99) div 10 * 2 + 20);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 192, Min(Data.Stars, 99) mod 10 * 2 + 21);
-    # // Wenn genug, dann H‰kchen
-    # if Data.Stars >= Data.StarsGoal then begin
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 192, 42);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 192, 43);
-    # end;
-    # // Wenn gar keine benˆtigt, dann nix
-    # if Data.StarsGoal = 0 then begin
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 192, 4);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 192, 5);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 192, 6);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 192, 7);
-    # end;
-    # // ‹brige Spezialpeterzeit
-    # if Data.ObjPlayers.Next.ID < 1 then begin
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 240, 4);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 240, 5);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 240, 6);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 240, 7);
-    # end else begin
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 240, 14);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 240, 15);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 240, (Data.TimeLeft div 20) div 10 * 2 + 20);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 240, Data.TimeLeft div 20 mod 10 * 2 + 21);
-    # end;
-    # // Munition
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 288, 16);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 288, 17);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 288, Min(Data.Ammo, 99) div 10 * 2 + 20);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 288, Min(Data.Ammo, 99) mod 10 * 2 + 21);
-    # // Bomben
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 336, 18);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 336, 19);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 336, Min(Data.Bombs, 99) div 10 * 2 + 20);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 336, Min(Data.Bombs, 99) mod 10 * 2 + 21);
-    # // ‹brige Lavafrierzeit
-    # if Data.Map.LavaTimeLeft = 0 then begin
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 384, 4);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 384, 5);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 384, 6);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 384, 7);
-    # end else begin
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 384, 40);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 384, 41);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 384, Min(Data.Map.LavaTimeLeft div 20, 99) div 10 * 2 + 20);
-    #   DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 384, Min(Data.Map.LavaTimeLeft div 20, 99) mod 10 * 2 + 21);
-    # end;
-    # 
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 576, 432, 4);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 592, 432, 5);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 608, 432, 6);
-    # DXImageListPack.Items[Image_GUI].Draw(DXDraw.Surface, 624, 432, 7);
+    draw_status_bar
+    
     # 
     # // Levelfortschrittsanzeige (wenn aktiviert)
     # if Data.OptShowStatus = 1 then begin
@@ -397,4 +318,77 @@ class Game < State
     
   end
   
+  private
+  
+  def draw_status_bar
+    @@gui ||= Gosu::Image.load_tiles 'media/gui.bmp', -4, -11
+    Gosu::translate(576, 0) do
+      tile_w = @@gui.first.width
+      tile_h = @@gui.first.height
+      
+      draw_digits = lambda do |num, row|
+        left_digit  = [num, 99].min / 10 * 2 + 20
+        right_digit = [num, 99].min % 10 * 2 + 21
+        @@gui[left_digit].draw  tile_w * 2, tile_h * row, 0
+        @@gui[right_digit].draw tile_w * 3, tile_h * row, 0
+      end
+
+      # Game logo and spacing
+      0.upto(3) do |x|
+        @@gui[x + 0].draw tile_w * x, tile_h * 0, 0
+        @@gui[x + 4].draw tile_w * x, tile_h * 1, 0
+      end
+      # Health
+      if true then # TODO player.alive?
+        @@gui[8].draw tile_w * 0, tile_h * 2, 0
+        @@gui[9].draw tile_w * 1, tile_h * 2, 0
+        draw_digits.call @player.life, 2
+      else
+        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 2, 0 }
+      end
+      # Keys
+      @@gui[10].draw tile_w * 0, tile_h * 3, 0
+      @@gui[11].draw tile_w * 1, tile_h * 3, 0
+      draw_digits.call keys, 3
+      # Stars
+      @@gui[12].draw tile_w * 0, tile_h * 4, 0
+      @@gui[13].draw tile_w * 1, tile_h * 4, 0
+      draw_digits.call stars, 4
+      if stars > stars_goal then
+        # Enough stars - draw checkmark
+        @@gui[42].draw tile_w * 2, tile_h * 4, 0
+        @@gui[43].draw tile_w * 3, tile_h * 4, 0
+      end
+      if stars_goal == 0 then
+        # Or blank the line out of no stars are needed
+        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 4, 0 }
+      end
+      # Remaining special peter time
+      if @player.pmid == ID_PLAYER then
+        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 5, 0 }
+      else
+        @@gui[14].draw tile_w * 0, tile_h * 5, 0
+        @@gui[15].draw tile_w * 1, tile_h * 5, 0
+        draw_digits.call time_left / TARGET_FPS, 5
+      end
+      # Ammo
+      @@gui[16].draw tile_w * 0, tile_h * 6, 0
+      @@gui[17].draw tile_w * 1, tile_h * 6, 0
+      draw_digits.call ammo, 6
+      # Bombs
+      @@gui[18].draw tile_w * 0, tile_h * 7, 0
+      @@gui[19].draw tile_w * 1, tile_h * 7, 0
+      draw_digits.call bombs, 7
+      # Remaining time for frozen lava
+      if map.lava_time_left == 0 then
+        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 8, 0 }
+      else
+        @@gui[40].draw tile_w * 0, tile_h * 8, 0
+        @@gui[41].draw tile_w * 1, tile_h * 8, 0
+        draw_digits.call map.lava_time_left / TARGET_FPS, 8
+      end
+      # Spacing
+      0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 9, 0 }
+    end
+  end
 end

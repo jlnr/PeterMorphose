@@ -30,8 +30,6 @@ class Map
       @timers << ini_file['Scripts', "Timer#{i}"]
     end
     
-    @stars_goal = (ini_file['Map', 'StarsGoal'] || 100).to_i
-    
     @sky = (ini_file['Map', 'Sky'] || 0).to_i
     
     @lava_speed = (ini_file['Map', 'LavaSpeed'] || 1).to_i

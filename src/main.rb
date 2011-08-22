@@ -37,11 +37,12 @@ Dir.chdir File.expand_path("#{__FILE__}/../..")
 Gosu::enable_undocumented_retrofication rescue nil
 
 WIDTH, HEIGHT = 640, 480
+TARGET_FPS = 30
 
 # Simple implementation of the Gosu "State-Based" game pattern
 class Window < Gosu::Window
   def initialize
-    super WIDTH*3/2, HEIGHT*3/2, :update_interval => 33.33
+    super WIDTH*3/2, HEIGHT*3/2, :update_interval => 1000.0 / TARGET_FPS
     
     self.caption = "Peter Morphose"
     
