@@ -25,7 +25,7 @@ class ObjectDef < Struct.new(:name, :life, :rect, :speed, :jump_x, :jump_y)
       ini = INIFile.new('objects.ini')
       (0..ID_MAX).map do |id|
         ObjectDef.new.tap do |obj_def|
-          hex_id = "%02x" % id
+          hex_id = "%02X" % id
           obj_def.name = ini['ObjName',  hex_id] || '<no name>'
           obj_def.life = (ini['ObjLife',  hex_id] || 3).to_i
           rect_string = ini['ObjRect',  hex_id] || '10102020'

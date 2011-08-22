@@ -28,38 +28,6 @@ class Game < State
     @objects = []
     @obj_vars = [nil] * 16
     
-=begin
-      // Wenn ¸berladen, dann schonmal Kopie der alten speichern
-      OverloadedTiles := TStringList.Create;
-      Level_pml.ReadSection('Tiles', OverloadedTiles);
-      if OverloadedTiles.Count > 0 then begin
-        // Originaltiles speichern
-        DXImageListPack.Items[Image_Tiles].Picture.SaveToFile(TempPath + '\PMTempOV.bmp');
-        // Originaltiles in NewTiles laden
-        NewTiles := TBitmap.Create;
-        NewTiles.LoadFromFile(TempPath + '\PMTempOV.bmp');
-        // ‹berladene Tiles einlesen
-        for LoopT := 0 to 255 do begin
-          Row := Level_pml.ReadString('Tiles', IntToHex(LoopT, 2), '');
-          if Length(Row) = 3456 then begin
-            Log.Add('Tile ' + IntToHex(LoopT, 2) + ' ¸berladen.');
-            for LoopY := 0 to 23 do
-              for LoopX := 0 to 23 do
-                NewTiles.Canvas.Pixels[(LoopT mod 16) * 24 + LoopX, (LoopT div 16) * 24 + LoopY]
-                  := StringToColor('$02' + Copy(Row, 5 + 6 * (LoopY + LoopX * 24), 2) + Copy(Row, 3 + 6 * (LoopY + LoopX * 24), 2) + Copy(Row, 1 + 6 * (LoopY + LoopX * 24), 2));
-          end;
-        end;
-        // Datei speichern und wieder einladen
-        NewTiles.SaveToFile(TempPath + '\PMTempOV.bmp');
-        DXImageListPack.Items[Image_Tiles].Picture.LoadFromFile(TempPath + '\PMTempOV.bmp');
-        DXImageListPack.Items[Image_Tiles].Restore;
-        // Newtiles und tempor‰re Datei lˆschen
-        NewTiles.Free;
-        DeleteFile(TempPath + '\PMTempOV.bmp');
-      end;
-      OverLoadedTiles.Free;
-=end
-    
     @map = Map.new(self, level_info.ini_file)
     @stars_goal = (level_info.ini_file['Map', 'StarsGoal'] || 100).to_i
     

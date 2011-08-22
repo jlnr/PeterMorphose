@@ -502,11 +502,9 @@ class LivingObject < GameObject
   
   def break_floor x, y
     debug binding if pmid == ID_PLAYER and $window.button_down? Gosu::KbD
-    if (TILE_BRIDGE..TILE_BRIDGE_4).include? game.map[x / TILE_SIZE, y / TILE_SIZE] and true
-      #Data.ObjEffects, Data.ObjEnd, ID_FXBreak, ID_FXBreak2, Bounds(X div 24 * 24, Y div 24 * 24, 23, 23)) = nil) then begin
-#      not find_object(ID_FX_BREAK, ID_FX_BREAK_2,
- #       ObjectDef::Rect.new(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, 24, 24)) then
-      
+    if (TILE_BRIDGE..TILE_BRIDGE_4).include? game.map[x / TILE_SIZE, y / TILE_SIZE] and
+      not game.find_object(ID_FX_BREAK, ID_FX_BREAK_2,
+        ObjectDef::Rect.new(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, 24, 24)) then
       game.create_object ID_FX_BREAK + rand(2),
                          x / TILE_SIZE * TILE_SIZE + 11,
                          y / TILE_SIZE * TILE_SIZE + 11, nil

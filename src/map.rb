@@ -1,4 +1,9 @@
 class Map
+  class OverriddenTile < Struct.new(:to_blob)
+    def columns; TILE_SIZE; end
+    def rows; TILE_SIZE; end
+  end
+  
   attr_reader :level_top, :level_bottom
   attr_accessor :lava_pos, :lava_time_left, :lava_mode, :lava_speed, :lava_frame
   
@@ -38,6 +43,33 @@ class Map
     
     @level_top = (ini_file['Map', 'LevelTop'] || 0).to_i * TILE_SIZE
     @level_bottom = [1024, @lava_pos / TILE_SIZE].min
+    
+    # Overloaded map tiles
+    @tile_images = []
+    @@tiles.each_with_index do |original_tile, index|
+      transparency = "\0\0\0\0"
+      if (override = ini_file['Tiles', '%02X' % index]) and override.length == 3456 then
+        data = "\xff" * (TILE_SIZE * TILE_SIZE * 4)
+        
+        (TILE_SIZE * TILE_SIZE).times do |i|
+          inv_x = i % TILE_SIZE
+          inv_y = i / TILE_SIZE
+          src_i = inv_x * TILE_SIZE + inv_y
+          rrggbb = override[src_i * 6, 6]
+          if rrggbb == 'FF00FF' then
+            data[i * 4, 4] = transparency
+          else
+            data[i * 4 + 0] = rrggbb[0, 2].to_i(16).chr
+            data[i * 4 + 1] = rrggbb[2, 2].to_i(16).chr
+            data[i * 4 + 2] = rrggbb[4, 2].to_i(16).chr
+          end
+        end
+        
+        @tile_images[index] = Gosu::Image.new(OverriddenTile.new(data))
+      else
+        @tile_images[index] = original_tile
+      end
+    end
   end
   
   def [](x, y)
@@ -96,7 +128,7 @@ class Map
     row = @game.view_pos / TILE_SIZE
     (HEIGHT / TILE_SIZE + 1).times do |y|
       TILES_X.times do |x|
-        @@tiles[self[x, row + y] || 0].draw x * TILE_SIZE, y * TILE_SIZE - offset, 0
+        @tile_images[self[x, row + y] || 0].draw x * TILE_SIZE, y * TILE_SIZE - offset, 0
       end
     end
   end
