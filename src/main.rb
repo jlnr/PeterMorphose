@@ -15,10 +15,10 @@ require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 # TODO Proper scaling
 # TODO Packaging as gem
 # TODO Deployment tasks
-# TODO "Gosu" splash screen
 # TODO Support for editor quick-starting
 # TODO Localization
 # TODO Better resource handling
+# TODO "Gosu" splash screen
 
 def debug binding
   require 'pry'

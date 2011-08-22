@@ -2,7 +2,7 @@ class Game < State
   attr_reader :player, :map
   attr_reader :view_pos, :frame
   attr_reader :time_left, :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
-  attr_reader :score, :keys, :stars, :ammo, :bombs
+  attr_accessor :score, :keys, :stars, :ammo, :bombs
   attr_reader :stars_goal
   attr_reader :obj_vars
   
@@ -294,6 +294,15 @@ class Game < State
     
   end
   
+  def cast_objects pmid, num, vx, vy, randomness, rect
+    num.times do
+      obj = GameObject.create self, pmid, rect.left + rand(rect.width), rect.top + rand(rect.height), nil
+      obj.vx = vx - randomness + rand(randomness * 2 + 1)
+      obj.vy = vy - randomness + rand(randomness * 2 + 1)
+      @objects << obj
+    end
+  end
+  
   def cast_fx smoke, flames, sparks, x, y, *args
     return if (view_pos + HEIGHT / 2 - y).abs > HEIGHT
     
@@ -375,7 +384,8 @@ class Game < State
       0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 9, Z_UI }
     end
   end
-
+  
+  # TODO Merge into cast_objects
   def cast_single_fx pmid, num, x, y, w, h, vx, vy, randomness
     num.times do
       x = [[x - w / 2 + rand(w + 1), 0].max, 575].min

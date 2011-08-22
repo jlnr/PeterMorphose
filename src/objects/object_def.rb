@@ -7,6 +7,10 @@ class ObjectDef < Struct.new(:name, :life, :rect, :speed, :jump_x, :jump_y)
     def bottom
       top + height
     end
+    
+    def collide_with? other
+      left < other.right and right > other.left and top < other.bottom and bottom > other.top
+    end
   end
   
   def self.[](pmid)

@@ -121,10 +121,10 @@ class GameObject
     mode = :default
     
     if [ID_FIREWALL_1, ID_FIREWALL_2, ID_FIRE].include? pmid then
-      color = Gosu::Color.new(127 + (xdata && xdata.to_i || 128), 255, 255, 255)
+      color = alpha(127 + (xdata && xdata.to_i || 128))
       mode = :additive
     elsif pmid == ID_HELP_ARROW then
-      color = Gosu::Color.new(127 + (game.frame / 8 % 2) * 64, 255, 255, 255)
+      color = alpha(127 + (game.frame / 8 % 2) * 64)
     end
     @@stuff_images[pmid - ID_OTHER_OBJECTS_MIN].draw x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode
     if pmid == ID_CAROLIN then
@@ -327,7 +327,18 @@ class GameObject
       #     TPMLiving(Self).Hit; VelY := 5; VelX := 0;
       #   end;
     end
-  end  
+  end
+  
+  def collide_with? other
+    other = other.rect unless other.is_a? ObjectDef::Rect
+    rect.collide_with? other
+  end
+  
+  def rect(extra_width = 0, extra_height = 0)
+    rect = ObjectDef[pmid].rect
+    ObjectDef::Rect.new(x + rect.left - extra_width, y + rect.top - extra_width,
+      rect.width + extra_width * 2, rect.height + extra_height * 2)
+  end
 end
 
 # TODO split into proper classes
@@ -351,7 +362,6 @@ end
     procedure CheckTile;
     procedure Fling(XLvl, YLvl, Rnd: Integer; Fixed, Malign: Boolean);
     function Blocked(Dir: Integer): Boolean;
-    function RectCollision(Rect: TRect): Boolean;
     function GetRect(ExtraWidth: Integer = 0; ExtraHeight: Integer = 0): TRect;
     function Stuck: Boolean;
     function InWater: Boolean;
@@ -360,7 +370,6 @@ end
 procedure DrawBMPText(Text: string; X, Y: Integer; Alpha: Byte; SrcPic: TPictureCollectionItem; DestSrf: TDirectDrawSurface; Quality: Integer);
 procedure MyStretchDraw(DestSrf: TDirectDrawSurface; SrcPic: TPictureCollectionItem; Pattern: Integer; DestRect: TRect; ATI: Boolean);
 procedure CastFX(SmokeNum, FlameNum, SparkNum, X, Y, Width, Height, XLvl, YLvl, Rnd, Level: Integer; FXObj: TPMObjBreak);
-procedure CastObjects(ID, Number, XLvl, YLvl, Rnd, Level: Integer; Rect: TRect; After: TPMObjBreak);
 procedure Explosion(X, Y, Radius: Integer; Data: TPMData; DoScore: Boolean);
 procedure DistSound(Y, Sound: Integer; Data: TPMData);
 function FindObject(StartObj, EndObj: TPMObject; MinID, MaxID: Integer; Rect: TRect): TPMObject;
@@ -384,22 +393,6 @@ begin
   end;
 end;
 
-function TPMObject.RectCollision(Rect: TRect): Boolean;
-begin
-  Result := OverlapRect(Bounds(PosX + Data.Defs[ID].Rect.Left,
-                               PosY + Data.Defs[ID].Rect.Top,
-                               Data.Defs[ID].Rect.Right,
-                               Data.Defs[ID].Rect.Bottom), Rect);
-end;
-
-function TPMObject.GetRect(ExtraWidth: Integer = 0; ExtraHeight: Integer = 0): TRect;
-begin
-  Result := Bounds(PosX + Data.Defs[ID].Rect.Left - ExtraWidth,
-                   PosY + Data.Defs[ID].Rect.Top - ExtraHeight,
-                   Data.Defs[ID].Rect.Right + ExtraWidth * 2,
-                   Data.Defs[ID].Rect.Bottom + ExtraHeight * 2)
-end;
-
 function TPMObject.Stuck: Boolean;
 begin with Data^ do begin
   Result := Map.Solid(PosX + Defs[ID].Rect.Left,
@@ -416,19 +409,6 @@ end; end;
 ///////////////////////
 // Andere Funktionen //
 ///////////////////////
-
-procedure CastObjects(ID, Number, XLvl, YLvl, Rnd, Level: Integer; Rect: TRect; After: TPMObjBreak);
-var
-  Loop: Integer;
-begin
-  if Round(Number / 100 * Level) > 0 then for Loop := 0 to Round(Number / 100 * Level) do
-    case ID of
-      ID_OtherObjectsMin..ID_OtherObjectsMax:
-        TPMObject.Create(After, '', ID, Rect.Left + Random(Rect.Right - Rect.Left + 1), Rect.Top + Random(Rect.Bottom - Rect.Top + 1), XLvl - Rnd + Random(Rnd * 2 + 1), YLvl - Rnd + Random(Rnd * 2 + 1));
-      ID_FXMin..ID_FXMax:
-        TPMEffect.Create(After, '', ID, Rect.Left + Random(Rect.Right - Rect.Left + 1), Rect.Top + Random(Rect.Bottom - Rect.Top + 1), XLvl - Rnd + Random(Rnd * 2 + 1), YLvl - Rnd + Random(Rnd * 2 + 1));
-    end;
-end;
 
 procedure Explosion(X, Y, Radius: Integer; Data: TPMData; DoScore: Boolean);
 var

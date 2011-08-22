@@ -9,11 +9,11 @@ class EffectObject < GameObject
     @@effect_images ||= Gosu::Image.load_tiles 'media/effects.bmp', -7, -7
     case pmid
     when ID_FX_SMOKE then
-      @@effect_images[[ 0, @phase -  1].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, 0x80ffffff, :additive
+      @@effect_images[[ 0, @phase -  1].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
     when ID_FX_FLAME then
-      @@effect_images[[ 7, @phase +  6].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, 0xa0ffffff, :additive
+      @@effect_images[[ 7, @phase +  6].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(160), :additive
     when ID_FX_SPARK then
-      @@effect_images[[14, @phase + 13].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, 0x80ffffff, :additive
+      @@effect_images[[14, @phase + 13].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
       # ID_FXBubble:
       #   Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), Max(21, Phase + 20), 192);
       # ID_FXRicochet:
@@ -42,8 +42,8 @@ class EffectObject < GameObject
       #   Data.Images[Image_Effects].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), 46, 100 + Random(29));
       # ID_FXWater:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 47, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
-      # ID_FXSparkle:
-      #   Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), 48, 255 - Phase);
+      when ID_FX_SPARKLE then
+      @@effect_images[48].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(255 - @phase), :additive
       # ID_FXText, ID_FXSlowText:
       #   DrawBMPText(ExtraData, Min(Max(PosX - Round(Length(ExtraData) * 4.5), 0), 576 - Length(ExtraData) * 9), PosY - 7 - Data.ViewPos, 255 - Phase, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality);
     end
@@ -121,10 +121,9 @@ class EffectObject < GameObject
     #   if Random(4) = 0 then PosX := PosX - 1 + Random(3);
     #   if not InWater then Kill;
     # end;
-    # ID_FXSparkle: begin
-    #   Inc(Phase, 25);
-    #   if Phase = 250 then Kill;
-    # end;
+  when ID_FX_SPARKLE then
+    @phase += 25
+    kill if @phase == 250
     end
   end
 end
