@@ -1,7 +1,7 @@
 class Game < State
   attr_reader :player, :map
   attr_reader :view_pos, :frame
-  attr_reader :time_left, :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
+  attr_accessor :time_left, :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
   attr_accessor :score, :keys, :stars, :ammo, :bombs
   attr_reader :stars_goal
   attr_reader :obj_vars

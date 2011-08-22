@@ -30,20 +30,21 @@ class EffectObject < GameObject
       #   Data.Images[Image_Effects].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), 33, 250 - Phase);
       # ID_FXFire:
       #   Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX, PosY - Data.ViewPos, 24, 24), 34, Phase);
-      # ID_FXFlyingCarolin:
-      #   Data.Images[Image_Effects].Draw(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 35);
-      # ID_FXFlyingChain:
-      #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 36, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
+    when ID_FX_FLYING_CAROLIN then
+      @@effect_images[35].draw x, y - game.view_pos, Z_EFFECTS
+    when ID_FX_FLYING_CHAIN then
+      @@effect_images[36].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10 % 360, 0.5, 0.5, 1, 1, alpha(255 - @phase)
       # ID_FXFlyingBlob:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 37, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
       # ID_FXWaterBubble:
       #   Data.Images[Image_Effects].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), 46, 100 + Random(29));
       # ID_FXWater:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 47, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
-      when ID_FX_SPARKLE then
+    when ID_FX_SPARKLE then
       @@effect_images[48].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(255 - @phase), :additive
-      # ID_FXText, ID_FXSlowText:
-      #   DrawBMPText(ExtraData, Min(Max(PosX - Round(Length(ExtraData) * 4.5), 0), 576 - Length(ExtraData) * 9), PosY - 7 - Data.ViewPos, 255 - Phase, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality);
+    when ID_FX_TEXT, ID_FX_SLOW_TEXT then
+      # TODO: Force text inside portion @ x=0..576
+      draw_centered_string xdata, x, y - 7 - game.view_pos, 255 - @phase
     end
   end
   
@@ -80,16 +81,16 @@ class EffectObject < GameObject
     #   Inc(Phase, 25);
     #   if Phase = 250 then begin Kill; Exit; end;
     # end;
-  when ID_FX_BREAK, ID_FX_BREAK_2 then
-    @phase += 15
-    if @phase == 255 then
-      game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_HOLE + ((y / TILE_SIZE % 2 + x / TILE_SIZE) % 2) * 16
-      game.cast_objects ID_FX_BREAKING_PARTS, 20, 0, 5, 2,
-        ObjectDef::Rect.new(x / (TILE_SIZE/2) * (TILE_SIZE/2), y / (TILE_SIZE/2) * (TILE_SIZE/2), 24, 24)
-      emit_sound "break#{rand(2) + 1}"
-      kill
-      return
-    end
+    when ID_FX_BREAK, ID_FX_BREAK_2 then
+      @phase += 15
+      if @phase == 255 then
+        game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_HOLE + ((y / TILE_SIZE % 2 + x / TILE_SIZE) % 2) * 16
+        game.cast_objects ID_FX_BREAKING_PARTS, 20, 0, 5, 2,
+          ObjectDef::Rect.new(x / (TILE_SIZE/2) * (TILE_SIZE/2), y / (TILE_SIZE/2) * (TILE_SIZE/2), 24, 24)
+        emit_sound "break#{rand(2) + 1}"
+        kill
+        return
+      end
     # ID_FXFire: begin
     #   Inc(Phase, 15);
     #   if Phase = 255 then begin
@@ -98,23 +99,17 @@ class EffectObject < GameObject
     #     Kill; Exit;
     #   end;
     # end;
-    # ID_FXBreakingParts, ID_FXText, ID_FXRicochet, ID_FXLine, ID_FXBlood, ID_FXFlyingChain, ID_FXFlyingBlob: begin
-    #   Inc(PosX, VelX);
-    #   Inc(PosY, VelY);
-    #   Inc(Phase, 15);
-    #   if Phase = 255 then Kill;
-    # end;
-    # ID_FXSlowText: begin
-    #   Inc(PosX, VelX);
-    #   Inc(PosY, VelY);
-    #   Inc(Phase, 5);
-    #   if Phase = 255 then Kill;
-    # end;
-    # ID_FXFlyingCarolin: begin
-    #   Inc(PosX, VelX);
-    #   Inc(PosY, VelY);
-    #   if PosY < Data.ViewPos - Data.OptEffectsDistance then Kill;
-    # end;
+    when ID_FX_BREAKING_PARTS, ID_FX_TEXT, ID_FX_RICOCHET, ID_FX_LINE,
+        ID_FX_BLOOD, ID_FX_FLYING_CHAIN, ID_FX_FLYING_BLOB, ID_FX_SLOW_TEXT then
+      self.x += vx
+      self.y += vy
+      @phase += 15
+      @phase -= 10 if pmid == ID_FX_SLOW_TEXT
+      kill if @phase == 255
+    when ID_FX_FLYING_CAROLIN then
+      self.x += vx
+      self.y += vy
+      kill if y < game.view_pos - HEIGHT
     # ID_FXWaterBubble: begin
     #   Dec(PosY);
     #   if Random(4) = 0 then PosX := PosX - 1 + Random(3);

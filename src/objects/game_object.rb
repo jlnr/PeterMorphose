@@ -13,6 +13,11 @@ class GameObject
     @marked = true
   end
   
+  def emit_text string, speed = :fast
+    if speed == :slow then id = ID_FX_SLOW_TEXT else id = ID_FX_TEXT end
+    game.create_object(id, x, y - 10, string).vy = -1
+  end
+  
   def initialize game, pmid, x, y, xdata
     @game, @pmid, @x, @y, @xdata = game, pmid, x, y, xdata
     @vx = @vy = 0

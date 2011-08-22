@@ -462,8 +462,8 @@ class LivingObject < GameObject
         sound(:morph).play
         self.pmid = ID_PLAYER_FIGHTER + map_tile - TILE_MORPH_FIGHTER
         game.time_left = ObjectDefs[pmid].life unless pmid == ID_PLAYER
-        # TODO CastFX(8, 0, 0, PosX, PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
-        # if Data.OptShowTexts = 1 then TPMEffect.Create(Data.ObjEffects, Data.Defs[ID].Name + '!', ID_FXText, PosX, PosY - 10, 0, -1);
+        game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
+        emit_text "#{ObjectDefs[pmid].name}!"
         return
       end
     end
