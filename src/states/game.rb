@@ -253,6 +253,8 @@ class Game < State
   end
   
   def button_down id
+    return State.current = LevelSelection.new if id == Gosu::KbEscape
+    
     #     if Data.State in [State_Game, State_Paused, State_Dead] then begin
     #       if Data.State in [State_Game, State_Paused] then Log.Add('Level abgebrochen.');
     #       if QuickStart then Close else DXWaveList.Items[Sound_WooshBack].Play(False);

@@ -128,18 +128,18 @@ class GameObject
     end
     @@stuff_images[pmid - ID_OTHER_OBJECTS_MIN].draw x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode
     if pmid == ID_CAROLIN then
+    # TODO
     #   if Length(ExtraData) < 3 then DrawBMPText('Carolin', PosX - 31, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality)
     #                            else DrawBMPText(Copy(ExtraData, 3, Length(ExtraData) - 2), PosX - ((Length(ExtraData) - 2) * 9) div 2, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality);
     end
   end
   
   def fall
-    # // Wasserplatsch machen
-    # if InWater and not LastFrameInWater then begin
-    #   CastObjects(ID_FXWater, 5, -VelX div 2, -5, 3, Data.OptEffects, GetRect(1, 1), Data.ObjEffects);
-    #   DistSound(PosY, Sound_Water + Random(2), Data^);
-    # end;
-    # LastFrameInWater := InWater;
+    if in_water? and not @last_frame_in_water then
+      # TODO CastObjects(ID_FXWater, 5, -VelX div 2, -5, 3, Data.OptEffects, GetRect(1, 1), Data.ObjEffects);
+      emit_sound "water#{rand(2) + 1}"
+    end
+    @last_frame_in_water = in_water?
     
     # Gravity
     self.vy += 1 if (pmid > ID_PLAYER_MAX or game.fly_time_left == 0) and not in_water?

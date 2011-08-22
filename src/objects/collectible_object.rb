@@ -1,12 +1,22 @@
 class CollectibleObject < GameObject
   def update
-    # // Fallen + Tile abfragen
-    # if (not (ID in [ID_EdibleFish, ID_EdibleFish2])) and (Length(ExtraData) > 0) and (ExtraData[1] = '1') then begin Fall; CheckTile; end;
-    # // In Lava verbrennen
-    # if PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom > Data.Map.LavaPos then begin CastFX(2, 2, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects); Kill; DistSound(PosY, Sound_Shshsh, Data^); if ID = ID_Carolin then Data.State := State_Dead; end;
-    # // HHIIIIILFE RÄTET MISCH
-    # if (ID = ID_Carolin) and (Data.Frame mod 20 = 0) and (Random(4) = 0) then
-    #   DistSound(PosY, Sound_Help + Random(2), Data^);
+    if not [ID_EDIBLE_FISH, ID_EDIBLE_FISH_2].include? pmid and not xdata.nil? and xdata[1, 1] == '1' then
+      fall
+      check_tile
+    end
+    
+    # Burn in lava
+    if y + ObjectDef[pmid].rect.bottom > game.map.lava_pos then
+      # TODO CastFX(2, 2, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects);
+      kill
+      emit_sound :shshsh
+      # game.lose if pmid == ID_CAROLIN TODO
+    end
+    
+    if pmid == ID_CAROLIN and game.frame % 20 == 0 and rand(4) == 0 then
+      emit_sound "help#{rand(2) + 1}"
+    end
+    
     # // Süse fischli`z
     # if ID = ID_EdibleFish then begin
     #   if not InWater then begin
@@ -25,7 +35,10 @@ class CollectibleObject < GameObject
     #     if Blocked(Dir_Right) then ID := ID_EdibleFish;
     #   end;
     # end;
-    # 
+    
+    # Cannot be collected...
+    return if game.player.action >= ACT_DEAD
+    
     # // Eingesammelt werden, wenn Spieler lebt
     # if TPMLiving(Data.ObjPlayers.Next).Action >= Act_Dead then Exit;
     # if RectCollision(Data.ObjPlayers.Next.GetRect(2, 2)) then case ID of
