@@ -6,7 +6,6 @@ end
 require 'gosu'
 require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
-# TODO Player
 # TODO More Objects
 # TODO Game Logic
 # TODO Music
@@ -31,7 +30,7 @@ Dir.chdir File.expand_path("#{__FILE__}/../..")
 
 %w(const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection states/game
-   objects/object_def objects/game_object objects/living_object
+   objects/object_def objects/game_object objects/living_object objects/collectible_object
    ini_file level_info map).each { |fn| require_relative fn }
 
 # Not yet part of gosu-preview

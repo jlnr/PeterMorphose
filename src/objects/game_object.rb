@@ -1,7 +1,20 @@
-class GameObject < Struct.new(:game, :pmid, :x, :y, :xdata, :vx, :vy)
-  def initialize *args
-    super *args
+class GameObject
+  attr_reader :game, :pmid
+  attr_accessor :x, :y, :xdata, :vx, :vy
+  
+  def initialize game, pmid, x, y, xdata
+    @game, @pmid, @x, @y, @xdata = game, pmid, x, y, xdata
+    @vx = @vy = 0
     @last_frame_in_water = in_water?
+  end
+  
+  def self.create game, pmid, x, y, xdata
+    case pmid
+      when 0..ID_LIVING_MAX then LivingObject
+      when ID_OTHER_OBJECTS_MIN..ID_OTHER_OBJECTS_MAX then GameObject
+      when ID_COLLECTIBLE_MIN..ID_COLLECTIBLE_MAX then CollectibleObject
+      when ID_FX_MIN..ID_FX_MAX then EffectObject
+    end.new game, pmid, x, y, xdata
   end
   
   MAX_SOUND_DISTANCE = 500.0
@@ -84,7 +97,7 @@ class GameObject < Struct.new(:game, :pmid, :x, :y, :xdata, :vx, :vy)
     end
     
     # Get roasted by lava
-    if y + ObjectDefs[pmid].bottom > map.lava_pos then
+    if y + ObjectDef[pmid].bottom > map.lava_pos then
       # TODO CastFX(4, 4, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects);
       kill
       emit_sound :shshsh
@@ -321,7 +334,6 @@ procedure CastFX(SmokeNum, FlameNum, SparkNum, X, Y, Width, Height, XLvl, YLvl, 
 procedure CastObjects(ID, Number, XLvl, YLvl, Rnd, Level: Integer; Rect: TRect; After: TPMObjBreak);
 procedure Explosion(X, Y, Radius: Integer; Data: TPMData; DoScore: Boolean);
 procedure DistSound(Y, Sound: Integer; Data: TPMData);
-function CreateObject(DataObj: TPMData; XData: string; InitID, X, Y, VX, VY: Integer): TPMObject;
 function FindObject(StartObj, EndObj: TPMObject; MinID, MaxID: Integer; Rect: TRect): TPMObject;
 function FindLiving(StartObj, EndObj: TPMObject; MinID, MaxID, MinAction, MaxAction: Integer; Rect: TRect): TPMLiving;
 function LaunchProjectile(X, Y, Direction: Integer; TargetMinObj, TargetMaxObj, FXObj: TPMObject; Data: TPMData): TPMObject;
@@ -620,20 +632,6 @@ begin
       end;
     end;
 end;
-
-function CreateObject(DataObj: TPMData; XData: string; InitID, X, Y, VX, VY: Integer): TPMObject;
-begin case InitID of
-  0..ID_LivingMax:
-    Result := TPMLiving.Create(DataObj.ObjEnemies, XData, InitID, X, Y, VX, VY, DataObj.Defs[InitID].Life, 0, Random(2));
-  ID_OtherObjectsMin..ID_OtherObjectsMax:
-    Result := TPMObject.Create(DataObj.ObjOther, XData, InitID, X, Y, VX, VY);
-  ID_CollectibleMin..ID_CollectibleMax:
-    Result := TPMCollectible.Create(DataObj.ObjCollectibles, XData, InitID, X, Y, VX, VY);
-  ID_FXMin..ID_FXMax:
-    Result := TPMEffect.Create(DataObj.ObjEffects, XData, InitID, X, Y, VX, VY);
-  else
-    Result := nil;
-end; end;
 
 function FindObject(StartObj, EndObj: TPMObject; MinID, MaxID: Integer; Rect: TRect): TPMObject;
 var

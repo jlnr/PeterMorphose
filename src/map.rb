@@ -1,4 +1,6 @@
 class Map
+  attr_reader :level_top, :lava_pos
+  
   def inspect
     "#<Map>"
   end
@@ -37,7 +39,11 @@ class Map
   end
   
   def [](x, y)
-    return @tiles[y * TILES_X + x]
+    if x.between? 0, TILES_X - 1 and y.between? 0, TILES_Y - 1 then
+      @tiles[y * TILES_X + x]
+    else
+      0x70
+    end
   end
   
   def []=(x, y, tile)

@@ -56,9 +56,9 @@ class Game < State
     
     @map = Map.new(self, level_info.ini_file)
     
-    @player = LivingObject.new(self, ID_PLAYER,
-      (level_info.ini_file['Objects', 'PlayerX'] || 288).to_i,
-      (level_info.ini_file['Objects', 'PlayerY'] || 24515).to_i)
+    player_x = (level_info.ini_file['Objects', 'PlayerX'] || 288).to_i
+    player_y = (level_info.ini_file['Objects', 'PlayerY'] || 24515).to_i
+    @player = LivingObject.new(self, ID_PLAYER, player_x, player_y, nil)
     @player.vx = (level_info.ini_file['Objects', 'PlayerVX'] || 0).to_i
     @player.vy = (level_info.ini_file['Objects', 'PlayerVY'] || 0).to_i
     @player.life = (level_info.ini_file['Objects', 'PlayerLife'] || ObjectDef[ID_PLAYER].life).to_i
@@ -66,41 +66,15 @@ class Game < State
     @player.action = ACT_STAND
     @objects << @player
     
-=begin
-      // Spieler einrichten
-      with TPMLiving.Create(
-                            Data.ObjPlayers,
-                            '',
-                            Level_pml.ReadInteger('Objects', 'PlayerID', ID_Player),
-                            Level_pml.ReadInteger('Objects', 'PlayerX',   288),
-                            Level_pml.ReadInteger('Objects', 'PlayerY', 24515),
-                            Level_pml.ReadInteger('Objects', 'PlayerVX', 0),
-                            Level_pml.ReadInteger('Objects', 'PlayerVY', 0),
-                            Level_pml.ReadInteger('Objects', 'PlayerLife', Theme_def.ReadInteger('ObjLife', '00', 8)),
-                            Act_Stand,
-                            Level_pml.ReadInteger('Objects', 'PlayerDirection', Random(2))
-                            )
-      do Log.Add('Spieler als ' + Data.Defs[ID].Name + ' bei ' + IntToStr(PosX) + ', ' + IntToStr(PosY) + ' platziert.');
-      Log.Add('Es ist ' + TimeToStr(Time) + '.');
-
-      // Zeit setzen, wenn Spieler Spezialpeter ist
-      if Data.ObjPlayers.Next.ID = ID_Player then Data.TimeLeft := 0 else Data.TimeLeft := Data.Defs[Data.ObjPlayers.Next.ID].Life;
-
-      // Neue Objekte laden
-      LoopX := -1;
-      while True do begin
-        Inc(LoopX);
-        ObjString := Level_pml.ReadString('Objects', IntToStr(LoopX), '');
-        if ObjString <> '' then
-          CreateObject(Data,
-                       Level_pml.ReadString('Objects', IntToStr(LoopX) + 'Y', ''),
-                       StrToIntDef('$' + Copy(ObjString, 1, 2), 0),
-                       StrToIntDef('$' + Copy(ObjString, 4, 3), 288),
-                       StrToIntDef('$' + Copy(ObjString, 8, 4), 0),
-                       StrToIntDef('$' + Copy(ObjString, 13, 5), 0),
-                       StrToIntDef('$' + Copy(ObjString, 19, 5), 0)) else Break;
-      end;
-=end
+    # If the player starts as a Special Peter, give him some time
+    @time_left = @player.pmid == ID_PLAYER ? 0 : ObjectDef[@player.pmid].life
+    
+    i = 0
+    while obj_string = level_info.ini_file['Objects', i] do
+      pmid, x, y = obj_string.split('|').map { |str| str.to_i(16) }
+      GameObject.create self, pmid, x, y, level_info.ini_file['Objects', "#{x}Y"]
+      i += 1
+    end
   end
   
   def update
@@ -169,9 +143,8 @@ class Game < State
     #           CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
     #         end;
     #       end;
-    #       if Data.InvTimeLeft > 0 then Dec(Data.InvTimeLeft);
-    #       // Bestimmen, welcher Teil des Levels angezeigt wird
-    #       Data.ViewPos := Max(Min(Min(Data.Map.LavaPos - 432, Data.ObjPlayers.Next.PosY - 240), 24096), Data.Map.LevelTop);
+    @inv_time_left -= 1 if @inv_time_left > 0
+    @view_pos = [[map.lava_pos - 432, @player.y - 240, 24096].min, map.level_top].max
     #     end;
 
     # if Data.State = State_Game then begin
