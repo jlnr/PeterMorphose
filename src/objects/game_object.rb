@@ -116,20 +116,21 @@ class GameObject
   end
   
   def draw
-    case pmid
-    when ID_FIREWALL_1, ID_FIREWALL_2, ID_FIRE then
-      #   Data.Images[Image_Stuff].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 128 + StrToIntDef(ExtraData, 128));
-      # ID_HelpArrow:
-      #   Data.Images[Image_Stuff].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 128 + ((Data.Frame div 8) mod 2) * 64);
-      # ID_Speed, ID_Jump, ID_Fly:
-      #   Data.Images[Image_Stuff].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - Data.ViewPos - 11, 24, 24), ID - ID_OtherObjectsMin, 255);
-    # else
-    #   Data.Images[Image_Stuff].Draw(Data.DXDraw.Surface, PosX - 11, PosY - Data.ViewPos - 11, ID - ID_OtherObjectsMin);
-    end;
-    # if ID = ID_Carolin then begin
+    @@stuff_images ||= Gosu::Image.load_tiles 'media/stuff.bmp', -16, -3
+    color = 0xffffffff
+    mode = :default
+    
+    if [ID_FIREWALL_1, ID_FIREWALL_2, ID_FIRE].include? pmid then
+      color = Gosu::Color.new(127 + (xdata && xdata.to_i || 128), 255, 255, 255)
+      mode = :additive
+    elsif pmid == ID_HELP_ARROW then
+      color = Gosu::Color.new(127 + (game.frame / 8 % 2) * 64, 255, 255, 255)
+    end
+    @@stuff_images[pmid - ID_OTHER_OBJECTS_MIN].draw x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode
+    if pmid == ID_CAROLIN then
     #   if Length(ExtraData) < 3 then DrawBMPText('Carolin', PosX - 31, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality)
     #                            else DrawBMPText(Copy(ExtraData, 3, Length(ExtraData) - 2), PosX - ((Length(ExtraData) - 2) * 9) div 2, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality);
-    # end;
+    end
   end
   
   def fall
