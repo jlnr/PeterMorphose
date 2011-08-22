@@ -18,17 +18,19 @@ class LivingObject < GameObject
     
     case pmid
     when ID_PLAYER..ID_PLAYER_BOMBER then
-      # TODO wings
-      # if (Data.FlyTimeLeft > 0) then case Direction of
-      #   Dir_Left: begin
-      #     Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 18, PosY - 12 - Data.ViewPos, 18, 24), 38 + (Data.Frame div 2) mod 4, Min(Data.FlyTimeLeft * 2 + 16, 255));
-      #     Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX, PosY - 12 - Data.ViewPos, 24, 24), 42 + (Data.Frame div 2) mod 4, Min(Data.FlyTimeLeft * 2 + 16, 255));
-      #   end;
-      #   Dir_Right: begin
-      #     Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 24, PosY - 12 - Data.ViewPos, 24, 24), 38 + (Data.Frame div 2) mod 4, Min(Data.FlyTimeLeft * 2 + 16, 255));
-      #     Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX, PosY - 12 - Data.ViewPos, 18, 24), 42 + (Data.Frame div 2) mod 4, Min(Data.FlyTimeLeft * 2 + 16, 255));
-      #   end;
-      # end;
+      # Animated wings while flying
+      if game.fly_time_left > 0 then
+        color = alpha([game.fly_time_left * 2 + 16, 255].min)
+        case player.direction
+          when DIR_LEFT then
+            EffectObject.images[38 + (game.frame / 2) % 4].draw x - 18, y - 12 - game.view_pos, 0.75, 1, color, :additive
+            EffectObject.images[42 + (game.frame / 2) % 4].draw x,      y - 12 - game.view_pos, 1.00, 1, color, :additive
+          when DIR_RIGHT then
+            EffectObject.images[38 + (game.frame / 2) % 4].draw x - 24, y - 12 - game.view_pos, 1.00, 1, color, :additive
+            EffectObject.images[42 + (game.frame / 2) % 4].draw x,      y - 12 - game.view_pos, 0.75, 1, color, :additive
+        end
+      end
+      # Transparency while invincible
       if game.inv_time_left == 0 or type = ID_PLAYER_BERSERKER then
         color = 0xffffffff
       else
@@ -47,13 +49,49 @@ class LivingObject < GameObject
     end
   end
   
+  def hurt from_explosion
+    return if action == ACT_DEAD or pmid == ID_PLAYER_BERSERKER
+    damage = 3
+    damage -= 1 if pmid == ID_PLAYER_FIGHTER
+    if pmid <= ID_PLAYER_MAX then
+      if game.inv_time_left > 0 then
+        damage = from_explosion ? 1 : 0
+      end
+      if from_explosion or game.inv_time_left == 0 then
+        game.inv_time_left = [25, game.inv_time_left].max
+      end
+    end
+    self.life -= damage
+    
+    if life < 1 then
+      self.action = ACT_DEAD
+      self.life = 0
+    else
+      self.action = ACT_PAIN_1 + rand(2)
+    end
+    case pmid
+      when ID_PLAYER..ID_PLAYER_MAX then
+        sound(:player_arg).play
+      when ID_ENEMY..ID_ENEMY_MAX then
+        emit_sound "arg#{rand(2) + 1}"
+        # TODO or Death sound
+    end
+    
+    # if Data.OptBlood = 1 then CastObjects(ID_FXBlood, ToDoDamage * 8, 0, 2, 2, Data.OptEffects, GetRect(0, 0), Data.ObjEffects);
+    
+    if pmid == ID_ENEMY_BOMBER and action == ACT_DEAD then
+      kill
+      game.cast_fx 10, 30, 10, x, y, 10, 10, 0, -10, 5
+    end
+  end
+  
   def update
     # Runterfallen
     fall if action < ACT_INV_UP
-
+    
     # Roasted by lava
     if y + ObjectDef[pmid].rect.bottom > game.map.lava_pos then
-      # ... CastFX(8, 8, 0, PosX, PosY, 16, 16, 0, -4, 1, Data.OptEffects, Data.ObjEffects);
+      cast_fx 8, 8, 0, x, y, 16, 16, 0, -4, 1
       kill
       emit_sound :shshsh
       if action != ACT_DEAD then
@@ -65,8 +103,8 @@ class LivingObject < GameObject
     end
     
     # Ascending staircase
+    except_open_doors = (0..TILE_STAIRS_UP_LOCKED).to_a + [TILE_STAIRS_DOWN_LOCKED]
     if action == ACT_INV_UP then
-      except_open_doors = (0..TILE_STAIRS_UP_LOCKED).to_a + [TILE_STAIRS_DOWN_LOCKED]
       emit_sound :stairs_steps if rand(8) == 0
       2.times do
         tile_below = game.map[x / TILE_SIZE, (y + 12) / TILE_SIZE]
@@ -85,14 +123,26 @@ class LivingObject < GameObject
       else
         self.x = self.x / TILE_SIZE * TILE_SIZE + TILE_SIZE / 2
       end
+    elsif action == ACT_INV_DOWN then
+      emit_sound :stairs_steps if rand(7) == 0
+      3.times do
+        tile_below = game.map[x / TILE_SIZE, (y + 12) / TILE_SIZE]
+        tile_above = game.map[x / TILE_SIZE, (y - 9) / TILE_SIZE]
+        if except_open_doors.include? tile_below or except_open_doors.include? tile_above then
+          self.y += 2
+        else
+          self.x = self.x / TILE_SIZE * TILE_SIZE + TILE_SIZE / 2 - 1
+        end
+      end
+      tile_below = game.map[x / TILE_SIZE, (y + 12) / TILE_SIZE]
+      tile_above = game.map[x / TILE_SIZE, (y - 9) / TILE_SIZE]
+      if except_open_doors.include? tile_below or except_open_doors.include? tile_above then
+        self.y += 2
+        return
+      else
+        self.x = self.x / TILE_SIZE * TILE_SIZE + TILE_SIZE / 2
+      end
     end
-    # if Action = Act_InvDown then begin
-    #   if Random(7) = 0 then DistSound(PosY, Sound_StairsRnd, Data^);
-    #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then Inc(PosY, 2) else PosX := PosX div 24 * 24 + 11;
-    #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then Inc(PosY, 2) else PosX := PosX div 24 * 24 + 11;
-    #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then Inc(PosY, 2) else PosX := PosX div 24 * 24 + 11;
-    #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then begin Inc(PosY, 2); Exit; end else PosX := PosX div 24 * 24 + 12;
-    # end;
     
     check_tile if action != ACT_DEAD
     
@@ -103,12 +153,16 @@ class LivingObject < GameObject
     
     return if action == ACT_DEAD
     
-    # // In Wasser blubbern
-    # if InWater then begin
-    #   if (Random(30) = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXWaterbubble, PosX, PosY - 7, 0, 0);
-    #   if ID = ID_PlayerBerserker then begin ID := ID_Player; CastFX(8, 0, 0, PosX, PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects); end;
-    #   if ID = ID_EnemyBerserker then begin ID := ID_Enemy; CastFX(8, 0, 0, PosX, PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects); end;
-    # end;
+    if in_water? then
+      game.create_object ID_FX_WATER_BUBBLE, x, y - 7, nil if rand(30) == 0
+      if pmid == ID_PLAYER_BERSERKER then
+        self.pmid = ID_PLAYER
+        game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
+      elsif pmid == ID_ENEMY_BERSERKER then
+        self.pmid = ID_ENEMY
+        game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
+      end
+    end
     
     # // Türen aufschließen
     # if (ID <= ID_PlayerMax) and (Data.Keys > 0) then with Data^ do begin
@@ -542,45 +596,6 @@ begin
   end;
   // B1U7F15CH r0lz
   if Data.OptBlood = 1 then CastObjects(ID_FXBlood, 8, 0, 2, 2, Data.OptEffects, GetRect(0, 0), Data.ObjEffects);
-  // Kamikazehonks: Explodieren
-  if (ID = ID_EnemyBomber) and (Action = Act_Dead) then begin
-    Kill;
-    CastFX(10, 30, 10, PosX, PosY, 10, 10, 0, -10, 5, Data.OptEffects, Data.ObjEffects);
-  end;
-end;
-
-procedure TPMLiving.Hurt(Explosion: Boolean);
-var
-  ToDoDamage: Integer;
-begin
-  // Tote und Brenntypen verprügeln bringtz nich
-  if (Action = Act_Dead) or (ID = ID_PlayerBerserker) then Exit;
-  // Normaler Schaden: 3 Punkte
-  ToDoDamage := 3;
-  // Ritter kommen selten mit dem Schrecken davon
-  if (ID = ID_PlayerFighter) and (Random(6) = 0) then Dec(ToDoDamage);
-  // Keinen Spieler hauen, wenn er noch unverwundbar ist || Unverwundbar machen
-  if ID <= ID_PlayerMax then begin
-    if Data.InvTimeLeft > 0 then ToDoDamage := Integer(Explosion);
-    if Explosion or (Data.InvTimeLeft = 0) then Data.InvTimeLeft := Max(25, Data.InvTimeLeft);
-  end;
-  // Immer druff da
-  Dec(Life, ToDoDamage);
-  // Action setzen
-  if Life < 1 then begin
-    Action := Act_Dead; Life := 0;
-    if ID <= ID_PlayerMax then Data.Waves.Items[Sound_PlayerArg].Play(False);
-    if (ID in [ID_Enemy..ID_EnemyMax]) and (Data.OptBlood = 0)
-      then DistSound(PosY, Sound_Arg + Random(2), Data^);
-    if (ID in [ID_Enemy..ID_EnemyMax]) and (Data.OptBlood = 1)
-      then DistSound(PosY, Sound_Death, Data^);
-  end else begin
-    Action := Act_Pain1 + Random(2);
-    if (ID <= ID_PlayerMax) and (ToDoDamage > 0) then Data.Waves.Items[Sound_PlayerArg].Play(False);
-    if ID in [ID_Enemy..ID_EnemyMax] then DistSound(PosY, Sound_Arg + Random(2), Data^);
-  end;
-  // B1U7F15CH r0lz
-  if Data.OptBlood = 1 then CastObjects(ID_FXBlood, ToDoDamage * 8, 0, 2, 2, Data.OptEffects, GetRect(0, 0), Data.ObjEffects);
   // Kamikazehonks: Explodieren
   if (ID = ID_EnemyBomber) and (Action = Act_Dead) then begin
     Kill;

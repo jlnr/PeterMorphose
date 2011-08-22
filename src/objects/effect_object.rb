@@ -5,15 +5,19 @@ class EffectObject < GameObject
     @phase = 0
   end
   
+  def self.images
+    @images ||= Gosu::Image.load_tiles 'media/effects.bmp', -7, -7
+  end
+  
   def draw
-    @@effect_images ||= Gosu::Image.load_tiles 'media/effects.bmp', -7, -7
+    
     case pmid
     when ID_FX_SMOKE then
-      @@effect_images[[ 0, @phase -  1].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
+      EffectObject.images[[ 0, @phase -  1].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
     when ID_FX_FLAME then
-      @@effect_images[[ 7, @phase +  6].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(160), :additive
+      EffectObject.images[[ 7, @phase +  6].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(160), :additive
     when ID_FX_SPARK then
-      @@effect_images[[14, @phase + 13].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
+      EffectObject.images[[14, @phase + 13].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
       # ID_FXBubble:
       #   Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), Max(21, Phase + 20), 192);
       # ID_FXRicochet:
@@ -23,7 +27,7 @@ class EffectObject < GameObject
       # ID_FXBlockerParts:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 29, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
     when ID_FX_BREAK, ID_FX_BREAK_2 then
-      @@effect_images[30 + (ID_FX_BREAK_2 - pmid)].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(@phase) # TODO :subtractive
+      EffectObject.images[30 + (ID_FX_BREAK_2 - pmid)].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(@phase) # TODO :subtractive
       # ID_FXBreakingParts:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 32, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
       # ID_FXBlood:
@@ -31,9 +35,9 @@ class EffectObject < GameObject
       # ID_FXFire:
       #   Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX, PosY - Data.ViewPos, 24, 24), 34, Phase);
     when ID_FX_FLYING_CAROLIN then
-      @@effect_images[35].draw x, y - game.view_pos, Z_EFFECTS
+      EffectObject.images[35].draw x, y - game.view_pos, Z_EFFECTS
     when ID_FX_FLYING_CHAIN then
-      @@effect_images[36].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10 % 360, 0.5, 0.5, 1, 1, alpha(255 - @phase)
+      EffectObject.images[36].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10 % 360, 0.5, 0.5, 1, 1, alpha(255 - @phase)
       # ID_FXFlyingBlob:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 37, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
       # ID_FXWaterBubble:
@@ -41,7 +45,7 @@ class EffectObject < GameObject
       # ID_FXWater:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 47, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
     when ID_FX_SPARKLE then
-      @@effect_images[48].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(255 - @phase), :additive
+      EffectObject.images[48].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(255 - @phase), :additive
     when ID_FX_TEXT, ID_FX_SLOW_TEXT then
       # TODO: Force text inside portion @ x=0..576
       draw_centered_string xdata, x, y - 7 - game.view_pos, 255 - @phase

@@ -1,5 +1,5 @@
 class Game < State
-  attr_reader :player, :map
+  attr_reader :player, :map, :objects
   attr_reader :view_pos, :frame
   attr_accessor :time_left, :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
   attr_accessor :score, :keys, :stars, :ammo, :bombs
@@ -31,9 +31,10 @@ class Game < State
     @map = Map.new(self, level_info.ini_file)
     @stars_goal = (level_info.ini_file['Map', 'StarsGoal'] || 100).to_i
     
+    player_id = (level_info.ini_file['Objects', 'PlayerID'] || 0).to_i
     player_x = (level_info.ini_file['Objects', 'PlayerX'] || 288).to_i
     player_y = (level_info.ini_file['Objects', 'PlayerY'] || 24515).to_i
-    @player = LivingObject.new(self, ID_PLAYER, player_x, player_y, nil)
+    @player = LivingObject.new(self, player_id, player_x, player_y, nil)
     player.vx = (level_info.ini_file['Objects', 'PlayerVX'] || 0).to_i
     player.vy = (level_info.ini_file['Objects', 'PlayerVY'] || 0).to_i
     player.life = (level_info.ini_file['Objects', 'PlayerLife'] || ObjectDef[ID_PLAYER].life).to_i

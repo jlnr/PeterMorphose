@@ -1,6 +1,6 @@
 class GameObject
-  attr_reader :game, :pmid
-  attr_accessor :x, :y, :xdata, :vx, :vy
+  attr_reader :game
+  attr_accessor :pmid, :x, :y, :xdata, :vx, :vy
   
   def marked?
     @marked
@@ -39,17 +39,21 @@ class GameObject
   
   def update
     if [ID_FIREWALL_1, ID_FIREWALL_2, ID_FIRE].include? pmid then
-      #   if PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom - 11 > Data.Map.LavaPos then begin CastFX(4, 4, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects); Kill; DistSound(PosY, Sound_Shshsh, Data^); end;
-      #   ExtraData := IntToStr(Abs((Round(Data.Frame * 7.5) mod 256) - 128));
-      #   BurnObj := Data.ObjEnemies;
-      #   while BurnObj <> Data.ObjEffects do begin
-      #     if PointInRect(Point(BurnObj.PosX, BurnObj.PosY), GetRect(0, 0)) and (BurnObj.ID <> ID_EnemyBerserker) and not (TPMLiving(BurnObj).Action in [Act_Dead, Act_InvUp, Act_InvDown]) then begin
-      #       TPMLiving(BurnObj).Hurt(False);
-      #       CastFX(Random(3), Random(2), 0, PosX, PosY, 12, 12, 0, 0, 2, Data.OptEffects, Data.ObjEffects);
-      #     end;
-      #     BurnObj := BurnObj.Next;
-      #   end;
-      return
+      if y + ObjectDef[pmid].rect.bottom - 11 > game.map.lava_pos then
+        game.cast_fx 4, 4, 0, x, y, 16, 16, 0, -3, 1
+        kill
+        emit_sound(:shshsh)
+      else
+        self.xdata = ((game.frame * 7.5).to_i % 256 - 128).abs.to_s
+        rect = self.rect
+        game.objects.each do |obj|
+          if obj.pmid <= ID_LIVING_MAX and obj.pmid != ID_ENEMY_BERSERKER and rect.include? obj then
+            obj.hurt(false)
+            game.cast_fx rand(3), rand(2), 0, x, y, 12, 12, 0, 0, 2
+          end
+        end
+        return
+      end
     end
     
     # Hint arrows
