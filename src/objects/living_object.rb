@@ -360,12 +360,11 @@ class LivingObject < GameObject
     end;
     
     if pmid == ID_ENEMY_GUN and action == ACT_ACTION_5 then
-      #   if PosX <= Data.ObjPlayers.Next.PosX then TempDir := Dir_Right else TempDir := Dir_Left;
-      #   TargetLiv := TPMLiving(LaunchProjectile(PosX, PosY + 2, TempDir, Data.ObjPlayers, Data.ObjEffects, Data.ObjEffects, Data^));
-      #   if TargetLiv <> nil then begin
-      #     TargetLiv.Hit;
-      #     TargetLiv.Fling(3 * RealDir(TempDir), -3, 1, True, True);
-      #   end;
+      shoot_dir = game.player.x < x ? DIR_LEFT : DIR_RIGHT
+      if target = game.launch_projectile(x, y + 2, shoot_dir, ID_PLAYER, ID_PLAYER_MAX) then
+        target.hit
+        target.fling 3 * shoot_dir.dir_to_vx, -3, 1, true, true
+      end
     end
     
     # "AI"
@@ -398,16 +397,16 @@ class LivingObject < GameObject
         self.vx = ObjectDef[pmid].speed * 2 * direction.dir_to_vx
       end
       
-      # Shoot player
-      # if pmid == ID_ENEMY_GUN and 
-      #   // Spieler in Sicht, TOTSNIPEX0RN !!!11
-      #   if (ID = ID_EnemyGun) and PointInRect(Point(Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY), GetRect(320, 1)) and (TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead)then begin
-      #     Target := 1;
-      #     for Loop := 0 to Abs(Data.ObjPlayers.Next.PosX - PosX) div 24 do
-      #       if Data.Map.Solid(Loop * 24 + Min(Data.ObjPlayers.Next.PosX, PosX), PosY) then Target := 0;
-      #     if Target = 1 then begin Action := Act_Action1; Exit; end;
-      #   end;
+      # Shoot player if line of sight is free
+      if pmid == ID_ENEMY_GUN and game.player.action < ACT_DEAD and
+         rect(320, 1).include? game.player then
+        tiles_to_check = (game.player.x - x).abs / TILE_SIZE
+        if (0..tiles_to_check).none? { |i| game.map.solid?(i * TILE_SIZE + [game.player.x, x].min, y) } then
+          self.action = ACT_ACTION_1
+        end
+      end
       
+      # Collide with player while running
       if game.player.action < ACT_PAIN_1 and collide_with? game.player.rect(1, -1) then
         if pmid == ID_ENEMY_BOMBER then
           game.player.hurt(true)
@@ -422,20 +421,20 @@ class LivingObject < GameObject
       end
     end
     
-    # // Spieler auch im Sprung umrempeln
-    # if (ID > ID_PlayerMax) and (Action in [Act_Jump, Act_Land]) and RectCollision(Data.ObjPlayers.Next.GetRect(0, -1))
-    #   and not (TPMLiving(Data.ObjPlayers.Next).Action in [Act_Pain1, Act_Pain2, Act_Dead, Act_InvUp, Act_InvDown]) then begin
-    #     if ID = ID_EnemyBomber then TPMLiving(Data.ObjPlayers.Next).Hurt(True)
-    #                            else TPMLiving(Data.ObjPlayers.Next).Hit;
-    #     Data.ObjPlayers.Next.Fling(8 * RealDir(Direction), -4, 0, True, True);
-    #     Fling(-7 * RealDir(Direction), 4, 1, True, False);
-    #     if ID = ID_EnemyBomber then begin
-    #       Kill;
-    #       CastFX(10, 30, 10, PosX, PosY, 10, 10, 0, -10, 5, Data.OptEffects, Data.ObjEffects);
-    #     end;
-    #     Exit;
-    #   end;
-    # 
+    # Collide with player while airborne
+    if pmid >= ID_ENEMY and [ACT_JUMP, ACT_LAND].include? action and
+       collide_with? game.player.rect(0, -1) then
+      if pmid == ID_ENEMY_BOMBER then
+        game.player.hurt(true)
+        game.cast_fx 10, 30, 10, x, y, 10, 0, -10, 5
+        kill
+      else
+        game.player.hit
+        fling -6 * direction.dir_to_vx, -2, 0, true, false
+      end
+      game.player.fling 8 * direction.dir_to_vx, -3, 0, true, true
+      return
+    end
     
     # Fly
     if pmid <= ID_PLAYER_MAX and game.fly_time_left > 0 and not (ACT_ACTION_1..ACT_ACTION_5).include? action then
