@@ -78,7 +78,7 @@ class LivingObject < GameObject
         dir = direction
       end
       @@enemy_images ||= Gosu::Image.load_tiles 'media/enemies.bmp', -ACT_NUM, -10
-      @@enemy_images[ACT_NUM * (direction + (pmid - ID_ENEMY) * 2) + action].draw x - 11, y - 11 - game.view_pos, 0
+      @@enemy_images[ACT_NUM * (dir + (pmid - ID_ENEMY) * 2) + action].draw x - 11, y - 11 - game.view_pos, 0
     end
   end
   
@@ -359,7 +359,8 @@ class LivingObject < GameObject
       self.direction = DIR_RIGHT if vx > 0
     end;
     
-    if pmid == ID_ENEMY_GUN and action == ACT_ACTION_5 then
+    if pmid == ID_ENEMY_GUN and action == ACT_ACTION_4 then
+      self.action = ACT_ACTION_5 # TODO this was better before?!
       shoot_dir = game.player.x < x ? DIR_LEFT : DIR_RIGHT
       if target = game.launch_projectile(x, y + 2, shoot_dir, ID_PLAYER, ID_PLAYER_MAX) then
         target.hit

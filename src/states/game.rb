@@ -14,8 +14,7 @@ class Game < State
   end
   
   def initialize level_info
-    @@song ||= Gosu::Song.new('media/game.ogg')
-    @@song.play(true)
+    song(:game).play
     
     @view_pos = TILES_Y * TILE_SIZE - HEIGHT # TODO
     

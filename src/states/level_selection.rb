@@ -9,7 +9,7 @@ class LevelSelection < State
     @selection = 0
     @levels = Dir.glob('levels/*.pml').map(&LevelInfo.method(:new)).sort
     
-    Gosu::Song.current_song.stop if Gosu::Song.current_song
+    song(:menu).play
   end
   
   def draw

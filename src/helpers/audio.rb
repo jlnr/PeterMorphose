@@ -1,8 +1,7 @@
 SONGS, SAMPLES = {}, {}
 
 def song(name)
-  # Music stubbed out, not yet converted
-  SONGS[name.to_sym] ||= Struct.new(:play).new #Gosu::Song.new("media/#{name}.ogg")
+  SONGS[name.to_sym] ||= Gosu::Song.new("media/#{name}.ogg")
 end
 
 def sound(name)

@@ -336,16 +336,18 @@ class GameObject
       #   if Self.ClassType = TPMLiving then
       #     TPMLiving(Self).Action := Act_Jump;
       # end;
-      # // Stacheln
-      # Tile_Spikes:
-      #   if (ID <= ID_LivingMax) and (((PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom) mod 24) > 8) then begin
-      #     TPMLiving(Self).Hit; VelY := -10; VelX := 0;
-      #   end;
-      # // Stacheln an der Decke
-      # Tile_SpikesTop:
-      #   if (ID <= ID_LivingMax) and (((PosY + Data.Defs[ID].Rect.Top) mod 24) < 14) then begin
-      #     TPMLiving(Self).Hit; VelY := 5; VelX := 0;
-      #   end;
+    when TILE_SPIKES then
+      if pmid <= ID_LIVING_MAX and (y + ObjectDef[pmid].rect.bottom) % 24 > 8 then
+        hit
+        self.vx = 0
+        self.vy = -10
+      end
+    when TILE_SPIKES_TOP then
+      if pmid <= ID_LIVING_MAX and (y + ObjectDef[pmid].rect.bottom) % 24 < 14 then
+        hit
+        self.vx = 0
+        self.vy = 5
+      end
     end
   end
   
