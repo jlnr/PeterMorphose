@@ -17,6 +17,80 @@ class GameObject < Struct.new(:game, :pmid, :x, :y, :xdata, :vx, :vy)
     ALL_WATER_TILES.include? game.map[x / TILE_SIZE, y / TILE_SIZE]
   end
   
+  def update
+    if [ID_FIREWALL_1, ID_FIREWALL_2, ID_FIRE].include? pmid then
+      #   if PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom - 11 > Data.Map.LavaPos then begin CastFX(4, 4, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects); Kill; DistSound(PosY, Sound_Shshsh, Data^); end;
+      #   ExtraData := IntToStr(Abs((Round(Data.Frame * 7.5) mod 256) - 128));
+      #   BurnObj := Data.ObjEnemies;
+      #   while BurnObj <> Data.ObjEffects do begin
+      #     if PointInRect(Point(BurnObj.PosX, BurnObj.PosY), GetRect(0, 0)) and (BurnObj.ID <> ID_EnemyBerserker) and not (TPMLiving(BurnObj).Action in [Act_Dead, Act_InvUp, Act_InvDown]) then begin
+      #       TPMLiving(BurnObj).Hurt(False);
+      #       CastFX(Random(3), Random(2), 0, PosX, PosY, 12, 12, 0, 0, 2, Data.OptEffects, Data.ObjEffects);
+      #     end;
+      #     BurnObj := BurnObj.Next;
+      #   end;
+      return
+    end
+    
+    # Hint arrows
+    if pmid == ID_HELP_ARROW and
+      false then #PointInRect(Point(Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY), Bounds(PosX - 11, PosY + 12, 24, 48)) then Kill;
+      kill
+    end
+    
+    # Fish
+    # if ID = ID_Fish then begin
+    #   if not InWater then begin Fall; CheckTile; end else begin
+    #     Dec(PosX, 2);
+    #     if Random(30) = 0 then TPMEffect.Create(Data.ObjEffects, '', ID_FXWaterbubble, PosX, PosY - 3, 0, 0);
+    #     if Blocked(Dir_Left) then ID := ID_Fish2;
+    #   end;
+    # end else if ID = ID_Fish2 then begin
+    #   if not InWater then begin Fall; CheckTile; end else begin
+    #     Inc(PosX, 2);
+    #     if Random(30) = 0 then TPMEffect.Create(Data.ObjEffects, '', ID_FXWaterbubble, PosX, PosY - 3, 0, 0);
+    #     if Blocked(Dir_Right) then ID := ID_Fish;
+    #   end;
+    # end;
+    
+    # Fused bomb
+    # if ID = ID_FusingBomb then begin
+    #   // Nach ner Weile hochgehen
+    #   ExtraData := IntToStr(StrToIntDef(ExtraData, 0) + 1);
+    #   if ExtraData = '25' then begin
+    #     Kill;
+    #     Explosion(PosX, PosY, 50, Data^, True);
+    #     Exit;
+    #   end;
+    #   // Bei Gegnerkontakt auch
+    #   BurnObj := Data.ObjEnemies;
+    #   while BurnObj <> Data.ObjPlayers do begin
+    #     if BurnObj.RectCollision(GetRect(1, 1)) and not (TPMLiving(BurnObj).Action in [Act_Dead, Act_InvUp, Act_InvDown]) then begin
+    #       TPMLiving(BurnObj).Hurt(True);
+    #       Kill;
+    #       Explosion(PosX, PosY, 50, Data^, True);
+    #       Exit;
+    #     end;
+    #     BurnObj := BurnObj.Next;
+    #   end;
+    #   // Fallen und so
+    #   Fall; CheckTile;
+    # end;
+    
+    # Rocks fall down
+    if (ID_TRASH..ID_TRASH_4).include? pmid then
+      fall
+      check_tile
+    end
+    
+    # Get roasted by lava
+    if y + ObjectDefs[pmid].bottom > map.lava_pos then
+      # TODO CastFX(4, 4, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects);
+      kill
+      emit_sound :shshsh
+    end
+  end
+  
   def fall
     # // Wasserplatsch machen
     # if InWater and not LastFrameInWater then begin
@@ -137,6 +211,76 @@ class GameObject < Struct.new(:game, :pmid, :x, :y, :xdata, :vx, :vy)
       game.map.solid? x + rect.right, y + rect.bottom + 1
     end
   end
+  
+  protected
+  
+  def check_tile
+    case game.map[x / TILE_SIZE, y / TILE_SIZE]
+    when TILE_AIR_ROCKET_UP, TILE_AIR_ROCKET_UP_2, TILE_AIR_ROCKET_UP_3 then
+      emit_sound :turbo
+      #   Fling(0, -20, 0, True, False);
+      #   if not Blocked(Dir_Up) then Dec(PosY);
+      #   PosX := PosX div 24 * 24 + 11;
+      #   if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
+      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, -10, 1, Data.OptEffects, Data.ObjEffects);
+      # end;
+      # Tile_AirRocketUpLeft: begin
+      #   DistSound(PosY, Sound_Turbo, Data^);
+      #   if not Blocked(Dir_Up) then Dec(PosY);
+      #   Fling(-10, -15, 0, True, False);
+      #   PosY := PosY div 24 * 24 + 11;
+      #   for I := 0 to 23 do if Stuck then Dec(PosY);
+      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, -8, -8, 1, Data.OptEffects, Data.ObjEffects);
+      # end;
+      # Tile_AirRocketUpRight: begin
+      #   DistSound(PosY, Sound_Turbo, Data^);
+      #   if not Blocked(Dir_Up) then Dec(PosY);
+      #   Fling(10, -15, 0, True, False);
+      #   PosY := PosY div 24 * 24 + 11;
+      #   for I := 0 to 23 do if Stuck then Dec(PosY);
+      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, +8, -8, 1, Data.OptEffects, Data.ObjEffects);
+      # end;
+      # Tile_AirRocketLeft: begin
+      #   DistSound(PosY, Sound_Turbo, Data^);
+      #   Fling(-20, 2, 0, True, False);
+      #   PosY := PosY div 24 * 24 + 11;
+      #   for I := 0 to 23 do if Stuck then Dec(PosY);
+      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, -10, 0, 1, Data.OptEffects, Data.ObjEffects);
+      # end;
+      # Tile_AirRocketRight: begin
+      #   DistSound(PosY, Sound_Turbo, Data^);
+      #   Fling(20, -2, 0, True, False);
+      #   PosY := PosY div 24 * 24 + 11;
+      #   for I := 0 to 23 do if Stuck then Dec(PosY);
+      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, +10, 0, 1, Data.OptEffects, Data.ObjEffects);
+      # end;
+      # Tile_AirRocketDown: begin
+      #   DistSound(PosY, Sound_Turbo, Data^);
+      #   Fling(0, 15, 0, True, False);
+      #   PosX := PosX div 24 * 24 + 11;
+      #   if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
+      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, 8, 1, Data.OptEffects, Data.ObjEffects);
+      # end;
+      # Tile_SlowRocketUp: begin
+      #   CastFX(0, 0, 1, PosX, PosY, 24, 24, 0, -2, 1, Data.OptEffects, Data.ObjEffects);
+      #   VelX := VelX div 2;
+      #   Dec(VelY, 4);
+      #   if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
+      #   if Self.ClassType = TPMLiving then
+      #     TPMLiving(Self).Action := Act_Jump;
+      # end;
+      # // Stacheln
+      # Tile_Spikes:
+      #   if (ID <= ID_LivingMax) and (((PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom) mod 24) > 8) then begin
+      #     TPMLiving(Self).Hit; VelY := -10; VelX := 0;
+      #   end;
+      # // Stacheln an der Decke
+      # Tile_SpikesTop:
+      #   if (ID <= ID_LivingMax) and (((PosY + Data.Defs[ID].Rect.Top) mod 24) < 14) then begin
+      #     TPMLiving(Self).Hit; VelY := 5; VelX := 0;
+      #   end;
+    end
+  end  
 end
 
 # TODO split into proper classes
@@ -166,25 +310,6 @@ end
     function InWater: Boolean;
   end;
 
-  // Der Objekteplatzhalter
-  TPMObjBreak = class(TPMObject)
-  public
-    procedure Draw; override;
-    procedure Update; override;
-  end;
-  
-  // Einsammelbare Objekte
-  TPMCollectible = class(TPMObject)
-    procedure Update; override;
-  end;
-
-  // Effekte
-  TPMEffect = class(TPMObject)
-    Phase: Integer;
-    procedure Draw; override;
-    procedure Update; override;
-  end;
-
 procedure DrawBMPText(Text: string; X, Y: Integer; Alpha: Byte; SrcPic: TPictureCollectionItem; DestSrf: TDirectDrawSurface; Quality: Integer);
 procedure MyStretchDraw(DestSrf: TDirectDrawSurface; SrcPic: TPictureCollectionItem; Pattern: Integer; DestRect: TRect; ATI: Boolean);
 procedure CastFX(SmokeNum, FlameNum, SparkNum, X, Y, Width, Height, XLvl, YLvl, Rnd, Level: Integer; FXObj: TPMObjBreak);
@@ -197,74 +322,6 @@ function FindLiving(StartObj, EndObj: TPMObject; MinID, MaxID, MinAction, MaxAct
 function LaunchProjectile(X, Y, Direction: Integer; TargetMinObj, TargetMaxObj, FXObj: TPMObject; Data: TPMData): TPMObject;
 
 implementation
-
-procedure TPMObject.Update;
-var
-  BurnObj: TPMObject;
-begin
-  // Feuerschranken (gr33tz fly 2 florien gro)
-  if ID in [ID_Firewall1, ID_Firewall2, ID_Fire] then begin
-    if PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom - 11 > Data.Map.LavaPos then begin CastFX(4, 4, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects); Kill; DistSound(PosY, Sound_Shshsh, Data^); end;
-    ExtraData := IntToStr(Abs((Round(Data.Frame * 7.5) mod 256) - 128));
-    BurnObj := Data.ObjEnemies;
-    while BurnObj <> Data.ObjEffects do begin
-      if PointInRect(Point(BurnObj.PosX, BurnObj.PosY), GetRect(0, 0)) and (BurnObj.ID <> ID_EnemyBerserker) and not (TPMLiving(BurnObj).Action in [Act_Dead, Act_InvUp, Act_InvDown]) then begin
-        TPMLiving(BurnObj).Hurt(False);
-        CastFX(Random(3), Random(2), 0, PosX, PosY, 12, 12, 0, 0, 2, Data.OptEffects, Data.ObjEffects);
-      end;
-      BurnObj := BurnObj.Next;
-    end;
-    Exit;
-  end;
-
-  // Hilfeblinkpfeile
-  if (ID = ID_HelpArrow) and PointInRect(Point(Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY), Bounds(PosX - 11, PosY + 12, 24, 48)) then Kill;
-
-  // Süse fischli`z
-  if ID = ID_Fish then begin
-    if not InWater then begin Fall; CheckTile; end else begin
-      Dec(PosX, 2);
-      if Random(30) = 0 then TPMEffect.Create(Data.ObjEffects, '', ID_FXWaterbubble, PosX, PosY - 3, 0, 0);
-      if Blocked(Dir_Left) then ID := ID_Fish2;
-    end;
-  end else if ID = ID_Fish2 then begin
-    if not InWater then begin Fall; CheckTile; end else begin
-      Inc(PosX, 2);
-      if Random(30) = 0 then TPMEffect.Create(Data.ObjEffects, '', ID_FXWaterbubble, PosX, PosY - 3, 0, 0);
-      if Blocked(Dir_Right) then ID := ID_Fish;
-    end;
-  end;
-
-  // Angezündete Bombe (BOAH KRAS MAN RENT UM EUER LEBEN !)
-  if ID = ID_FusingBomb then begin
-    // Nach ner Weile hochgehen
-    ExtraData := IntToStr(StrToIntDef(ExtraData, 0) + 1);
-    if ExtraData = '25' then begin
-      Kill;
-      Explosion(PosX, PosY, 50, Data^, True);
-      Exit;
-    end;
-    // Bei Gegnerkontakt auch
-    BurnObj := Data.ObjEnemies;
-    while BurnObj <> Data.ObjPlayers do begin
-      if BurnObj.RectCollision(GetRect(1, 1)) and not (TPMLiving(BurnObj).Action in [Act_Dead, Act_InvUp, Act_InvDown]) then begin
-        TPMLiving(BurnObj).Hurt(True);
-        Kill;
-        Explosion(PosX, PosY, 50, Data^, True);
-        Exit;
-      end;
-      BurnObj := BurnObj.Next;
-    end;
-    // Fallen und so
-    Fall; CheckTile;
-  end;
-
-  // Steine fallen
-  if ID in [ID_Trash..ID_Trash4] then begin Fall; CheckTile; end;
-
-  // Lavaüberprüfung
-  if PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom > Data.Map.LavaPos then begin CastFX(4, 4, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects); Kill; DistSound(PosY, Sound_Shshsh, Data^); end;
-end;
 
 procedure TPMObject.Draw;
 begin
@@ -302,77 +359,6 @@ begin
   Free;
 end;
 
-procedure TPMObject.CheckTile;
-var
-  I: Integer;
-begin
-  case Data.Map.Tile(PosX, PosY) of
-    // Turbopfeile
-    Tile_AirRocketUp, Tile_AirRocketUp2, Tile_AirRocketUp3: begin
-      DistSound(PosY, Sound_Turbo, Data^);
-      Fling(0, -20, 0, True, False);
-      if not Blocked(Dir_Up) then Dec(PosY);
-      PosX := PosX div 24 * 24 + 11;
-      if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, -10, 1, Data.OptEffects, Data.ObjEffects);
-    end;
-    Tile_AirRocketUpLeft: begin
-      DistSound(PosY, Sound_Turbo, Data^);
-      if not Blocked(Dir_Up) then Dec(PosY);
-      Fling(-10, -15, 0, True, False);
-      PosY := PosY div 24 * 24 + 11;
-      for I := 0 to 23 do if Stuck then Dec(PosY);
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, -8, -8, 1, Data.OptEffects, Data.ObjEffects);
-    end;
-    Tile_AirRocketUpRight: begin
-      DistSound(PosY, Sound_Turbo, Data^);
-      if not Blocked(Dir_Up) then Dec(PosY);
-      Fling(10, -15, 0, True, False);
-      PosY := PosY div 24 * 24 + 11;
-      for I := 0 to 23 do if Stuck then Dec(PosY);
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, +8, -8, 1, Data.OptEffects, Data.ObjEffects);
-    end;
-    Tile_AirRocketLeft: begin
-      DistSound(PosY, Sound_Turbo, Data^);
-      Fling(-20, 2, 0, True, False);
-      PosY := PosY div 24 * 24 + 11;
-      for I := 0 to 23 do if Stuck then Dec(PosY);
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, -10, 0, 1, Data.OptEffects, Data.ObjEffects);
-    end;
-    Tile_AirRocketRight: begin
-      DistSound(PosY, Sound_Turbo, Data^);
-      Fling(20, -2, 0, True, False);
-      PosY := PosY div 24 * 24 + 11;
-      for I := 0 to 23 do if Stuck then Dec(PosY);
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, +10, 0, 1, Data.OptEffects, Data.ObjEffects);
-    end;
-    Tile_AirRocketDown: begin
-      DistSound(PosY, Sound_Turbo, Data^);
-      Fling(0, 15, 0, True, False);
-      PosX := PosX div 24 * 24 + 11;
-      if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, 8, 1, Data.OptEffects, Data.ObjEffects);
-    end;
-    Tile_SlowRocketUp: begin
-      CastFX(0, 0, 1, PosX, PosY, 24, 24, 0, -2, 1, Data.OptEffects, Data.ObjEffects);
-      VelX := VelX div 2;
-      Dec(VelY, 4);
-      if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
-      if Self.ClassType = TPMLiving then
-        TPMLiving(Self).Action := Act_Jump;
-    end;
-    // Stacheln
-    Tile_Spikes:
-      if (ID <= ID_LivingMax) and (((PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom) mod 24) > 8) then begin
-        TPMLiving(Self).Hit; VelY := -10; VelX := 0;
-      end;
-    // Stacheln an der Decke
-    Tile_SpikesTop:
-      if (ID <= ID_LivingMax) and (((PosY + Data.Defs[ID].Rect.Top) mod 24) < 14) then begin
-        TPMLiving(Self).Hit; VelY := 5; VelX := 0;
-      end;
-  end;
-end;
 
 procedure TPMObject.Fling(XLvl, YLvl, Rnd: Integer; Fixed, Malign: Boolean);
 begin

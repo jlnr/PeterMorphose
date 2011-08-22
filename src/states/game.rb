@@ -1,5 +1,6 @@
 class Game < State
-  attr_reader :view_pos, :player, :map
+  attr_reader :player, :map
+  attr_reader :view_pos, :frame
   attr_reader :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
   
   def initialize level_info
@@ -135,8 +136,7 @@ class Game < State
     #     // Normaler Verlauf
     #     if Data.State = State_Game then begin
     #       // Bildz‰hler erhˆhen
-    #       Inc(Data.Frame);
-    #       if Data.Frame = 2400 then Data.Frame := 0;
+    @frame = (@frame + 1) % 2400
     #       if MessageOpacity > 0 then Dec(MessageOpacity, 3);
     # 
     #       // Jetzt schon das Skript ausf¸hren (damit Zeile 0 ber¸cksichtigt wird)

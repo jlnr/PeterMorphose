@@ -55,13 +55,29 @@ class LivingObject < GameObject
     #   end;
     # end;
     # 
-    # // Im Treppenhaus?
-    # if Action = Act_InvUp then begin
-    #   if Random(8) = 0 then DistSound(PosY, Sound_StairsRnd, Data^);
-    #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then Dec(PosY, 2) else PosX := PosX div 24 * 24 + 11;
-    #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then Dec(PosY, 2) else PosX := PosX div 24 * 24 + 11;
-    #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then begin Dec(PosY, 2); Exit; end else PosX := PosX div 24 * 24 + 12;
-    # end;
+
+    # Ascending staircase
+    if action == ACT_INV_UP then
+      except_open_doors = (0..TILE_STAIRS_UP_LOCKED).to_a + [TILE_STAIRS_DOWN_LOCKED]
+      emit_sound :stairs_steps if rand(8) == 0
+      2.times do
+        tile_below = game.map[x / TILE_SIZE, (y + 12) / TILE_SIZE]
+        tile_above = game.map[x / TILE_SIZE, (y - 9) / TILE_SIZE]
+        if except_open_doors.include? tile_below or except_open_doors.include? tile_above then
+          self.y -= 2
+        else
+          self.x = self.x / TILE_SIZE * TILE_SIZE + TILE_SIZE / 2 - 1
+        end
+      end
+      tile_below = game.map[x / TILE_SIZE, (y + 12) / TILE_SIZE]
+      tile_above = game.map[x / TILE_SIZE, (y - 9) / TILE_SIZE]
+      if except_open_doors.include? tile_below or except_open_doors.include? tile_above then
+        self.y -= 2
+        return
+      else
+        self.x = self.x / TILE_SIZE * TILE_SIZE + TILE_SIZE / 2
+      end
+    end
     # if Action = Act_InvDown then begin
     #   if Random(7) = 0 then DistSound(PosY, Sound_StairsRnd, Data^);
     #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then Inc(PosY, 2) else PosX := PosX div 24 * 24 + 11;
@@ -69,24 +85,22 @@ class LivingObject < GameObject
     #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then Inc(PosY, 2) else PosX := PosX div 24 * 24 + 11;
     #   if (Data.Map.Tile(PosX, PosY + 12) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) or (Data.Map.Tile(PosX, PosY - 9) in [0..Tile_StairsUpLocked, Tile_StairsDownLocked]) then begin Inc(PosY, 2); Exit; end else PosX := PosX div 24 * 24 + 12;
     # end;
-    # 
-    # // Wandteile (nur if alive)
-    # if Action <> Act_Dead then CheckTile;
-    # 
+    
+    check_tile if action != ACT_DEAD
+    
     # // Brüchigen Boden unter den Füßen einstürzen lassen
     # BreakFloor(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 2);
     # BreakFloor(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 2);
-    # 
-    # // Der Rest nur, wenn nich tot
-    # if Action = Act_Dead then Exit;
-    # 
+    
+    return if action == ACT_DEAD
+    
     # // In Wasser blubbern
     # if InWater then begin
     #   if (Random(30) = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXWaterbubble, PosX, PosY - 7, 0, 0);
     #   if ID = ID_PlayerBerserker then begin ID := ID_Player; CastFX(8, 0, 0, PosX, PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects); end;
     #   if ID = ID_EnemyBerserker then begin ID := ID_Enemy; CastFX(8, 0, 0, PosX, PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects); end;
     # end;
-    # 
+    
     # // Türen aufschließen
     # if (ID <= ID_PlayerMax) and (Data.Keys > 0) then with Data^ do begin
     #   // Nach links
@@ -210,8 +224,6 @@ class LivingObject < GameObject
     #   TPMObject.Create(Data.ObjOther, '0', ID_FusingBomb, PosX + RealDir(Direction) * 5, PosY + 2, RealDir(Direction) * 8, -3);
     # end;
     
-    
-
     if pmid <= ID_PLAYER_MAX and not busy? then
       self.direction = DIR_LEFT  if vx < 0
       self.direction = DIR_RIGHT if vx > 0
@@ -287,11 +299,16 @@ class LivingObject < GameObject
     #     Exit;
     #   end;
     # 
-    # // Fliegen
-    # if (ID <= ID_PlayerMax) and (Data.FlyTimeLeft > 0) and not (Action in [Act_Action1..Act_Action5]) then
-    #   begin if VelY < 0 then Action := Act_Jump else Action := Act_Land; Exit; end;
-    # // Verwundet bleibt verwundet, bis wieder Boden unter den Füßen ist
-    # if ((Action = Act_Pain1) or (Action = Act_Pain2)) and (not Blocked(Dir_Down)) and (not InWater) then Exit;
+    
+    # Fly
+    if pmid <= ID_PLAYER_MAX and game.fly_time_left > 0 and not (ACT_ACTION_1..ACT_ACTION_5).include? action then
+      self.action = vy < 0 ? ACT_JUMP : ACT_LAND
+      return
+    end
+    
+    # Hurt player cannot recover until on the ground
+    return if [ACT_PAIN_1, ACT_PAIN_2].include? action and not blocked? DIR_DOWN and not in_water?
+    
     # // Hingefallen, weiter aufstehen
     # if (Action >= Act_Impact1) and (Action <= Act_Impact5) and (Data.Frame mod 2 = 0) then Exit;
     # if (Action >  Act_Impact1) and (Action <= Act_Impact5) then begin Dec(Action); Exit; end;
@@ -303,9 +320,12 @@ class LivingObject < GameObject
     # if (Action >= Act_Action1) and (Action < Act_Action5)
     #   and (ID = ID_EnemyGun) and (Data.Frame mod 5 <> 0) then Exit;
     # if (Action >= Act_Action1) and (Action < Act_Action5) then begin Inc(Action); Exit; end;
-    # // Springen und fallen
-    # if not Blocked(Dir_Down) then begin
-    #   if VelY < 0 then Action := Act_Jump else Action := Act_Land; Exit; end;
+    
+    if not blocked? DIR_DOWN then
+      self.action = vy < 0 ? ACT_JUMP : ACT_LAND
+      return
+    end
+    
     # // Auf Schleim laufen / Spieler
     # if (ID <= ID_PlayerMax) and Blocked(Dir_Down) and (Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3])
     #   and ((isLeft in Data.Input.States) or (isRight in Data.Input.States))
@@ -327,9 +347,13 @@ class LivingObject < GameObject
     #       if Random(5) = 0 then DistSound(PosY, Sound_Slime + Random(3), Data^);
     #       Exit;
     #     end;
-    # // Laufen
-    # if Blocked(Dir_Down) and (Abs(VelX) > 0) then
-    #   begin Action := Act_Walk1 + Data.Frame mod 8 div 2; Exit; end;
+    
+    # Walking animation
+    if blocked? DIR_DOWN and vx.abs > 0 then
+      self.action = ACT_WALK_1 + game.frame % 8 / 2
+      return
+    end
+    
     # "idlezeiten von ueber 4 wochen sind absolut eleet"
     self.action = ACT_STAND
   end
@@ -383,6 +407,86 @@ class LivingObject < GameObject
     sound(:jump).play if pmid <= ID_PLAYER_MAX
   end;
   
+  def use_tile
+    return if busy?
+    
+    # Tile below player (magic floor tiles)
+    case game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE]
+    when TILE_ROCKET_UP, TILE_ROCKET_UP_2, TILE_ROCKET_UP_3 then
+      sample(:jump).play if pmid <= ID_PLAYER_MAX
+      emit_sound :turbo
+      self.vx = 0
+      self.vy = -20
+      self.y -= 1 unless blocked? DIR_UP
+      self.action = ACT_JUMP
+      # TODO CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, -10, 1, Data.OptEffects, Data.ObjEffects);
+      return
+    # Tile_RocketUpLeft, Tile_RocketUpLeft2, Tile_RocketUpLeft3: begin
+    #   if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
+    #   DistSound(PosY, Sound_Turbo, Data^);
+    #   VelX := -15;
+    #   VelY := -15;
+    #   if not Blocked(Dir_Up) then Dec(PosY);
+    #   Action := Act_Jump;
+    #   Direction := Dir_Left;
+    #   CastFX(0, 0, 10, PosX, PosY, 24, 24, -8, -8, 1, Data.OptEffects, Data.ObjEffects);
+    #   if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
+    #   Exit;
+    # Tile_RocketUpRight, Tile_RocketUpRight2, Tile_RocketUpRight3: begin
+    #   if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
+    #   DistSound(PosY, Sound_Turbo, Data^);
+    #   VelX := 15;
+    #   VelY := -15;
+    #   if not Blocked(Dir_Up) then Dec(PosY);
+    #   Action := Act_Jump;
+    #   Direction := Dir_Right;
+    #   CastFX(0, 0, 10, PosX, PosY, 24, 24, +8, -8, 1, Data.OptEffects, Data.ObjEffects);
+    #   if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
+    #   Exit;
+    # Tile_MorphFighter..Tile_MorphMax: if ID <= ID_PlayerMax then begin
+    #   Data.Waves[Sound_Morph].Play(False);
+    #   ID := ID_PlayerFighter + (Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) - Tile_MorphFighter);
+    #   Data.Map.Tiles[PosX div 24, (PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) div 24] := Tile_MorphEmpty;
+    #   if ID <> ID_Player then Data.TimeLeft := Data.Defs[ID].Life;
+    #   CastFX(8, 0, 0, PosX, PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
+    #   if Data.OptShowTexts = 1 then TPMEffect.Create(Data.ObjEffects, Data.Defs[ID].Name + '!', ID_FXText, PosX, PosY - 10, 0, -1);
+    #   Exit;
+    # end;
+    end
+    
+    # Tile right behind player (doors etc.)
+    case game.map[x / TILE_SIZE, y / TILE_SIZE]
+    when TILE_STAIRS_UP_LOCKED then
+      return if pmid > ID_PLAYER_MAX or game.keys == 0
+      game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_UP
+      game.keys -= 1
+      sample("door#{rand(2) + 1}").play
+      use_tile
+    when TILE_STAIRS_UP..TILE_STAIRS_UP_2 then
+      return if not game.map.stairs_passable? x / TILE_SIZE, y / TILE_SIZE and pmid >= ID_PLAYER_MAX
+      self.y = y / TILE_SIZE * TILE_SIZE
+      self.action = ACT_INV_UP
+      self.vx = self.vy = 0
+      emit_sound :stairs
+    end
+      #   Tile_StairsDownLocked: begin
+      #     if (ID > ID_PlayerMax) or (Data.Keys = 0) then Exit;
+      #     Data.Map.Tiles[PosX div 24, PosY div 24] := Tile_StairsDown;
+      #     Dec(Data.Keys);
+      #     Data.Waves[Sound_Door + Random(2)].Play(False);
+      #     UseTile;
+      #   end;
+      #   Tile_StairsDown..Tile_StairsDown2: begin
+      #     if not Data.Map.StairsEnd(PosX div 24, PosY div 24) then Exit;
+      #     PosY := PosY div 24 * 24 + 13;
+      #     Action := Act_InvDown;
+      #     VelX := 0;
+      #     VelY := 0;
+      #     DistSound(PosY, Sound_Stairs, Data^);
+      #     Exit;
+      #   end;
+      # end;
+  end
   
   private
   
@@ -485,92 +589,6 @@ begin
   if (ID = ID_EnemyBomber) and (Action = Act_Dead) then begin
     Kill;
     CastFX(10, 30, 10, PosX, PosY, 10, 10, 0, -10, 5, Data.OptEffects, Data.ObjEffects);
-  end;
-end;
-
-procedure TPMLiving.UseTile;
-begin
-  // Nur, wenn Objekt Lust hat
-  if Busy then Exit;
-  case Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Bottom + 1) of
-    Tile_RocketUp, Tile_RocketUp2, Tile_RocketUp3: begin
-      if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
-      DistSound(PosY, Sound_Turbo, Data^);
-      VelX := 0;
-      VelY := -20;
-      if not Blocked(Dir_Up) then Dec(PosY);
-      Action := Act_Jump;
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, -10, 1, Data.OptEffects, Data.ObjEffects);
-      if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
-      Exit;
-    end;
-    Tile_RocketUpLeft, Tile_RocketUpLeft2, Tile_RocketUpLeft3: begin
-      if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
-      DistSound(PosY, Sound_Turbo, Data^);
-      VelX := -15;
-      VelY := -15;
-      if not Blocked(Dir_Up) then Dec(PosY);
-      Action := Act_Jump;
-      Direction := Dir_Left;
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, -8, -8, 1, Data.OptEffects, Data.ObjEffects);
-      if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
-      Exit;
-    end;
-    Tile_RocketUpRight, Tile_RocketUpRight2, Tile_RocketUpRight3: begin
-      if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
-      DistSound(PosY, Sound_Turbo, Data^);
-      VelX := 15;
-      VelY := -15;
-      if not Blocked(Dir_Up) then Dec(PosY);
-      Action := Act_Jump;
-      Direction := Dir_Right;
-      CastFX(0, 0, 10, PosX, PosY, 24, 24, +8, -8, 1, Data.OptEffects, Data.ObjEffects);
-      if ID <= ID_PlayerMax then Data.Waves[Sound_Jump].Play(False);
-      Exit;
-    end;
-    Tile_MorphFighter..Tile_MorphMax: if ID <= ID_PlayerMax then begin
-      Data.Waves[Sound_Morph].Play(False);
-      ID := ID_PlayerFighter + (Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) - Tile_MorphFighter);
-      Data.Map.Tiles[PosX div 24, (PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) div 24] := Tile_MorphEmpty;
-      if ID <> ID_Player then Data.TimeLeft := Data.Defs[ID].Life;
-      CastFX(8, 0, 0, PosX, PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
-      if Data.OptShowTexts = 1 then TPMEffect.Create(Data.ObjEffects, Data.Defs[ID].Name + '!', ID_FXText, PosX, PosY - 10, 0, -1);
-      Exit;
-    end;
-  end;
-  case Data.Map.Tile(PosX, PosY) of
-    Tile_StairsUpLocked: begin
-      if (ID > ID_PlayerMax) or (Data.Keys = 0) then Exit;
-      Data.Map.Tiles[PosX div 24, PosY div 24] := Tile_StairsUp;
-      Dec(Data.Keys);
-      Data.Waves[Sound_Door + Random(2)].Play(False);
-      UseTile;
-    end;
-    Tile_StairsUp..Tile_StairsUp2: begin
-      if (not Data.Map.StairsEnd(PosX div 24, PosY div 24)) and (ID > ID_PlayerMax) then Exit;
-      PosY := PosY div 24 * 24;
-      Action := Act_InvUp;
-      VelX := 0;
-      VelY := 0;
-      DistSound(PosY, Sound_Stairs, Data^);
-      Exit;
-    end;
-    Tile_StairsDownLocked: begin
-      if (ID > ID_PlayerMax) or (Data.Keys = 0) then Exit;
-      Data.Map.Tiles[PosX div 24, PosY div 24] := Tile_StairsDown;
-      Dec(Data.Keys);
-      Data.Waves[Sound_Door + Random(2)].Play(False);
-      UseTile;
-    end;
-    Tile_StairsDown..Tile_StairsDown2: begin
-      if not Data.Map.StairsEnd(PosX div 24, PosY div 24) then Exit;
-      PosY := PosY div 24 * 24 + 13;
-      Action := Act_InvDown;
-      VelX := 0;
-      VelY := 0;
-      DistSound(PosY, Sound_Stairs, Data^);
-      Exit;
-    end;
   end;
 end;
 
