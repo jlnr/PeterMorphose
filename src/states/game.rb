@@ -2,7 +2,7 @@ class Game < State
   attr_reader :player, :map
   attr_reader :view_pos, :frame
   attr_reader :time_left, :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
-  attr_reader :keys, :stars, :ammo, :bombs
+  attr_reader :score, :keys, :stars, :ammo, :bombs
   attr_reader :stars_goal
   attr_reader :obj_vars
   
@@ -16,8 +16,7 @@ class Game < State
     @frame = -1
     @frame_fading_box = 16
     @time_left = @inv_time_left = @speed_time_left = @jump_time_left = @fly_time_left = 0
-    @keys = @stars = @ammo = @bombs = 0
-    @score = 0
+    @score = @keys = @stars = @ammo = @bombs = 0
     
     @lava_frame = 0
     @lava_time_left = 0
@@ -187,28 +186,11 @@ class Game < State
     @player.jump     if jump_pressed?
     @player.use_tile if use_pressed?
     @player.action   if action_pressed?
-    
-    
-    #       if DXInput.Keyboard.Keys[VK_Up] or DXInput.Joystick.Buttons[0] and (Data.FlyTimeLeft = 0) then TPMLiving(Data.ObjPlayers.Next).Jump;
-    #       if DXInput.Keyboard.Keys[VK_Down] or DXInput.Joystick.Buttons[2] and (Data.FlyTimeLeft = 0) then TPMLiving(Data.ObjPlayers.Next).UseTile;
-    #       if DXInput.Keyboard.Keys[VK_Space] or DXInput.Joystick.Buttons[1] then TPMLiving(Data.ObjPlayers.Next).Special;
-    #       if DXInput.Joystick.Buttons[3] then begin
-    #         if (Data.Frame = -1) or (Data.ObjPlayers.Next.ID = ID_Player) then Exit;
-    #         Data.ObjPlayers.Next.ID := ID_Player;
-    #         if TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead then TPMLiving(Data.ObjPlayers.Next).Action := Act_Jump;
-    #         CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
-    #         Exit;
-    #       end;
+    @player.dispose  if dispose_pressed?
     
     @objects.each &:update
     @objects.reject! &:marked?
-    #  // Jetzt noch die kaputten lˆschen
-    #  TempObj := Data.ObjCollectibles.Next;
-    #  while TempObj <> nil do begin
-    #    if TempObj.Last.Marked then TempObj.Last.ReallyKill;
-    #    TempObj := TempObj.Next;
-    #  end;
-       
+    
     #  // Ab und zu mal ein Rauchwˆlkchen und Flammen aus der Lava steigen lassen...
     #  if Data.Map.LavaTimeLeft = 0 then begin
     #    CastFX(Random(2) + 1, Random(2) + 1, 0, 288, Data.Map.LavaPos, 576, 8, 1, -4, 1, Data.OptEffects, Data.ObjEffects);
@@ -237,15 +219,14 @@ class Game < State
     
     draw_status_bar
     
-    # 
-    # // Levelfortschrittsanzeige (wenn aktiviert)
+    # Optional progress indicator
     # if Data.OptShowStatus = 1 then begin
     #   DXDraw.Surface.FillRectAlpha(Bounds(2, 38, 8, 404), clGray, 64);
     #   if Data.ObjPlayers.Next.ID > -1 then DXDraw.Surface.FillRectAlpha(Bounds(0, 38 + Round(((Data.ObjPlayers.Next.PosY / 24 - Data.Map.LevelTop / 24) / (LevelBottom - Data.Map.LevelTop / 24)) * 400), 12, 4), clNavy, 192);
     #   if (Data.Map.LavaPos <= 24576) and (Data.Map.LavaTimeLeft = 0) then DXDraw.Surface.FillRectAlpha(Bounds(0, 38 + Round(((Data.Map.LavaPos / 24 - Data.Map.LevelTop / 24) / (LevelBottom - Data.Map.LevelTop / 24)) * 400), 12, 4), clYellow, 128);
     #   if (Data.Map.LavaPos <= 24576) and (Data.Map.LavaTimeLeft > 0) then DXDraw.Surface.FillRectAlpha(Bounds(0, 38 + Round(((Data.Map.LavaPos / 24 - Data.Map.LevelTop / 24) / (LevelBottom - Data.Map.LevelTop / 24)) * 400), 12, 4), clAqua, 128);
     # end;
-    # 
+    
     # // Scriptmessages
     # if (Data.State in [State_Game, State_Paused]) and (MessageOpacity > 0) then
     #   DrawBMPText(MessageText, (640 - Length(MessageText) * 9) div 2, 230, MessageOpacity, DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality);
@@ -267,10 +248,8 @@ class Game < State
     # if Data.State = State_Paused then begin
     #   DXImageList.Items[Image_GameDialogs].DrawAdd(DXDraw.Surface, Bounds(200, 120, 240, 120), 2, 255);
     # end;
-    # 
-    # // Und noch die Punkte
-    # DrawBMPText('Punkte: ' + IntToStr(Data.Score), 320 - Round((Length(IntToStr(Data.Score)) + 8) * 4.5), 25, 160, DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality);
-    # DXDraw.Flip;
+    
+    draw_string "Punkte: #{score}", :center, 5
   end
   
   def button_down id
@@ -286,17 +265,10 @@ class Game < State
     #       if Data.State = State_Game then begin Data.State := State_Paused; Exit; end;
     #   end;
     #     State_Game: case Key of
-    @player.jump     if jump?   id and fly_time_left == 0
-    @player.use_tile if use?    id and fly_time_left == 0
-    @player.action   if action? id
-    #       VK_Space: TPMLiving(Data.ObjPlayers.Next).Special;
-    #       VK_Delete, VK_Return: begin
-    #                    if (Data.Frame = -1) or (Data.ObjPlayers.Next.ID = ID_Player) then Exit;
-    #                    Data.ObjPlayers.Next.ID := ID_Player;
-    #                    if TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead then TPMLiving(Data.ObjPlayers.Next).Action := Act_Jump;
-    #                    CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
-    #                    Exit;
-    #                  end;
+    @player.jump     if jump?    id and fly_time_left == 0
+    @player.use_tile if use?     id and fly_time_left == 0
+    @player.action   if action?  id
+    @player.dispose  if dispose? id
     #     end;
     #     State_Dead: if Key = VK_Return then
     #       begin if QuickStart then StartGame(ParamStr(1)) else StartGame(TPMLevelInfo(LevelList.Items[SelectedLevel]).Location); DXWaveList.Items[Sound_Woosh].Play(False); end;

@@ -15,8 +15,6 @@ class Map
     @scripts = []
     @timers = []
     @vars = []
-    #@lava_frame = @lava_time_left = @lava_score = 0
-    #Sky, LavaSpeed, LavaMode, LevelTop: Integer;
     
     (0...TILES_Y).each do |y|
       row = ini_file['Map', y] || '00' * TILES_X
