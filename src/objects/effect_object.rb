@@ -22,10 +22,8 @@ class EffectObject < GameObject
       #   Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX, PosY - 11 - Data.ViewPos, StrToInt(ExtraData), 24), 28, 255 - Phase);
       # ID_FXBlockerParts:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 29, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
-      # ID_FXBreak:
-      #   Data.Images[Image_Effects].DrawSub(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), 30, Phase);
-      # ID_FXBreak2:
-      #   Data.Images[Image_Effects].DrawSub(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), 31, Phase);
+    when ID_FX_BREAK, ID_FX_BREAK_2 then
+      @@effect_images[30 + (ID_FX_BREAK_2 - pmid)].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(@phase) # TODO :subtractive
       # ID_FXBreakingParts:
       #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 32, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
       # ID_FXBlood:
@@ -82,15 +80,16 @@ class EffectObject < GameObject
     #   Inc(Phase, 25);
     #   if Phase = 250 then begin Kill; Exit; end;
     # end;
-    # ID_FXBreak, ID_FXBreak2: begin
-    #   Inc(Phase, 15);
-    #   if Phase = 255 then begin
-    #     Data.Map.Tiles[PosX div 24, PosY div 24] := Tile_Hole + (((PosY div 24) mod 2 + PosX div 24) mod 2) * 16;
-    #     CastObjects(ID_FXBreakingParts, 20, 0, 5, 2, Data.OptEffects, Bounds(PosX div 24 * 24, PosY div 24 * 24, 24, 24), Data.ObjEffects);
-    #     DistSound(PosY, Sound_Break + Random(2), Data^);
-    #     Kill; Exit;
-    #   end;
-    # end;
+  when ID_FX_BREAK, ID_FX_BREAK_2 then
+    @phase += 15
+    if @phase == 255 then
+      game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_HOLE + ((y / TILE_SIZE % 2 + x / TILE_SIZE) % 2) * 16
+      game.cast_objects ID_FX_BREAKING_PARTS, 20, 0, 5, 2,
+        ObjectDef::Rect.new(x / (TILE_SIZE/2) * (TILE_SIZE/2), y / (TILE_SIZE/2) * (TILE_SIZE/2), 24, 24)
+      emit_sound "break#{rand(2) + 1}"
+      kill
+      return
+    end
     # ID_FXFire: begin
     #   Inc(Phase, 15);
     #   if Phase = 255 then begin

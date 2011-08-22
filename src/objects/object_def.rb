@@ -1,4 +1,5 @@
 class ObjectDef < Struct.new(:name, :life, :rect, :speed, :jump_x, :jump_y)
+  # TODO This has become a general purpose class, should be moved out of this file
   class Rect < Struct.new(:left, :top, :width, :height)
     def right
       left + width
@@ -9,7 +10,13 @@ class ObjectDef < Struct.new(:name, :life, :rect, :speed, :jump_x, :jump_y)
     end
     
     def collide_with? other
-      left < other.right and right > other.left and top < other.bottom and bottom > other.top
+      left < other.right and right > other.left and
+        top < other.bottom and bottom > other.top
+    end
+    
+    def include? point
+      point.x >= left and point.y >= top and
+        point.x < right and point.y < bottom
     end
   end
   

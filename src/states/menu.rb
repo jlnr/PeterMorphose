@@ -18,7 +18,7 @@ class Menu < State
       @buttons[image_index].draw 120, 20 + 70 * index, 0
     end
     
-    draw_string 'Wähle mit den Pfeiltasten aus, was du tun willst und drücke Enter.', :center, 435
+    draw_centered_string 'Wähle mit den Pfeiltasten aus, was du tun willst und drücke Enter.', WIDTH / 2, 435
   end
   
   def button_down id

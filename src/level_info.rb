@@ -42,8 +42,7 @@ class LevelInfo
     draw_rect 0, y, 631, 1, 0x003000
     # TODO (Highscore) / (not beaten yet)
     draw_string @title, 5, y + 7, 255
-    # TODO right-align
-    draw_string @difficulty, 626 - @difficulty.length * 9, y + 7, 255
+    draw_right_aligned_string @difficulty, 626, y + 7, 255
     draw_string @description, 5, y + 30, 192
     draw_string @goal, 5, y + 53, 128
     draw_string "Von #{@author}", 5, y + 76, 80

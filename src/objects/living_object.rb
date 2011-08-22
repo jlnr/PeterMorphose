@@ -96,9 +96,10 @@ class LivingObject < GameObject
     
     check_tile if action != ACT_DEAD
     
-    # // Brüchigen Boden unter den Füßen einstürzen lassen
-    # BreakFloor(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 2);
-    # BreakFloor(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 2);
+    # Break tiles where due
+    rect = self.rect(0, 2)
+    break_floor rect.left,  rect.bottom
+    break_floor rect.right, rect.bottom
     
     return if action == ACT_DEAD
     
@@ -500,11 +501,17 @@ class LivingObject < GameObject
   private
   
   def break_floor x, y
-    # if (Data.Map.Tile(X, Y) in [Tile_Bridge..Tile_Bridge4])
-    # and (FindObject(Data.ObjEffects, Data.ObjEnd, ID_FXBreak, ID_FXBreak2, Bounds(X div 24 * 24, Y div 24 * 24, 23, 23)) = nil) then begin
-    #   TPMEffect.Create(Data.ObjEffects, '', ID_FXBreak + Random(2), X div 24 * 24 + 11, Y div 24 * 24 + 11, 0, 0);
-    #   DistSound(Y, Sound_Break + Random(2), Data^);
-    # end;
+    debug binding if pmid == ID_PLAYER and $window.button_down? Gosu::KbD
+    if (TILE_BRIDGE..TILE_BRIDGE_4).include? game.map[x / TILE_SIZE, y / TILE_SIZE] and true
+      #Data.ObjEffects, Data.ObjEnd, ID_FXBreak, ID_FXBreak2, Bounds(X div 24 * 24, Y div 24 * 24, 23, 23)) = nil) then begin
+#      not find_object(ID_FX_BREAK, ID_FX_BREAK_2,
+ #       ObjectDef::Rect.new(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, 24, 24)) then
+      
+      game.create_object ID_FX_BREAK + rand(2),
+                         x / TILE_SIZE * TILE_SIZE + 11,
+                         y / TILE_SIZE * TILE_SIZE + 11, nil
+      emit_sound "break#{rand(2) + 1}"
+    end
   end
 end
   

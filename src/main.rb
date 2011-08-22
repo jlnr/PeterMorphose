@@ -40,7 +40,7 @@ WIDTH, HEIGHT = 640, 480
 TARGET_FPS = 30
 
 # Z Order
-Z_EFFECTS, Z_LAVA, Z_UI = *0..255
+Z_EFFECTS, Z_LAVA, Z_UI, Z_TEXT = *0..255
 
 # Simple implementation of the Gosu "State-Based" game pattern
 class Window < Gosu::Window

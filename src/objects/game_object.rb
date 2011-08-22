@@ -19,15 +19,6 @@ class GameObject
     @last_frame_in_water = in_water?
   end
   
-  def self.create game, pmid, x, y, xdata
-    case pmid
-      when 0..ID_LIVING_MAX then LivingObject
-      when ID_OTHER_OBJECTS_MIN..ID_OTHER_OBJECTS_MAX then GameObject
-      when ID_COLLECTIBLE_MIN..ID_COLLECTIBLE_MAX then CollectibleObject
-      when ID_FX_MIN..ID_FX_MAX then EffectObject
-    end.new game, pmid, x, y, xdata
-  end
-  
   MAX_SOUND_DISTANCE = 500.0
   
   def emit_sound name
@@ -128,15 +119,18 @@ class GameObject
     end
     @@stuff_images[pmid - ID_OTHER_OBJECTS_MIN].draw x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode
     if pmid == ID_CAROLIN then
-    # TODO
-    #   if Length(ExtraData) < 3 then DrawBMPText('Carolin', PosX - 31, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality)
-    #                            else DrawBMPText(Copy(ExtraData, 3, Length(ExtraData) - 2), PosX - ((Length(ExtraData) - 2) * 9) div 2, PosY + 16 - Data.ViewPos, 128, Data.FontPic, Data.DXDraw.Surface, Data.OptQuality);
+      if xdata and xdata.length > 2 then
+        name = xdata.split[2..-1]
+      else
+        name = 'Carolin'
+      end
+      draw_centered_string name, x, y + 16 - game.view_pos, 128
     end
   end
   
   def fall
     if in_water? and not @last_frame_in_water then
-      # TODO CastObjects(ID_FXWater, 5, -VelX div 2, -5, 3, Data.OptEffects, GetRect(1, 1), Data.ObjEffects);
+      game.cast_objects ID_FX_WATER, 5, -vx / 2, -5, 3, rect(1, 1)
       emit_sound "water#{rand(2) + 1}"
     end
     @last_frame_in_water = in_water?
@@ -234,11 +228,6 @@ class GameObject
       #       end;
       #     end;
     end
-    
-    # Annoying Special FX
-    # if (Data.OptQuality = 2) and ((Abs(VelX) > 12) or (VelY < -15)) then
-    #   CastFX(Random(5), Random(3), 0, PosX, PosY, 5, 5, 0, -2, 2, Data.OptEffects, Data.ObjEffects);
-    # end;
   end
   
   def blocked? direction
@@ -336,7 +325,7 @@ class GameObject
   
   def rect(extra_width = 0, extra_height = 0)
     rect = ObjectDef[pmid].rect
-    ObjectDef::Rect.new(x + rect.left - extra_width, y + rect.top - extra_width,
+    ObjectDef::Rect.new(x + rect.left - extra_width, y + rect.top - extra_height,
       rect.width + extra_width * 2, rect.height + extra_height * 2)
   end
 end
@@ -344,40 +333,6 @@ end
 # TODO split into proper classes
 
 =begin
-  // Peter-Morphose-Grundobjekt mit all seinen Eigenschaften
-  TPMObject = class(TObject)
-  public
-    Data: ^TPMData;
-    Next, Last: TPMObject;
-    ID, PosX, PosY, VelX, VelY: Integer;
-    ExtraData: string;
-    LastFrameInWater: Boolean;
-    Marked: Boolean;
-    constructor Create(After: TPMObject; XData: string; InitID, X, Y, VX, VY: Integer);
-    procedure Draw; virtual;
-    procedure Update; virtual;
-    procedure Kill;
-    procedure ReallyKill;
-    procedure Fall;
-    procedure CheckTile;
-    procedure Fling(XLvl, YLvl, Rnd: Integer; Fixed, Malign: Boolean);
-    function Blocked(Dir: Integer): Boolean;
-    function GetRect(ExtraWidth: Integer = 0; ExtraHeight: Integer = 0): TRect;
-    function Stuck: Boolean;
-    function InWater: Boolean;
-  end;
-
-procedure DrawBMPText(Text: string; X, Y: Integer; Alpha: Byte; SrcPic: TPictureCollectionItem; DestSrf: TDirectDrawSurface; Quality: Integer);
-procedure MyStretchDraw(DestSrf: TDirectDrawSurface; SrcPic: TPictureCollectionItem; Pattern: Integer; DestRect: TRect; ATI: Boolean);
-procedure CastFX(SmokeNum, FlameNum, SparkNum, X, Y, Width, Height, XLvl, YLvl, Rnd, Level: Integer; FXObj: TPMObjBreak);
-procedure Explosion(X, Y, Radius: Integer; Data: TPMData; DoScore: Boolean);
-procedure DistSound(Y, Sound: Integer; Data: TPMData);
-function FindObject(StartObj, EndObj: TPMObject; MinID, MaxID: Integer; Rect: TRect): TPMObject;
-function FindLiving(StartObj, EndObj: TPMObject; MinID, MaxID, MinAction, MaxAction: Integer; Rect: TRect): TPMLiving;
-function LaunchProjectile(X, Y, Direction: Integer; TargetMinObj, TargetMaxObj, FXObj: TPMObject; Data: TPMData): TPMObject;
-
-implementation
-
 procedure TPMObject.Fling(XLvl, YLvl, Rnd: Integer; Fixed, Malign: Boolean);
 begin
   // Wehrlose Objekte nur, wenn Malign=False
@@ -456,20 +411,6 @@ begin
         CastObjects(ID_FXBreakingParts, 20, 0, 3, 3, Data.OptEffects, Bounds(I * 24, P * 24, 24, 24), Data.ObjEffects);
       end;
     end;
-end;
-
-function FindObject(StartObj, EndObj: TPMObject; MinID, MaxID: Integer; Rect: TRect): TPMObject;
-var
-  TempObj: TPMObject;
-begin
-  Result := nil;
-  TempObj := StartObj;
-  while True do begin
-    TempObj := TempObj.Next;
-    if TempObj = EndObj then Exit;
-    if (TempObj.ID in [MinID..MaxID])
-      and PointInRect(Point(TempObj.PosX, TempObj.PosY), Rect) then begin Result := TempObj; Exit; end;
-  end;
 end;
 
 function FindLiving(StartObj, EndObj: TPMObject; MinID, MaxID, MinAction, MaxAction: Integer; Rect: TRect): TPMLiving;

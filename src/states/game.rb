@@ -79,7 +79,7 @@ class Game < State
     i = 0
     while obj_string = level_info.ini_file['Objects', i] do
       pmid, x, y = obj_string.split('|').map { |str| str.to_i(16) }
-      @objects << GameObject.create(self, pmid, x, y, level_info.ini_file['Objects', "#{x}Y"])
+      create_object pmid, x, y, level_info.ini_file['Objects', "#{x}Y"]
       i += 1
     end
   end
@@ -251,7 +251,7 @@ class Game < State
     #   DXImageList.Items[Image_GameDialogs].DrawAdd(DXDraw.Surface, Bounds(200, 120, 240, 120), 2, 255);
     # end;
     
-    draw_string "Punkte: #{score}", :center, 5
+    draw_centered_string "Punkte: #{score}", WIDTH / 2, 5
   end
   
   def button_down id
@@ -296,10 +296,9 @@ class Game < State
   
   def cast_objects pmid, num, vx, vy, randomness, rect
     num.times do
-      obj = GameObject.create self, pmid, rect.left + rand(rect.width), rect.top + rand(rect.height), nil
+      obj = create_object pmid, rect.left + rand(rect.width), rect.top + rand(rect.height), nil
       obj.vx = vx - randomness + rand(randomness * 2 + 1)
       obj.vy = vy - randomness + rand(randomness * 2 + 1)
-      @objects << obj
     end
   end
   
@@ -309,6 +308,23 @@ class Game < State
     cast_single_fx ID_FX_SMOKE, smoke,  x, y, *args
     cast_single_fx ID_FX_FLAME, flames, x, y, *args
     cast_single_fx ID_FX_SPARK, sparks, x, y, *args
+  end
+
+  def create_object pmid, x, y, xdata
+    cls = case pmid
+      when 0..ID_LIVING_MAX then LivingObject
+      when ID_OTHER_OBJECTS_MIN..ID_OTHER_OBJECTS_MAX then GameObject
+      when ID_COLLECTIBLE_MIN..ID_COLLECTIBLE_MAX then CollectibleObject
+      when ID_FX_MIN..ID_FX_MAX then EffectObject
+    end
+    
+    obj = cls.new(self, pmid, x, y, xdata)
+    @objects << obj
+    obj
+  end
+  
+  def find_object min_id, max_id, rect
+    @objects.find { |o| o.pmid >= min_id and o.pmid <= max_id and rect.include? o }
   end
   
   private
@@ -390,10 +406,9 @@ class Game < State
     num.times do
       x = [[x - w / 2 + rand(w + 1), 0].max, 575].min
       y =   y - h / 2 + rand(h + 1)
-      fx = EffectObject.create self, pmid, x, y, nil
+      fx = create_object(pmid, x, y, nil)
       fx.vx = vx - randomness + rand(randomness * 2 + 1)
       fx.vy = vy - randomness + rand(randomness * 2 + 1)
-      @objects << fx
     end
   end  
 end

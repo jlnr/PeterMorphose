@@ -1,14 +1,17 @@
-def draw_string string, x, y, alpha = 255
-  # TODO Hackish...
-  # TODO ZOrder
+def font
   @font ||= Gosu::Font.new(16)
-  if x == :center then
-    @font.draw_rel string, WIDTH / 2, y, 255, 0.5, 0.0,
-      1, 1, alpha << 24 | 0xffffff
-  else
-    @font.draw string, x, y, 255,
-      1, 1, alpha << 24 | 0xffffff
-  end
+end
+
+def draw_string string, x, y, a = 255
+  font.draw string, x, y, Z_TEXT, 1, 1, alpha(a)
+end
+
+def draw_centered_string string, x, y, a = 255
+  font.draw_rel string, x, y, Z_TEXT, 0.5, 0.0, 1, 1, alpha(a)
+end
+
+def draw_right_aligned_string string, x, y, a = 255
+  font.draw_rel string, x, y, Z_TEXT, 1, 0.0, 1, 1, alpha(a)
 end
 
 def draw_rect x, y, w, h, color, z = 0
