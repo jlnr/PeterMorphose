@@ -30,9 +30,9 @@ class LivingObject < GameObject
       #   end;
       # end;
       if game.inv_time_left == 0 or type = ID_PLAYER_BERSERKER then
-        color = 0xa0ffffff
-      else
         color = 0xffffffff
+      else
+        color = 0xa0ffffff
       end
       @@player_images ||= Gosu::Image.load_tiles 'media/player.bmp', -ACT_NUM, -10
       @@player_images[ACT_NUM * (direction + (pmid - ID_PLAYER) * 2) + action].draw x - 11, y - 11 - game.view_pos, 0, 1, 1, color
@@ -368,8 +368,8 @@ class LivingObject < GameObject
   
   def dispose
     return if game.frame == -1 or pmid > ID_PLAYER_MAX
-    self.pmid = ID_PLAYER
-    self.action = ACT_JUMP unless action == ACT_DEAD
+    @pmid = ID_PLAYER
+    @action = ACT_JUMP unless action == ACT_DEAD
     # TODO CastFX(8, 0, 0, Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY, 24, 24, 0, -1, 4, Data.OptEffects, Data.ObjEffects);
   end
   

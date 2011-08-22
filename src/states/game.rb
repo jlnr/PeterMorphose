@@ -6,6 +6,10 @@ class Game < State
   attr_reader :stars_goal
   attr_reader :obj_vars
   
+  def inspect
+    "#<Game>"
+  end
+  
   def initialize level_info
     @view_pos = TILES_Y * TILE_SIZE - HEIGHT # TODO
     
@@ -191,14 +195,12 @@ class Game < State
     @objects.each &:update
     @objects.reject! &:marked?
     
-    #  // Ab und zu mal ein Rauchwˆlkchen und Flammen aus der Lava steigen lassen...
-    #  if Data.Map.LavaTimeLeft = 0 then begin
-    #    CastFX(Random(2) + 1, Random(2) + 1, 0, 288, Data.Map.LavaPos, 576, 8, 1, -4, 1, Data.OptEffects, Data.ObjEffects);
-    #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
-    #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
-    #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
-    #  end;
-    
+    if map.lava_time_left == 0 then
+      cast_fx rand(2) + 1, rand(2) + 1, 0, 288, map.lava_pos, 576, 8, 1, -3, 1
+      #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
+      #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
+      #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
+    end
   end
   
   def draw
@@ -209,7 +211,7 @@ class Game < State
     @@danger ||= Gosu::Image.load_tiles 'media/danger.png', -2, -2
     offset = if map.lava_time_left == 0 then frame / 2 % 2 else 0 end
     -1.upto(4) do |x|
-      @@danger[map.lava_time_left == 0 ? 0 : 1].draw x * 120 + map.lava_frame, map.lava_pos - view_pos + 0, 0
+      @@danger[map.lava_time_left == 0 ? 0 : 1].draw x * 120 + map.lava_frame, map.lava_pos - view_pos + 0, Z_LAVA
     end
     if map.lava_pos < map.level_top + 432 then
       #   for LoopX := -1 to 4 do
@@ -292,6 +294,14 @@ class Game < State
     
   end
   
+  def cast_fx smoke, flames, sparks, x, y, *args
+    return if (view_pos + HEIGHT / 2 - y).abs > HEIGHT
+    
+    cast_single_fx ID_FX_SMOKE, smoke,  x, y, *args
+    cast_single_fx ID_FX_FLAME, flames, x, y, *args
+    cast_single_fx ID_FX_SPARK, sparks, x, y, *args
+  end
+  
   private
   
   def draw_status_bar
@@ -303,66 +313,77 @@ class Game < State
       draw_digits = lambda do |num, row|
         left_digit  = [num, 99].min / 10 * 2 + 20
         right_digit = [num, 99].min % 10 * 2 + 21
-        @@gui[left_digit].draw  tile_w * 2, tile_h * row, 0
-        @@gui[right_digit].draw tile_w * 3, tile_h * row, 0
+        @@gui[left_digit].draw  tile_w * 2, tile_h * row, Z_UI
+        @@gui[right_digit].draw tile_w * 3, tile_h * row, Z_UI
       end
 
       # Game logo and spacing
       0.upto(3) do |x|
-        @@gui[x + 0].draw tile_w * x, tile_h * 0, 0
-        @@gui[x + 4].draw tile_w * x, tile_h * 1, 0
+        @@gui[x + 0].draw tile_w * x, tile_h * 0, Z_UI
+        @@gui[x + 4].draw tile_w * x, tile_h * 1, Z_UI
       end
       # Health
       if true then # TODO player.alive?
-        @@gui[8].draw tile_w * 0, tile_h * 2, 0
-        @@gui[9].draw tile_w * 1, tile_h * 2, 0
+        @@gui[8].draw tile_w * 0, tile_h * 2, Z_UI
+        @@gui[9].draw tile_w * 1, tile_h * 2, Z_UI
         draw_digits.call player.life, 2
       else
-        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 2, 0 }
+        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 2, Z_UI }
       end
       # Keys
-      @@gui[10].draw tile_w * 0, tile_h * 3, 0
-      @@gui[11].draw tile_w * 1, tile_h * 3, 0
+      @@gui[10].draw tile_w * 0, tile_h * 3, Z_UI
+      @@gui[11].draw tile_w * 1, tile_h * 3, Z_UI
       draw_digits.call keys, 3
       # Stars
-      @@gui[12].draw tile_w * 0, tile_h * 4, 0
-      @@gui[13].draw tile_w * 1, tile_h * 4, 0
+      @@gui[12].draw tile_w * 0, tile_h * 4, Z_UI
+      @@gui[13].draw tile_w * 1, tile_h * 4, Z_UI
       draw_digits.call stars, 4
       if stars > stars_goal then
         # Enough stars - draw checkmark
-        @@gui[42].draw tile_w * 2, tile_h * 4, 0
-        @@gui[43].draw tile_w * 3, tile_h * 4, 0
+        @@gui[42].draw tile_w * 2, tile_h * 4, Z_UI
+        @@gui[43].draw tile_w * 3, tile_h * 4, Z_UI
       end
       if stars_goal == 0 then
         # Or blank the line out of no stars are needed
-        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 4, 0 }
+        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 4, Z_UI }
       end
       # Remaining special peter time
       if player.pmid == ID_PLAYER then
-        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 5, 0 }
+        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 5, Z_UI }
       else
-        @@gui[14].draw tile_w * 0, tile_h * 5, 0
-        @@gui[15].draw tile_w * 1, tile_h * 5, 0
+        @@gui[14].draw tile_w * 0, tile_h * 5, Z_UI
+        @@gui[15].draw tile_w * 1, tile_h * 5, Z_UI
         draw_digits.call time_left / TARGET_FPS, 5
       end
       # Ammo
-      @@gui[16].draw tile_w * 0, tile_h * 6, 0
-      @@gui[17].draw tile_w * 1, tile_h * 6, 0
+      @@gui[16].draw tile_w * 0, tile_h * 6, Z_UI
+      @@gui[17].draw tile_w * 1, tile_h * 6, Z_UI
       draw_digits.call ammo, 6
       # Bombs
-      @@gui[18].draw tile_w * 0, tile_h * 7, 0
-      @@gui[19].draw tile_w * 1, tile_h * 7, 0
+      @@gui[18].draw tile_w * 0, tile_h * 7, Z_UI
+      @@gui[19].draw tile_w * 1, tile_h * 7, Z_UI
       draw_digits.call bombs, 7
       # Remaining time for frozen lava
       if map.lava_time_left == 0 then
         0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 8, 0 }
       else
-        @@gui[40].draw tile_w * 0, tile_h * 8, 0
-        @@gui[41].draw tile_w * 1, tile_h * 8, 0
+        @@gui[40].draw tile_w * 0, tile_h * 8, Z_UI
+        @@gui[41].draw tile_w * 1, tile_h * 8, Z_UI
         draw_digits.call map.lava_time_left / TARGET_FPS, 8
       end
       # Spacing
-      0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 9, 0 }
+      0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 9, Z_UI }
     end
   end
+
+  def cast_single_fx pmid, num, x, y, w, h, vx, vy, randomness
+    num.times do
+      x = [[x - w / 2 + rand(w + 1), 0].max, 575].min
+      y =   y - h / 2 + rand(h + 1)
+      fx = EffectObject.create self, pmid, x, y, nil
+      fx.vx = vx - randomness + rand(randomness * 2 + 1)
+      fx.vy = vy - randomness + rand(randomness * 2 + 1)
+      @objects << fx
+    end
+  end  
 end

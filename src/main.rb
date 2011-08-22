@@ -30,7 +30,7 @@ Dir.chdir File.expand_path("#{__FILE__}/../..")
 
 %w(const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection states/game
-   objects/object_def objects/game_object objects/living_object objects/collectible_object
+   objects/object_def objects/game_object objects/living_object objects/collectible_object objects/effect_object
    ini_file level_info map).each { |fn| require_relative fn }
 
 # Not yet part of gosu-preview
@@ -38,6 +38,9 @@ Gosu::enable_undocumented_retrofication rescue nil
 
 WIDTH, HEIGHT = 640, 480
 TARGET_FPS = 30
+
+# Z Order
+Z_EFFECTS, Z_LAVA, Z_UI = *0..255
 
 # Simple implementation of the Gosu "State-Based" game pattern
 class Window < Gosu::Window
