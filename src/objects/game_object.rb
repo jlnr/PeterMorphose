@@ -99,6 +99,7 @@ class GameObject < Struct.new(:game, :pmid, :x, :y, :xdata, :vx, :vy)
     # end;
     # LastFrameInWater := InWater;
     
+    # Gravity
     self.vy += 1 if (pmid > ID_PLAYER_MAX or game.fly_time_left == 0) and not in_water?
     
     if in_water? then
@@ -106,6 +107,10 @@ class GameObject < Struct.new(:game, :pmid, :x, :y, :xdata, :vx, :vy)
       self.vy += 1 if vy < 1
       self.vx -= 1 if vx > 2
       self.vx += 1 if vx < 2
+    end
+    
+    if pmid <= ID_PLAYER_MAX and not blocked? DIR_DOWN then
+      self.vx = (self.vx / 2.0).to_i
     end
     
     # Velocity is limited to +- TILE_SIZE

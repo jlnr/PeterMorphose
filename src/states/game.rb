@@ -181,18 +181,9 @@ class Game < State
           if not busy? and vx > -ObjectDef[pmid].speed * 1.75 then
             self.vx -= ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
           end
-          # if Data.OptOldJumping = 1 then begin
-          #   if (Action = Act_Jump) or (Action = Act_Land)
-          #   or (Action = Act_Pain1) or (Action = Act_Pain2) then begin
-          #     if not Blocked(Dir_Left) then Dec(PosX);
-          #     if not Blocked(Dir_Left) then Dec(PosX);
-          #     if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
-          #     if not Blocked(Dir_Left) and (Action = Act_Land) then Dec(PosX);
-          #   end;
-          # end else begin
-          #   if (Action in [Act_Jump, Act_Pain1, Act_Pain2]) and (VelX > -Data.Defs[ID].JumpX - 2) then Dec(VelX);
-          #   if (Action = Act_Land) and (VelX > -Data.Defs[ID].JumpX - 3) then Dec(VelX);
-          # end;
+          if [ACT_JUMP, ACT_LAND, ACT_PAIN_1, ACT_PAIN_2].include? action then
+            (ObjectDef[pmid].jump_x * 2).times { self.x -= 1 unless blocked? DIR_LEFT }
+          end
         end
       end
       if right_pressed? then
@@ -200,19 +191,10 @@ class Game < State
           if not busy? and vx < +ObjectDef[pmid].speed * 1.75 then
             self.vx += ObjectDef[pmid].speed# + (@speed_time_left > 0 ? 6 : 0).round
           end
+          if [ACT_JUMP, ACT_LAND, ACT_PAIN_1, ACT_PAIN_2].include? action then
+            (ObjectDef[pmid].jump_x * 2).times { self.x += 1 unless blocked? DIR_RIGHT }
+          end
         end
-        # if Data.OptOldJumping = 1 then begin
-        #   if (Action = Act_Jump) or (Action = Act_Land)
-        #   or (Action = Act_Pain1) or (Action = Act_Pain2) then begin
-        #     if not Blocked(Dir_Right) then Inc(PosX);
-        #     if not Blocked(Dir_Right) then Inc(PosX);
-        #     if not Blocked(Dir_Right) and (Action = Act_Land) then Inc(PosX);
-        #     if not Blocked(Dir_Right) and (Action = Act_Land) then Inc(PosX);
-        #   end;
-        # end else begin
-        #   if (Action in [Act_Jump, Act_Pain1, Act_Pain2]) and (VelX < +Data.Defs[ID].JumpX + 2) then Inc(VelX);
-        #   if (Action = Act_Land) and (VelX < +Data.Defs[ID].JumpX + 3) then Inc(VelX);
-        # end;
       end
     end
     #       ...else with TPMLiving(Data.ObjPlayers.Next) do begin

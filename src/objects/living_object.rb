@@ -413,7 +413,7 @@ class LivingObject < GameObject
     # Tile below player (magic floor tiles)
     case game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE]
     when TILE_ROCKET_UP, TILE_ROCKET_UP_2, TILE_ROCKET_UP_3 then
-      sample(:jump).play if pmid <= ID_PLAYER_MAX
+      sound(:jump).play if pmid <= ID_PLAYER_MAX
       emit_sound :turbo
       self.vx = 0
       self.vy = -20
