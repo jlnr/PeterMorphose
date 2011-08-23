@@ -87,7 +87,11 @@ class CollectibleObject < GameObject
         sound(:collect_star).play Gosu::random(0.5, 0.7), Gosu::random(0.9, 1.1)
         game.score += 2
         game.stars += 1
-        game.player.emit_text "Nr. #{game.stars}"
+        if game.stars < game.stars_goal then
+          game.player.emit_text "Noch #{game.stars_goal - game.stars}"
+        elsif game.stars == game.stars_goal then
+          game.player.emit_text "Genug gesammelt!"
+        end
         game.cast_objects ID_FX_SPARKLE, 2, 0, 0, 0, rect
         kill
       when ID_POINTS..ID_POINTS_MAX then

@@ -190,8 +190,8 @@ class GameObject
     end
     
     if blocked? DIR_UP and game.fly_time_left == 0 then
-      self.vy /= -2
-      self.vx /= +2
+      self.vy = 1
+      #self.vx /= +2
     end
     
     if vx < 0 then

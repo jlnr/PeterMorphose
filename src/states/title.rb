@@ -11,7 +11,7 @@ class Title < State
   def button_down id
     if menu_confirm? id or menu_cancel? id then
       sound(:whoosh).play
-      State.current = Menu.new
+      State.current = LevelSelection.new#Menu.new
     end
   end
 end

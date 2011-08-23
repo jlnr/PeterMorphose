@@ -301,7 +301,7 @@ class LivingObject < GameObject
       rect = ObjectDef::Rect.new(x - 11 + direction.dir_to_vx * 6, y - 16, 22, 32)
       if target = game.find_living(ID_ENEMY, ID_ENEMY_MAX, 0, ACT_PAIN_1 - 1, rect) then
         target.hit
-        target.fling 5 * direction.dir_to_vx * 5, -4, 1, true, true
+        target.fling 5 * direction.dir_to_vx, -4, 1, true, true
         if target.action == ACT_DEAD then
           game.score += score = ObjectDef[target.pmid].life * 3
           target.emit_text "#{score} Punkte!"
@@ -411,7 +411,7 @@ class LivingObject < GameObject
       if game.player.action < ACT_PAIN_1 and collide_with? game.player.rect(1, -1) then
         if pmid == ID_ENEMY_BOMBER then
           game.player.hurt(true)
-          game.cast_fx 10, 30, 10, x, y, 10, 0, -10, 5
+          game.cast_fx 10, 30, 10, x, y, 10, 20, 0, -10, 5
           kill
         else
           game.player.hit

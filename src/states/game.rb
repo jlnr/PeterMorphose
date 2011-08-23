@@ -179,9 +179,9 @@ class Game < State
     
     if map.lava_time_left == 0 then
       cast_fx rand(2) + 1, rand(2) + 1, 0, 288, map.lava_pos, 576, 8, 1, -3, 1
-      #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
-      #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
-      #    if (Data.OptEffects > 0) and (Random(250 - Data.OptEffects) div 10 = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXBubble, Random(576), Data.Map.LavaPos - 12, 1 - Random(3), 0);
+      if rand(15) == 0 then
+        create_object(ID_FX_BUBBLE, rand(576), map.lava_pos - 12, nil).vx = 1 - rand(3)
+      end
     end
   end
   
