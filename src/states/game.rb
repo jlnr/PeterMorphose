@@ -130,7 +130,7 @@ class Game < State
     elsif @result.nil? and player.y < map.level_top then
       if stars < stars_goal then
         lose t("Du hast verloren, weil du nicht genug Sterne gesammelt hast.")
-      elsif find_object(ID_CAROLIN, ID_CAROLON, ObjectDef::Rect.new(0, 0, 576, 24576)) then
+      elsif find_object(ID_CAROLIN, ID_CAROLIN, ObjectDef::Rect.new(0, 0, 576, 24576)) then
         lose t("Du hast verloren, weil du nicht alle Gefangenen befreit hast.")
       else
         @result = :won
