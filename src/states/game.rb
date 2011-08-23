@@ -13,9 +13,55 @@ class Game < State
   def lose
   end
   
-  def explosion *args
+  def explosion x, y, radius, do_score
+    emit_sound :explosion, y
+    
+    (10 + radius / 2).times do
+      angle = Gosu::random(0, 360)
+      slowdown = Gosu::random(5, 11)
+      fx = create_object(ID_FX_SMOKE + rand(2), x, y, nil)
+      fx.vx = Gosu::offset_x(angle, radius / slowdown).to_i
+      fx.vy = Gosu::offset_y(angle, radius / slowdown).to_i
+    end
+    
+    # Damage nearby livings
+    objects.each do |obj|
+      next if not obj.is_a? LivingObject or obj.action == ACT_DEAD
+      
+      dist = Gosu::distance(x, y, obj.x, obj.y)
+      next if dist >= radius
+      
+      if dist < radius / 3 then
+        obj.hurt(true)
+      else
+        obj.hit
+      end
+      
+      if obj.action == ACT_DEAD and do_score and obj.pmid.between? ID_ENEMY, ID_ENEMY_MAX then
+        @score += score = ObjectDef[obj.pmid].life * 3
+        obj.emit_text "*#{score}*"
+      end
+    end
+    
+    # Damage creates
+    ((x - radius) / TILE_SIZE).upto((x + radius) / TILE_SIZE) do |tile_x|
+      ((y - radius) / TILE_SIZE).upto((y + radius) / TILE_SIZE) do |tile_y|
+        next if Gosu::distance(x, y, tile_x * TILE_SIZE + 12, tile_y * TILE_SIZE + 12) > radius
+        
+        case map[tile_x, tile_y]
+        when TILE_BIG_BLOCKER, TILE_BIG_BLOCKER_2 then
+          if not find_object ID_FX_FIRE, ID_FX_FIRE, ObjectDef::Rect.new(tile_x * TILE_SIZE - 1, tile_y * TILE_SIZE - 1, 2, 2) then
+            create_object ID_FX_FIRE, tile_x * TILE_SIZE, tile_y * TILE_SIZE, nil
+          end
+        when TILE_BIG_BLOCKER_3 then
+          map[tile_x, tile_y] = 0
+          emit_sound "break#{rand(2) + 1}", y
+          cast_objects ID_FX_BREAKING_PARTS, 20, 0, 3, 3, ObjectDef::Rect.new(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+        end
+      end
+    end
   end
-  
+    
   def initialize level_info
     song(:game).play
     
@@ -166,7 +212,7 @@ class Game < State
     
     if @speed_time_left > 0 then
       @speed_time_left -= 1
-      cast_objects ID_FX_SPARK, rand(2), 0, 0, 1, game.player.rect(1, 1)
+      cast_objects ID_FX_SPARK, rand(2), 0, 0, 1, player.rect(1, 1)
     end
     @jump_time_left -= 1 if @jump_time_left > 0
     @fly_time_left -= 1 if @fly_time_left > 0

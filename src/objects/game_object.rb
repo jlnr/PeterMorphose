@@ -108,7 +108,7 @@ class GameObject
     
     # Get roasted by lava
     if y + ObjectDef[pmid].rect.bottom > game.map.lava_pos then
-      # TODO CastFX(4, 4, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects);
+      game.cast_fx 4, 4, 0, x, y, 16, 16, 0, -3, 1
       kill
       emit_sound :shshsh
     end
@@ -342,53 +342,6 @@ class GameObject
         self.vy = 5
       end
     end
-  end
-  
-  def explosion x, y, radius, do_score
-    # TODO DistSound(Y, Sound_Explosion, Data);
-    
-    (10 + radius / 2).times do
-      angle = Gosu::random(0, 360)
-      slowdown = Gosu::random(5, 11)
-      fx = game.create_object(ID_FX_SMOKE + rand(2), x, y, nil)
-      fx.vx = Gosu::offset_x(angle, radius / slowdown).to_i
-      fx.vy = Gosu::offset_y(angle, radius / slowdown).to_i
-    end
-    
-    # Damage livings
-    # TempObj := Data.ObjEnemies.Next;
-    #     while TempObj <> Data.ObjEffects do begin
-    #       if (TempObj.ClassType = TPMLiving) and (TPMLiving(TempObj).Action < Act_Dead) then begin
-    #         if Sqrt(Power(Abs(X - TempObj.PosX), 2) + Power(Abs(Y - TempObj.PosY), 2)) <= (Radius / 3) then TPMLiving(TempObj).Hurt(True)
-    #           else if Sqrt(Power(Abs(X - TempObj.PosX), 2) + Power(Abs(Y - TempObj.PosY), 2)) <= Radius then TPMLiving(TempObj).Hit;
-    #         if DoScore and (TempObj.ID in [ID_Enemy..ID_EnemyMax]) and (TPMLiving(TempObj).Action = Act_Dead) then begin
-    #           Inc(Data.Score, Data.Defs[TempObj.ID].Life * 3);
-    #           TPMEffect.Create(Data.ObjEffects, IntToStr(Data.Defs[TempObj.ID].Life * 3) + ' Punkte!', ID_FXText, TempObj.PosX, TempObj.PosY - 10, 0, -1);
-    #         end;
-    #       end;
-    #       TempObj := TempObj.Next;
-    #     end;
-    
-    # Damage creates
-    # for I := (X - Radius) div 24 to (X + Radius) div 24 do
-    #       for P := (Y - Radius) div 24 to (Y + Radius) div 24 do begin
-    #         if (Sqrt(Power(Abs(X div 24 - I), 2) + Power(Abs(Y div 24 - P), 2)) < Radius / 24)
-    #           and (Data.Map.Tile(I * 24, P * 24) in [Tile_BigBlocker, Tile_BigBlocker2])
-    #             and (FindObject(Data.ObjEffects, Data.ObjEnd, ID_FXFire, ID_FXFire, Bounds(I * 24 - 1, P * 24 - 1, 2, 2)) = nil) then
-    #               TPMEffect.Create(Data.ObjEffects, '', ID_FXFire, I * 24, P * 24, 0, 0);
-    #         if Data.Map.Tile(I * 24, P * 24) in [Tile_Blocker..Tile_Blocker3] then begin
-    #           if Data.Map.Tile(I * 24, P * 24) in [Tile_Blocker, Tile_Blocker2]
-    #             then Data.Map.Tiles[I, P] := Tile_BlockerBroken
-    #             else Data.Map.Tiles[I, P] := Tile_Blocker3Broken;
-    #           CastObjects(ID_FXBlockerParts, 10, 0, -2, 5, Data.OptEffects, Bounds(I * 24, P * 24, 24, 24), Data.ObjEffects);
-    #           DistSound(Y, Sound_BlockerBreak, Data);
-    #         end;
-    #         if Data.Map.Tile(I * 24, P * 24) = Tile_BigBlocker3 then begin
-    #           Data.Map.SetTile(I, P, 0);
-    #           DistSound(Y, Sound_Break + Random(2), Data);
-    #           CastObjects(ID_FXBreakingParts, 20, 0, 3, 3, Data.OptEffects, Bounds(I * 24, P * 24, 24, 24), Data.ObjEffects);
-    #         end;
-    #       end;
   end
   
   def collide_with? other

@@ -1,5 +1,5 @@
 class LevelInfo
-  attr_accessor :filename, :title, :ini_file
+  attr_accessor :filename, :difficulty, :ini_file
   
   def initialize filename
     @filename = filename
@@ -57,7 +57,7 @@ class LevelInfo
     elsif File.basename(other.filename) == FIRST_LEVEL then
       +1
     else
-      title <=> other.title
+      difficulty <=> other.difficulty
     end
   end
 end
