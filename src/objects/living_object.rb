@@ -558,7 +558,7 @@ class LivingObject < GameObject
     return if busy?
     
     # Lever behind player
-    if can_reach_lever? then
+    if pmid <= ID_PLAYER_MAX and can_reach_lever? then
       if pmid == ID_PLAYER then
         # only the normal player has an animation for that
         self.action = ACT_ACTION_1
