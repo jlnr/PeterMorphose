@@ -28,7 +28,7 @@ end
 # For resource loading.
 Dir.chdir File.expand_path("#{__FILE__}/../..")
 
-%w(const helpers/graphics helpers/audio helpers/input
+%w(localization const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection states/game
    objects/object_def objects/game_object objects/living_object objects/collectible_object objects/effect_object
    ini_file level_info map).each { |fn| require_relative fn }
@@ -47,7 +47,7 @@ class Window < Gosu::Window
   def initialize
     super WIDTH*3/2, HEIGHT*3/2, :update_interval => 1000.0 / TARGET_FPS
     
-    self.caption = "Peter Morphose"
+    self.caption = 'Peter Morphose'
     
     State.current = Title.new
   end

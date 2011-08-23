@@ -23,8 +23,8 @@ class LevelSelection < State
     if @@levels.size > LEVELS_ON_SCREEN then
       draw_string '|', 632, 384.0 * @@ls_top / (@@levels.size - LEVELS_ON_SCREEN)
     end
-    draw_centered_string 'Wähle mit den Pfeiltasten ein Level aus und starte es mit Enter.', WIDTH / 2, 424
-    draw_centered_string 'Willst du zurück zum Hauptmenü, drücke Escape.', WIDTH / 2, 446
+    draw_centered_string t('Wähle mit den Pfeiltasten ein Level aus und starte es mit Enter.'), WIDTH / 2, 434
+    #draw_centered_string t('Willst du zurück zum Hauptmenü, drücke Escape.'), WIDTH / 2, 446
   end
   
   def button_down(id)

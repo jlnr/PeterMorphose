@@ -49,7 +49,7 @@ class CollectibleObject < GameObject
         kill
       when ID_KEY then
         sound(:collect_key).play
-        game.player.emit_text "#{ObjectDef[pmid].name}!"
+        game.player.emit_text "#{t ObjectDef[pmid].name}!"
         game.cast_objects ID_FX_SPARKLE, 2, 0, 0, 0, rect
         game.score += 2
         game.keys += 1
@@ -66,11 +66,11 @@ class CollectibleObject < GameObject
         sound(:morph).play
         game.cast_objects ID_FX_SPARKLE, 2, 0, 0, 0, rect
         if pmid == ID_MORE_TIME then
-          game.player.emit_text '+1 Sekunde'
+          game.player.emit_text "+1 #{t 'Sekunde'}"
           game.score += 5
           game.time_left += 30
         else
-          game.player.emit_text '+3,5 Sekunden'
+          game.player.emit_text "+3,5 #{t 'Sekunden'}"
           game.score += 10
           game.time_left += 110
         end
@@ -88,9 +88,9 @@ class CollectibleObject < GameObject
         game.score += 2
         game.stars += 1
         if game.stars < game.stars_goal then
-          game.player.emit_text "Noch #{game.stars_goal - game.stars}"
+          game.player.emit_text t("Noch %d") % (game.stars_goal - game.stars)
         elsif game.stars == game.stars_goal then
-          game.player.emit_text "Genug gesammelt!"
+          game.player.emit_text t("Genug gesammelt!")
         end
         game.cast_objects ID_FX_SPARKLE, 2, 0, 0, 0, rect
         kill
@@ -119,15 +119,7 @@ class CollectibleObject < GameObject
       when ID_COOKIE then
         sound(:eat).play
         game.cast_objects ID_FX_SPARKLE, 1, 0, 0, 0, rect
-        if xdata.nil? or xdata.length <= 2 then
-          xdata = case rand(4)
-          when 0 then '|Komisch, der Keks war leer?'
-          when 1 then '|Sowas, der Keks war leer!'
-          when 2 then '|Och nein, schon wieder ein leerer Keks!'
-          when 3 then '|Der Keks ist leer.'
-          end
-        end
-        emit_text xdata.split('|')[1], :slow
+        emit_text xdata.split('|')[1] || t('Der Keks war leer...'), :slow
         game.score += 10
         kill
       when ID_SLOW_DOWN then
@@ -141,12 +133,12 @@ class CollectibleObject < GameObject
           game.map.lava_speed -= 1
         end
         sound(:collect_freeze).play
-        game.player.emit_text 'Lava verlangsamt!'
+        game.player.emit_text t('Lava verlangsamt!')
         game.cast_objects ID_FX_SPARKLE, 3, 0, 0, 0, rect
         kill
       when ID_CRYSTAL then
         sound(:collect_freeze).play
-        game.player.emit_text 'Lava angehalten!', :slow
+        game.player.emit_text t('Lava angehalten!'), :slow
         game.map.lava_time_left += 80
         game.cast_objects ID_FX_SPARKLE, 4, 0, 0, 0, rect
         kill
@@ -155,7 +147,7 @@ class CollectibleObject < GameObject
         if game.player.pmid != target_id then
           sound(:morph).play
           game.player.pmid = target_id
-          game.player.emit_text "#{ObjectDef[game.player.pmid].name}!"
+          game.player.emit_text "#{t ObjectDef[game.player.pmid].name}!", :slow
           game.player.action = ACT_JUMP
           game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
           game.time_left = ObjectDef[game.player.pmid].life
@@ -164,7 +156,7 @@ class CollectibleObject < GameObject
         end
       when ID_SPEED, ID_JUMP, ID_FLY then
         sound(:morph).play
-        game.player.emit_text "#{ObjectDef[pmid].name}!", :slow
+        game.player.emit_text "#{t ObjectDef[pmid].name}!", :slow
         case pmid
         when ID_SPEED then game.speed_time_left = 330
         when ID_JUMP  then game.jump_time_left  = 330

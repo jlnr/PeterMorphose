@@ -233,7 +233,7 @@ class Game < State
     #   DXImageList.Items[Image_GameDialogs].DrawAdd(DXDraw.Surface, Bounds(200, 120, 240, 120), 2, 255);
     # end;
     
-    draw_centered_string "Punkte: #{score}", WIDTH / 2, 5
+    draw_centered_string "#{t 'Punkte'}: #{score}", WIDTH / 2, 5
   end
   
   def button_down id

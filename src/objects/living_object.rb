@@ -120,7 +120,7 @@ class LivingObject < GameObject
   
   def hit
     return if action == ACT_DEAD or pmid == ID_PLAYER_BERSERKER
-    return if ID_PLAYER_FIGHTER and rand(2) == 0
+    return if pmid == ID_PLAYER_FIGHTER and rand(2) == 0
     
     if pmid <= ID_PLAYER_MAX then
       return if game.inv_time_left > 0
@@ -304,7 +304,7 @@ class LivingObject < GameObject
         target.fling 5 * direction.dir_to_vx, -4, 1, true, true
         if target.action == ACT_DEAD then
           game.score += score = ObjectDef[target.pmid].life * 3
-          target.emit_text "#{score} Punkte!"
+          target.emit_text "*#{score}*"
         end
       end
     end
@@ -318,7 +318,7 @@ class LivingObject < GameObject
         target.fling 3 * direction.dir_to_vx * 3, -3, 1, true, true
         if target.action == ACT_DEAD then
           game.score += score = ObjectDef[target.pmid].life * 3
-          target.emit_text "#{score} Punkte!"
+          target.emit_text "*#{score}*"
         end
       end
     end
@@ -331,7 +331,7 @@ class LivingObject < GameObject
           obj.hurt(false)
           if obj.action = ACT_DEAD then
             game.score += score = ObjectDef[obj.pmid].life * 3
-            obj.emit_text "#{score} Punkte!"
+            obj.emit_text "*#{score}*"
           end
         end
       end
