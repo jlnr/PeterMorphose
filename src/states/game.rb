@@ -1,4 +1,6 @@
 class Game < State
+  include PMScript
+  
   # @result can be: nil (running), :lost, :won
   # @paused can be: true, false
   
@@ -121,6 +123,8 @@ class Game < State
   end
   
   def update
+    debug binding if $window.button_down? Gosu::KbD
+    
     if @result.nil? and (player.action == ACT_DEAD or player.marked?) then
       lose t("Du bist gestorben.")
     elsif @result.nil? and player.y < map.level_top then
@@ -138,19 +142,18 @@ class Game < State
     @frame = (@frame + 1) % 2400
     @message_opacity -= 3 if @message_opacity > 0
     
-    # // Jetzt schon das Skript ausf¸hren (damit Zeile 0 ber¸cksichtigt wird)
-    # if Data.Map.LavaPos div 24 < LavaTopPos then begin // Hˆchstwert ¸berschritten
-    #   LavaTopPos := Data.Map.LavaPos div 24;
-    #   ExecuteScript(Data.Map.Scripts[LavaTopPos], 'lava');
-    # end;
-    # // Auﬂerdem Spielerskript ausf¸hren
-    # if Data.ObjPlayers.Next.PosY div 24 < PlayerTopPos then begin // Hˆchstwert ¸berschritten
-    #   PlayerTopPos := Data.ObjPlayers.Next.PosY div 24;
-    #   ExecuteScript(Data.Map.Scripts[PlayerTopPos], 'player');
-    # end;
-    # // Und nu die Timerz
-    # ExecuteScript(Data.Map.ScriptTimers[Data.Frame mod 10], 'do');
-    # ExecuteScript(Data.Map.ScriptTimers[10], 'do');
+    if map.lava_pos / TILE_SIZE < @lava_top_pos then
+      @lava_top_pos = map.lava_pos / TILE_SIZE
+      execute_script map.scripts[@lava_top_pos], 'lava'
+    end
+    
+    if player.y / TILE_SIZE < @player_top_pos then
+      @player_top_pos = player.y / TILE_SIZE
+      execute_script map.scripts[@lava_top_pos], 'player'
+    end
+    
+    execute_script map.timers[frame % 10], 'do'
+    execute_script map.timers[10], 'do'
     
     # Rising lava
     if map.lava_time_left == 0 then
@@ -221,10 +224,12 @@ class Game < State
     @jump_time_left -= 1 if @jump_time_left > 0
     @fly_time_left -= 1 if @fly_time_left > 0
     
-    player.jump     if jump_pressed?
-    player.use_tile if use_pressed?
-    player.act      if action_pressed?
-    player.dispose  if dispose_pressed?
+    if frame > 2 then
+      player.jump     if jump_pressed?
+      player.use_tile if use_pressed?
+      player.act      if action_pressed?
+      player.dispose  if dispose_pressed?
+    end
     
     @objects.each &:update
     @objects.reject! &:marked?
@@ -265,9 +270,9 @@ class Game < State
     #   if (Data.Map.LavaPos <= 24576) and (Data.Map.LavaTimeLeft > 0) then DXDraw.Surface.FillRectAlpha(Bounds(0, 38 + Round(((Data.Map.LavaPos / 24 - Data.Map.LevelTop / 24) / (LevelBottom - Data.Map.LevelTop / 24)) * 400), 12, 4), clAqua, 128);
     # end;
     
-    # // Scriptmessages
-    # if (Data.State in [State_Game, State_Paused]) and (MessageOpacity > 0) then
-    #   DrawBMPText(MessageText, (640 - Length(MessageText) * 9) div 2, 230, MessageOpacity, DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality);
+    if @result.nil? and @message_opacity > 0 then
+      draw_centered_string @message_text, WIDTH / 2, 230, @message_opacity
+    end
     
     @@dialogs ||= Gosu::Image.load_tiles 'media/dialogs.bmp', -1, -3
     if not @result.nil? then
@@ -331,6 +336,8 @@ class Game < State
   ensure
     create_object ID_FX_LINE, [x, orig_x].min, y, (x - orig_x).abs.to_s
   end
+  
+  include PMScript
 
   def cast_objects pmid, num, vx, vy, randomness, rect
     num.times do

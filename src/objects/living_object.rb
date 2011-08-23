@@ -289,8 +289,8 @@ class LivingObject < GameObject
               target.xdata[9 + i * 10, 2] = '%02X' % old_tile
               game.cast_fx 8, 0, 0, tile_x * TILE_SIZE + 10, tile_y * TILE_SIZE + 12, 24, 24, 0, 0, 2
             end
-          elsif not xdata.nil?
-            game.execute_script xdata[2..-1], 'do'
+          elsif not target.xdata.nil?
+            game.execute_script target.xdata[2..-1], 'do'
           end
         end
       end
@@ -456,7 +456,7 @@ class LivingObject < GameObject
     if action.between? ACT_ACTION_1, ACT_ACTION_5 then
       case pmid
       when ID_PLAYER, ID_PLAYER_GUN, ID_ENEMY_FIGHTER then slowness = 2
-      when ID_ENEMY_GUN then slowness = 5
+      when ID_ENEMY_GUN then slowness = 8
       when ID_PLAYER_BOMBER then slowness = 3
       else
         slowness = 1

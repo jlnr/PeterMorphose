@@ -7,7 +7,6 @@ require 'gosu'
 require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
 # Must have
-# TODO Script
 # TODO Simplify controls
 
 # Gosu related work
@@ -20,17 +19,19 @@ require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 # TODO "Gosu" splash screen
 # TODO Remaining Menu
 # TODO High Scores
-# TODO Support for editor quick-starting on Windows
 
 def debug binding
   require 'pry'
   Pry.start binding
 end
 
+# Save ARGV[1] if existing
+ARGV[0] = File.expand_path(ARGV[0]) if ARGV[0]
+
 # For resource loading.
 Dir.chdir File.expand_path("#{__FILE__}/../..")
 
-%w(localization const helpers/graphics helpers/audio helpers/input
+%w(localization script const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection states/game
    objects/object_def objects/game_object objects/living_object objects/collectible_object objects/effect_object
    ini_file level_info map).each { |fn| require_relative fn }
@@ -51,7 +52,11 @@ class Window < Gosu::Window
     
     self.caption = 'Peter Morphose'
     
-    State.current = Title.new
+    if ARGV[0] then
+      State.current = Game.new LevelInfo.new(ARGV[0])
+    else
+      State.current = Title.new
+    end
   end
   
   def update

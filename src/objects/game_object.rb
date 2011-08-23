@@ -6,6 +6,10 @@ class GameObject
     @marked
   end
   
+  def alive?
+    not marked?
+  end
+  
   def kill
     0.upto(game.obj_vars.size) do |i|
       game.obj_vars[i] = nil if game.obj_vars[i] == self

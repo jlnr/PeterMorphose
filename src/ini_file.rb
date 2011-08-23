@@ -12,7 +12,7 @@ class INIFile
         case Iconv.conv('utf-8', 'ISO-8859-1', line.chomp)
         when /^\[(.+)\]$/ then
           current_section = @sections[$1] = {}
-        when /^(.*)=(.*)$/ then
+        when /^([^=]*)=(.*)$/ then
           current_section[$1] = $2
         end
       end

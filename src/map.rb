@@ -5,6 +5,7 @@ class Map
   end
   
   attr_reader :level_top, :level_bottom
+  attr_reader :scripts, :timers, :vars
   attr_accessor :lava_pos, :lava_time_left, :lava_mode, :lava_speed, :lava_frame
   
   def inspect
@@ -19,7 +20,7 @@ class Map
     @tiles = []
     @scripts = []
     @timers = []
-    @vars = []
+    @vars = [0] * 16
     
     (0...TILES_Y).each do |y|
       row = ini_file['Map', y] || '00' * TILES_X
