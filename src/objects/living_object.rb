@@ -54,7 +54,7 @@ class LivingObject < GameObject
       # Animated wings while flying
       if game.fly_time_left > 0 then
         color = alpha([game.fly_time_left * 2 + 16, 255].min)
-        case player.direction
+        case direction
           when DIR_LEFT then
             EffectObject.images[38 + (game.frame / 2) % 4].draw x - 18, y - 12 - game.view_pos, 0.75, 1, color, :additive
             EffectObject.images[42 + (game.frame / 2) % 4].draw x,      y - 12 - game.view_pos, 1.00, 1, color, :additive
@@ -512,7 +512,7 @@ class LivingObject < GameObject
     
     if in_water? then
       # Cannot jump when in deep water
-      return if ALL_WATER_TILES.include? game.map[x / TILE_SIZE, y / TILE_SIZE]
+      return if ALL_WATER_TILES.include? game.map[x / TILE_SIZE, (y - 3) / TILE_SIZE]
     else
       # Cannot jump when busy
       return if busy?
@@ -522,10 +522,12 @@ class LivingObject < GameObject
     if pmid <= ID_PLAYER_MAX then
       dir = self.direction = DIR_LEFT if left_pressed?
       dir = self.direction = DIR_RIGHT if right_pressed?
+    elsif pmid.between? ID_ENEMY, ID_ENEMY_MAX then
+      dir = direction
     end
     
     if pmid <= ID_PLAYER_MAX and game.jump_time_left > 0 then
-      self.vy = (ObjectDef[pmid].jump_y * 1.5).round - 1
+      self.vy = (ObjectDef[pmid].jump_y * 1.7).round - 1
       game.cast_objects ID_FX_SMOKE, 2, 0, 3, 2, rect(1, 0)
       sound(:turbo).play
       dir = DIR_UP
@@ -547,8 +549,8 @@ class LivingObject < GameObject
     
     if in_water? then
       self.vx /= 3
-      self.vy = (vy / 1.2).round
-      emit_sound :water
+      self.vy += 1
+      emit_sound "water#{rand(2) + 1}"
     end
     
     self.action = ACT_JUMP

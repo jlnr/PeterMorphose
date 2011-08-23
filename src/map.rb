@@ -119,7 +119,7 @@ class Map
     else
       5.times do |y|
         4.times do |x|
-          @@skies.first.draw x * 144, y * 120 - @game.view_pos % 120, 0
+          @@skies[@sky].draw x * 144, y * 120 - @game.view_pos % 120, 0
         end
       end
     end

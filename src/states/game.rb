@@ -147,7 +147,7 @@ class Game < State
       end
     else
       player.instance_eval do
-        2.times { self.vy -= 1 if up_pressed?    and vy > -4 }
+        4.times { self.vy -= 1 if up_pressed?    and vy > -4 }
         2.times { self.vy += 1 if down_pressed?  and vy < +4 }
         4.times { self.vx -= 1 if left_pressed?  and vx > -6 }
         4.times { self.vx += 1 if right_pressed? and vx < +6 }

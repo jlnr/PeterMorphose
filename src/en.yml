@@ -36,15 +36,17 @@
 'Weg durchs Feuer': 'Through Fire'
 'Vom Ozean in die Traufe': 'From Ocean to Worse'
 'Hektische Runde mit einigen kniffligen Stellen.': 'Hektische Runde mit einigen kniffligen Stellen.' # TODO
-'Schwere, aber schaffbare Karte mit viel Wasser.': 'Schwere, aber schaffbare Karte mit viel Wasser.' # TODO
-'Hoch hinaus': 'Hoch hinaus' # TODO
-'Mittel und kurz': 'Mittel und kurz' # TODO
-'Leichte und kurze Runde mit vielen Flugeinlagen.': 'Leichte und kurze Runde mit vielen Flugeinlagen.' # TODO
-'Gruselgrotte': 'Gruselgrotte' # TODO
-'Sehr schwer': 'Sehr schwer' # TODO
-'Keine Lava, viele Gegner. Achte auf die Sterne!': 'Keine Lava, viele Gegner. Achte auf die Sterne!' # TODO
-'Grünhügelshausen': 'Grünhügelshausen' # TODO
-'Gemütliche Runde für fortgeschrittene Spieler.': 'Gemütliche Runde für fortgeschrittene Spieler.' # TODO
-'Der Alkohol und seine Folgen': 'Der Alkohol und seine Folgen' # TODO
-'Schwer': 'Schwer' # TODO
-'Das passiert, wenn kleine Peter auf Partys gehen...': 'Das passiert, wenn kleine Peter auf Partys gehen...' # TODO
+'Schwere, aber schaffbare Karte mit viel Wasser.': 'Hard map with plenty water.'
+'Hoch hinaus': 'Higher and Higher'
+'Mittel und kurz': 'intermediate, short'
+'Leichte und kurze Runde mit vielen Flugeinlagen.': 'Short and easy map with a lot of airborne acrobatics.'
+'Gruselgrotte': 'Creepy Cavern'
+'Sehr schwer': 'very hard'
+'Keine Lava, viele Gegner. Achte auf die Sterne!': 'No lava, many enemies, few stars.'
+'Grünhügelshausen': 'Greenhillyvillyvalley'
+'Gemütliche Runde für fortgeschrittene Spieler.': 'Relaxed map for intermediate players.'
+'Der Alkohol und seine Folgen': 'The Day After'
+'Schwer': 'hard'
+'Das passiert, wenn kleine Peter auf Partys gehen...': 'What happens when little Peter goes to party...'
+'Sekunde': 'sec'
+'Sekunden': 'sec'

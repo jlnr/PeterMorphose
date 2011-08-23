@@ -144,7 +144,7 @@ class GameObject
     @last_frame_in_water = in_water?
     
     # Gravity
-    self.vy += 1 if (pmid > ID_PLAYER_MAX or game.fly_time_left == 0) and not in_water?
+    self.vy += 1 if (pmid > ID_PLAYER_MAX or game.fly_time_left == 0)# and not in_water?
     
     if in_water? then
       self.vy -= 1 if vy > +1
