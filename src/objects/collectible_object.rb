@@ -119,7 +119,7 @@ class CollectibleObject < GameObject
       when ID_COOKIE then
         sound(:eat).play
         game.cast_objects ID_FX_SPARKLE, 1, 0, 0, 0, rect
-        emit_text xdata.split('|')[1] || t('Der Keks war leer...'), :slow
+        emit_text t(xdata.split('|')[1] || 'Der Keks war leer...'), :slow
         game.score += 10
         kill
       when ID_SLOW_DOWN then
