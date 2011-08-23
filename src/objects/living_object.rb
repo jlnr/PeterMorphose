@@ -473,20 +473,23 @@ class LivingObject < GameObject
     end
     
     if pmid <= ID_ENEMY_MAX and
-       game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE].between? TILE_SLIME, TILE_SLIME_3 and
-       not (pmid == ID_ENEMY_FIGHTER and game.frame % 100 >= 70 or pmid == ID_ENEMY_GUN and game.frame % 100 <= 15) then
-      self.action = ACT_WALK_1 + game.frame % 12 / 3
-      if pmid <= ID_PLAYER_MAX then
-        self.direction = DIR_LEFT if left_pressed?
-        self.direction = DIR_RIGHT if right_pressed?
+       game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE].between? TILE_SLIME, TILE_SLIME_3 then
+      # Only when walking...
+      if (pmid <= ID_PLAYER_MAX and (left_pressed? or right_pressed?)) or
+         (pmid == ID_ENEMY_FIGHTER and game.frame % 100 < 70 or pmid == ID_ENEMY_GUN and game.frame % 100 > 15) then
+        self.action = ACT_WALK_1 + game.frame % 12 / 3
+        if pmid <= ID_PLAYER_MAX then
+          self.direction = DIR_LEFT if left_pressed?
+          self.direction = DIR_RIGHT if right_pressed?
+        end
         if (y - game.player.y).abs < HEIGHT and rand(5) == 0 then
           blob = game.create_object(ID_FX_FLYING_BLOB, x, y + ObjectDef[pmid].rect.bottom, nil)
           blob.vx = rand(3) - 1
           blob.vy = rand(3)
           emit_sound "slime#{rand(3) + 1}"
         end
+        return
       end
-      return
     end
     
     # Walking animation
@@ -520,7 +523,7 @@ class LivingObject < GameObject
     
     dir = DIR_UP
     if pmid <= ID_PLAYER_MAX then
-      dir = self.direction = DIR_LEFT if left_pressed?
+      dir = self.direction = DIR_LEFT  if left_pressed?
       dir = self.direction = DIR_RIGHT if right_pressed?
     elsif pmid.between? ID_ENEMY, ID_ENEMY_MAX then
       dir = direction
@@ -540,11 +543,10 @@ class LivingObject < GameObject
     else
       self.vx = dir.dir_to_vx * [ObjectDef[pmid].jump_x, vx.abs / 2].max
       
-      # TODO Slime tiles
-      #if (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3])
-      #or (Data.Map.Tile(PosX + Data.Defs[ID].Rect.Left + Data.Defs[ID].Rect.Right, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3]) then begin
-      #  VelX := VelX div 3;
-      #  VelY := Round(VelY / 1.5);
+      if game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE].between? TILE_SLIME, TILE_SLIME_3 then
+        self.vx / 3
+        self.vy -= -2
+      end
     end
     
     if in_water? then

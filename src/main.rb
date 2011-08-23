@@ -7,7 +7,6 @@ require 'gosu'
 require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
 # Must have
-# TODO Game Logic
 # TODO Script
 # TODO Simplify controls
 

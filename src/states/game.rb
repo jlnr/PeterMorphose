@@ -1,4 +1,7 @@
 class Game < State
+  # @result can be: nil (running), :lost, :won
+  # @paused can be: true, false
+  
   attr_reader :player, :map, :objects
   attr_reader :view_pos, :frame
   attr_accessor :time_left, :inv_time_left, :speed_time_left, :jump_time_left, :fly_time_left
@@ -10,7 +13,9 @@ class Game < State
     "#<Game>"
   end
   
-  def lose
+  def lose reason
+    @result = :lost
+    @reason = reason
   end
   
   def explosion x, y, radius, do_score
@@ -116,35 +121,36 @@ class Game < State
   end
   
   def update
-    #   State_Paused, State_Game, State_Dead, State_Won: begin
-    #     // W‰re State_Dead nicht doch passender?
-    #     if (Data.State = State_Game) and ((Data.ObjPlayers.Next = Data.ObjEffects) or (TPMLiving(Data.ObjPlayers.Next).Action = Act_Dead)) then
-    #       begin Data.State := State_Dead; Log.Add('Spieler gestorben.'); end;
-    #     // Gewonnen?
-    #     if (Data.State = State_Game) and (Data.ObjPlayers.Next.PosY < Data.Map.LevelTop) then
-    #       if (Data.Stars >= Data.StarsGoal) and (FindObject(Data.ObjCollectibles, Data.ObjOther, ID_Carolin, ID_Carolin, Bounds(0, 0, 576, 24576)) = nil) then begin
-    #         Data.State := State_Won;                          ' + IntToStr(Data.Score) + ' Punkte!');
-    #       end else begin
-    #         Data.State := State_Dead; Log.Add('Zu wenig Sterne oder Geiseln ¸brig - verloren.');
-    #       end;
-    #     // Normaler Verlauf
-    #     if Data.State = State_Game then begin
+    if @result.nil? and (player.action == ACT_DEAD or player.marked?) then
+      lose t("Du bist gestorben.")
+    elsif @result.nil? and player.y < map.level_top then
+      if stars < stars_goal then
+        lose t("Du hast verloren, weil du nicht genug Sterne gesammelt hast.")
+      elsif find_object(ID_CAROLIN, ID_CAROLON, ObjectDef::Rect.new(0, 0, 576, 24576)) then
+        lose t("Du hast verloren, weil du nicht alle Gefangenen befreit hast.")
+      else
+        @result = :won
+      end
+    end
+    
+    return if not @result.nil?
+    
     @frame = (@frame + 1) % 2400
     @message_opacity -= 3 if @message_opacity > 0
     
-    #       // Jetzt schon das Skript ausf¸hren (damit Zeile 0 ber¸cksichtigt wird)
-    #       if Data.Map.LavaPos div 24 < LavaTopPos then begin // Hˆchstwert ¸berschritten
-    #         LavaTopPos := Data.Map.LavaPos div 24;
-    #         ExecuteScript(Data.Map.Scripts[LavaTopPos], 'lava');
-    #       end;
-    #       // Auﬂerdem Spielerskript ausf¸hren
-    #       if Data.ObjPlayers.Next.PosY div 24 < PlayerTopPos then begin // Hˆchstwert ¸berschritten
-    #         PlayerTopPos := Data.ObjPlayers.Next.PosY div 24;
-    #         ExecuteScript(Data.Map.Scripts[PlayerTopPos], 'player');
-    #       end;
-    #       // Und nu die Timerz
-    #       ExecuteScript(Data.Map.ScriptTimers[Data.Frame mod 10], 'do');
-    #       ExecuteScript(Data.Map.ScriptTimers[10], 'do');
+    # // Jetzt schon das Skript ausf¸hren (damit Zeile 0 ber¸cksichtigt wird)
+    # if Data.Map.LavaPos div 24 < LavaTopPos then begin // Hˆchstwert ¸berschritten
+    #   LavaTopPos := Data.Map.LavaPos div 24;
+    #   ExecuteScript(Data.Map.Scripts[LavaTopPos], 'lava');
+    # end;
+    # // Auﬂerdem Spielerskript ausf¸hren
+    # if Data.ObjPlayers.Next.PosY div 24 < PlayerTopPos then begin // Hˆchstwert ¸berschritten
+    #   PlayerTopPos := Data.ObjPlayers.Next.PosY div 24;
+    #   ExecuteScript(Data.Map.Scripts[PlayerTopPos], 'player');
+    # end;
+    # // Und nu die Timerz
+    # ExecuteScript(Data.Map.ScriptTimers[Data.Frame mod 10], 'do');
+    # ExecuteScript(Data.Map.ScriptTimers[10], 'do');
     
     # Rising lava
     if map.lava_time_left == 0 then
@@ -167,9 +173,7 @@ class Game < State
     end
     @inv_time_left -= 1 if @inv_time_left > 0
     @view_pos = [[map.lava_pos - 432, player.y - 240, 24096].min, map.level_top].max
-    #     end;
-
-    # if Data.State = State_Game then begin
+      
     if fly_time_left == 0 and not player.in_water? then
       if left_pressed? then
         player.instance_eval do
@@ -264,66 +268,50 @@ class Game < State
     # // Scriptmessages
     # if (Data.State in [State_Game, State_Paused]) and (MessageOpacity > 0) then
     #   DrawBMPText(MessageText, (640 - Length(MessageText) * 9) div 2, 230, MessageOpacity, DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality);
-    # 
-    # // Game-Over-Schild 
-    # if (Data.State = State_Dead) or (Data.State = State_Won) then begin
-    #   Inc(Data.FrameFadingBox);
-    #   if Data.FrameFadingBox = 33 then Data.FrameFadingBox := 1;
-    #   DXImageList.Items[Image_GameDialogs].DrawAdd(DXDraw.Surface, Bounds(200, 160, 240, 120), Data.State - State_Dead, Abs(16 - Data.FrameFadingBox) * 16);
-    #   if Data.State = State_Won then begin
-    #     if Data.Score > OldHiscore then
-    #       DrawBMPText('Punkte: ' + IntToStr(Data.Score) + ' (neuer Hiscore)', 320 - Round((Length(IntToStr(Data.Score)) + 24) * 4.5), 220, 255 - Min(Abs(16 - Data.FrameFadingBox) * 16, 255), DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality)
-    #     else
-    #       DrawBMPText('Punkte: ' + IntToStr(Data.Score), 320 - Round((Length(IntToStr(Data.Score)) + 8) * 4.5), 220, 255 - Min(Abs(16 - Data.FrameFadingBox) * 16, 255), DXImageList.Items[Image_Font], DXDraw.Surface, Data.OptQuality);
-    #   end;
-    # end;
-    # 
-    # // Pause-Schriftzug
-    # if Data.State = State_Paused then begin
-    #   DXImageList.Items[Image_GameDialogs].DrawAdd(DXDraw.Surface, Bounds(200, 120, 240, 120), 2, 255);
-    # end;
+    
+    @@dialogs ||= Gosu::Image.load_tiles 'media/dialogs.bmp', -1, -3
+    if not @result.nil? then
+      @frame_fading_box += 1
+      @frame_fading_box = 1 if @frame_fading_box == 33
+      
+      if @result == :lost then
+        draw_centered_string @reason, WIDTH / 2, 220, (16 - @frame_fading_box).abs * 15
+      else
+        @@dialogs[1].draw 200, 160, Z_UI, 1, 1, alpha((16 - @frame_fading_box).abs * 15), :additive
+      end
+    elsif @paused then
+      @@dialgos[2].draw 200, 120, Z_UI, 1, 1, alpha(255), :additive
+    end
     
     draw_centered_string "#{t 'Punkte'}: #{score}", WIDTH / 2, 5
   end
   
   def button_down id
-    return State.current = LevelSelection.new if id == Gosu::KbEscape
-    
-    #     if Data.State in [State_Game, State_Paused, State_Dead] then begin
-    #       if Data.State in [State_Game, State_Paused] then Log.Add('Level abgebrochen.');
-    #       if QuickStart then Close else DXWaveList.Items[Sound_WooshBack].Play(False);
-    #       Data.State := State_LevelSelection;
-    #       Exit;
-    #     end;
-    #   // P: Pause an/aus
-    #   if Key = Ord('P') then begin
-    #     if Data.State = State_Paused then begin Data.State := State_Game; Exit; end else
-    #       if Data.State = State_Game then begin Data.State := State_Paused; Exit; end;
-    #   end;
-    #     State_Game: case Key of
-    player.jump     if jump?    id and fly_time_left == 0
-    player.use_tile if use?     id and fly_time_left == 0
-    player.act      if action?  id
-    player.dispose  if dispose? id
-    #     end;
-    #     State_Dead: if Key = VK_Return then
-    #       begin if QuickStart then StartGame(ParamStr(1)) else StartGame(TPMLevelInfo(LevelList.Items[SelectedLevel]).Location); DXWaveList.Items[Sound_Woosh].Play(False); end;
-    #     State_Won: if Key = VK_Return then begin
-    #                  Data.State := State_WonInfo;
-    #                  if Data.Score > OldHiscore then begin
-    #                    OptionFile := TIniFile32.Create(ExtractFileDir(ParamStr(0)) + '\PeterM.ini');
-    #                    if QuickStart then
-    #                      OptionFile.WriteString('Hiscore', ExtractFileName(ExtractShortPathName(ParamStr(1))), Muesli(Data.Score))
-    #                    else
-    #                      OptionFile.WriteString('Hiscore', ExtractFileName(ExtractShortPathName(TPMLevelInfo(LevelList[SelectedLevel]).Location)), Muesli(Data.Score));
-    #                    OptionFile.Free;
-    #                    if not QuickStart then TPMLevelInfo(LevelList[SelectedLevel]).Hiscore := Data.Score;
-    #                  end;
-    #                  Log.Add('Level beendet.');
-    #                  if QuickStart then Close else DXWaveList.Items[Sound_Woosh].Play(False);
-    #                end;
-    #     State_WonInfo: if not (ssAlt in Shift) then begin Data.State := State_LevelSelection; DXWaveList.Items[Sound_Woosh].Play(False); end;
-    
+    case @result
+    when nil then
+      if menu_cancel? id then
+        State.current = LevelSelection.new 
+        sound(:whoosh).play
+      elsif @paused then
+        @paused = false if id == Gosu::KbP
+      else
+        @paused = true  if id == Gosu::KbP
+        player.jump     if jump?    id and fly_time_left == 0
+        player.use_tile if use?     id and fly_time_left == 0
+        player.act      if action?  id
+        player.dispose  if dispose? id
+      end
+    when :lost then
+      if menu_cancel? id then
+        State.current = LevelSelection.new 
+        sound(:whoosh).play
+      end
+    when :won then
+      if menu_confirm? id or menu_cancel? id then
+        State.current = LevelSelection.new 
+        sound(:whoosh).play
+      end
+    end
   end
   
   def launch_projectile x, y, direction, min_id, max_id

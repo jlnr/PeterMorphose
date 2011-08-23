@@ -10,7 +10,7 @@ class CollectibleObject < GameObject
       game.cast_fx 2, 2, 0, x, y, 16, 16, 0, -3, 1
       kill
       emit_sound :shshsh
-      game.lose if pmid == ID_CAROLIN
+      game.lose("Du hast verloren, weil eine Gefangene verbrannt ist.") if pmid == ID_CAROLIN
     end
     
     if pmid == ID_CAROLIN and game.frame % 20 == 0 and rand(4) == 0 then
