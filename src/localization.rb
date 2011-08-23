@@ -6,10 +6,13 @@ if Locale.current.language == 'de' then
     string
   end
 else
+  LOCALIZATION_FILE = File.expand_path("#{__FILE__}/../en.yml")
+  TRANSLATIONS = YAML.load_file(LOCALIZATION_FILE)
+  
   def t string
-    @translations ||= YAML.load_file(File.expand_path("#{__FILE__}/../en.yml"))
-    @translations[string] ||= begin
-      puts "Localization TODO: '#{string}': '...'"
+    TRANSLATIONS[string] ||= begin
+      @localization_file ||= (File.open(LOCALIZATION_FILE, 'a') rescue $stdout)
+      @localization_file.puts "'#{string}': '#{string}' # TODO"
       string
     end
   end

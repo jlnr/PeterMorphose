@@ -6,19 +6,22 @@ end
 require 'gosu'
 require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
+# Must have
 # TODO Game Logic
-# TODO Remaining FX, explosions, etc
 # TODO Script
+# TODO Simplify controls
+
+# Gosu related work
 # TODO Proper scaling
 # TODO Packaging as gem
 # TODO Deployment tasks
-# TODO Support for editor quick-starting
-# TODO Localization
 # TODO Better resource handling
 
+# Polish
 # TODO "Gosu" splash screen
 # TODO Remaining Menu
 # TODO High Scores
+# TODO Support for editor quick-starting on Windows
 
 def debug binding
   require 'pry'

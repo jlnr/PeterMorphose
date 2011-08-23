@@ -289,7 +289,7 @@ class LivingObject < GameObject
               target.xdata[9 + i * 10, 2] = '%02X' % old_tile
               game.cast_fx 8, 0, 0, tile_x * TILE_SIZE + 10, tile_y * TILE_SIZE + 12, 24, 24, 0, 0, 2
             end
-          else
+          elsif not xdata.nil?
             game.execute_script xdata[2..-1], 'do'
           end
         end
@@ -472,28 +472,22 @@ class LivingObject < GameObject
       return
     end
     
-    # TODO slime
-    # // Auf Schleim laufen / Spieler
-    # if (ID <= ID_PlayerMax) and Blocked(Dir_Down) and (Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3])
-    #   and ((isLeft in Data.Input.States) or (isRight in Data.Input.States))
-    #     then begin
-    #       Action := Act_Walk1 + Data.Frame mod 12 div 3;
-    #       if isLeft in Data.Input.States then Direction := Dir_Left else Direction := Dir_Right;
-    #       if (Abs(Data.ObjPlayers.Next.PosY - PosY) < Data.OptEffectsDistance) and (Random(5) = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXFlyingBlob, PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom, -1 + Random(3), Random(3));
-    #       if Random(5) = 0 then DistSound(PosY, Sound_Slime + Random(3), Data^);
-    #       Exit;
-    #     end;
-    # // Auf Schleim laufen / Gegner
-    # if Blocked(Dir_Down) and (Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3])
-    #   and (((ID = ID_EnemyFighter) and (Data.Frame mod 100 < 70))
-    #        or ((ID = ID_EnemyGun) and (Data.Frame mod 100 > 15))
-    #        or (ID in [ID_Enemy, ID_EnemyBerserker, ID_EnemyBomber]))
-    #     then begin
-    #       Action := Act_Walk1 + Data.Frame mod 12 div 3;
-    #       if (Abs(Data.ObjPlayers.Next.PosY - PosY) < Data.OptEffectsDistance) and (Random(5) = 0) then TPMEffect.Create(Data.ObjEffects, '', ID_FXFlyingBlob, PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom, -1 + Random(3), Random(3));
-    #       if Random(5) = 0 then DistSound(PosY, Sound_Slime + Random(3), Data^);
-    #       Exit;
-    #     end;
+    if pmid <= ID_ENEMY_MAX and
+       game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE].between? TILE_SLIME, TILE_SLIME_3 and
+       not (pmid == ID_ENEMY_FIGHTER and game.frame % 100 >= 70 or pmid == ID_ENEMY_GUN and game.frame % 100 <= 15) then
+      self.action = ACT_WALK_1 + game.frame % 12 / 3
+      if pmid <= ID_PLAYER_MAX then
+        self.direction = DIR_LEFT if left_pressed?
+        self.direction = DIR_RIGHT if right_pressed?
+        if (y - game.player.y).abs < HEIGHT and rand(5) == 0 then
+          blob = game.create_object(ID_FX_FLYING_BLOB, x, y + ObjectDef[pmid].rect.bottom, nil)
+          blob.vx = rand(3) - 1
+          blob.vy = rand(3)
+          emit_sound "slime#{rand(3) + 1}"
+        end
+      end
+      return
+    end
     
     # Walking animation
     if blocked? DIR_DOWN and vx.abs > 0 then
@@ -570,10 +564,10 @@ class LivingObject < GameObject
       sound(:jump).play if pmid <= ID_PLAYER_MAX
       emit_sound :turbo
       self.vx = 0
-      self.vy = -20
+      self.vy = -21
       self.y -= 1 unless blocked? DIR_UP
       self.action = ACT_JUMP
-      # TODO CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, -10, 1, Data.OptEffects, Data.ObjEffects);
+      game.cast_fx 0, 0, 10, x, y, 24, 24, 0, -10, 1
       return
     when TILE_ROCKET_UP_LEFT, TILE_ROCKET_UP_LEFT_2, TILE_ROCKET_UP_LEFT_3 then
       sound(:jump).play if pmid <= ID_PLAYER_MAX
@@ -583,7 +577,7 @@ class LivingObject < GameObject
       self.y -= 1 unless blocked? DIR_UP
       self.action = ACT_JUMP
       self.direction = DIR_LEFT
-      # TODO CastFX(0, 0, 10, PosX, PosY, 24, 24, -8, -8, 1, Data.OptEffects, Data.ObjEffects);
+      game.cast_fx 0, 0, 10, x, y, 24, 24, -8, -8, 1
       return
     when TILE_ROCKET_UP_RIGHT, TILE_ROCKET_UP_RIGHT_2, TILE_ROCKET_UP_RIGHT_3 then
       sound(:jump).play if pmid <= ID_PLAYER_MAX
@@ -593,7 +587,7 @@ class LivingObject < GameObject
       self.y -= 1 unless blocked? DIR_UP
       self.action = ACT_JUMP
       self.direction = DIR_RIGHT
-      # TODO CastFX(0, 0, 10, PosX, PosY, 24, 24, +8, -8, 1, Data.OptEffects, Data.ObjEffects);
+      game.cast_fx 0, 0, 10, x, y, 24, 24, +8, -8, 1
       return
     when TILE_MORPH_FIGHTER..TILE_MORPH_MAX
       if pmid <= ID_PLAYER_MAX then

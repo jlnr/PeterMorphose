@@ -147,10 +147,10 @@ class GameObject
     self.vy += 1 if (pmid > ID_PLAYER_MAX or game.fly_time_left == 0) and not in_water?
     
     if in_water? then
-      self.vy -= 1 if vy > 1
-      self.vy += 1 if vy < 1
-      self.vx -= 1 if vx > 2
-      self.vx += 1 if vx < 2
+      self.vy -= 1 if vy > +1
+      self.vy += 1 if vy < -1
+      self.vx -= 1 if vx > +2
+      self.vx += 1 if vx < -2
     end
     
     if pmid <= ID_PLAYER_MAX and not blocked? DIR_DOWN then
@@ -221,24 +221,17 @@ class GameObject
       self.vx += 1 if vx <  0
       self.vx += 1 if vx < -1
       self.vx += 1 if pmid <= ID_ENEMY_MAX and vx < -ObjectDef[pmid].speed
-      # TODO Slime tiles
-      #       if Data.Map.Tile(PosX, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) in [Tile_Slime..Tile_Slime3] then begin
-      #         if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
-      #         if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
-      #         if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
-      #         if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
-      #         if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
-      #         if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
-      #         if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
-      #         if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
-      #         if Data.Frame mod 2 = 0 then begin
-      #           if VelX > 0 then Dec(VelX); if VelX > 1 then Dec(VelX);
-      #           if (ID <= ID_EnemyMax) and (VelX > +Data.Defs[ID].Speed) then Dec(VelX);
-      #           if VelX < 0 then Inc(VelX); if VelX < -1 then Inc(VelX);
-      #           if (ID <= ID_EnemyMax) and (VelX < -Data.Defs[ID].Speed) then Inc(VelX);
-      #         end;
-      #       end;
-      #     end;
+      
+      if game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE].between? TILE_SLIME, TILE_SLIME_3 then
+        (4 + game.frame % 2).times do
+          self.vx -= 1 if vx > 0
+          self.vx += 1 if vx < 0
+        end
+        (2 + game.frame % 2).times do
+          self.vx -= 1 if pmid <= ID_ENEMY_MAX and vx > +ObjectDef[pmid].speed
+          self.vx += 1 if pmid <= ID_ENEMY_MAX and vx < -ObjectDef[pmid].speed
+        end
+      end
     end
   end
   
@@ -286,7 +279,7 @@ class GameObject
     case game.map[x / TILE_SIZE, y / TILE_SIZE]
     when TILE_AIR_ROCKET_UP, TILE_AIR_ROCKET_UP_2, TILE_AIR_ROCKET_UP_3 then
       emit_sound :turbo
-      fling 0, -20, 0, true, false
+      fling 0, -21, 0, true, false
       self.y -= 1 unless blocked? DIR_UP
       self.x = x / 24 * 24 + 11
       self.vx = direction.dir_to_vx if pmid.between? ID_ENEMY, ID_ENEMY_MAX

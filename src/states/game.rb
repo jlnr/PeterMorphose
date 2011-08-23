@@ -13,6 +13,9 @@ class Game < State
   def lose
   end
   
+  def explosion *args
+  end
+  
   def initialize level_info
     song(:game).play
     
@@ -142,25 +145,24 @@ class Game < State
           end
         end
       end
+    else
+      player.instance_eval do
+        2.times { self.vy -= 1 if up_pressed?    and vy > -4 }
+        2.times { self.vy += 1 if down_pressed?  and vy < +4 }
+        4.times { self.vx -= 1 if left_pressed?  and vx > -6 }
+        4.times { self.vx += 1 if right_pressed? and vx < +6 }
+        if not in_water? then
+          self.vx -= 1 if vx > 0
+          self.vx += 1 if vx < 0
+          self.vy -= 1 if vy > 0
+          self.vy += 1 if vy < 0
+        elsif vx + vy > 1 and game.frame % 3 == 0 and rand(5) == 0 then
+          sound("water#{rand(2) + 1}").play
+        end
+        self.direction = DIR_LEFT  if vx < 0
+        self.direction = DIR_RIGHT if vx > 0
+      end
     end
-    # Water and flying controls
-    #       ...else with TPMLiving(Data.ObjPlayers.Next) do begin
-    #         if (isUp in DXInput.States)    and (VelY > -5) then Dec(VelY);
-    #         if (isUp in DXInput.States)    and (VelY > -5) then Dec(VelY);
-    #         if (isDown in DXInput.States)  and (VelY < +5) then Inc(VelY);
-    #         if (isDown in DXInput.States)  and (VelY < +5) then Inc(VelY);
-    #         if (isLeft in DXInput.States)  and (VelX > -4) then Dec(VelX);
-    #         if (isRight in DXInput.States) and (VelX < +4) then Inc(VelX);
-    #         if (isLeft in DXInput.States)  and (VelX > -4) then Dec(VelX);
-    #         if (isRight in DXInput.States) and (VelX < +4) then Inc(VelX);
-    #         if not InWater then begin
-    #           if VelY < 0 then Inc(VelY); if VelY > 0 then Dec(VelY);
-    #           if VelX < 0 then Inc(VelX); if VelX > 0 then Dec(VelX);
-    #         end;
-    #         if InWater and (VelX + VelY > 1) and (Data.Frame mod 3 = 0) and (Random(5) = 0) then Data.Waves[Sound_Water + Random(2)].Play(False);
-    #         if VelX < 0 then Direction := Dir_Left;
-    #         if VelX > 0 then Direction := Dir_Right;
-    #       end;
     
     if @speed_time_left > 0 then
       @speed_time_left -= 1
@@ -193,12 +195,14 @@ class Game < State
     @@danger ||= Gosu::Image.load_tiles 'media/danger.png', -2, -2
     offset = if map.lava_time_left == 0 then frame / 2 % 2 else 0 end
     -1.upto(4) do |x|
-      @@danger[map.lava_time_left == 0 ? 0 : 1].draw x * 120 + map.lava_frame, map.lava_pos - view_pos + 0, Z_LAVA
+      @@danger[map.lava_time_left == 0 ? 0 : 1].draw x * 120 + map.lava_frame + offset, map.lava_pos - view_pos, Z_LAVA
     end
     if map.lava_pos < map.level_top + 432 then
-      #   for LoopX := -1 to 4 do
-      #     for LoopY := 0 to (Data.Map.LevelTop + 432 - Data.Map.LavaPos) div 48 + 1 do
-      #   DXImageListPack.Items[Image_Danger].Draw(DXDraw.Surface, LoopX * 120 + Data.Map.LavaFrame, Data.Map.LavaPos - Data.ViewPos + 48 + LoopY * 48 + Integer(Data.Map.LavaTimeLeft = 0) * ((Data.Frame div 2) mod 2), Min(1, Data.Map.LavaTimeLeft) + 2);
+      -1.upto(4) do |x|
+        0.upto((map.level_top + 432 - map.lava_pos) / 48 + 1) do |y|
+          @@danger[map.lava_time_left == 0 ? 2 : 3].draw x * 120 + map.lava_frame + offset, map.lava_pos - view_pos + 48 + y * 48, Z_LAVA
+        end
+      end
     end
     
     draw_status_bar
@@ -396,7 +400,7 @@ class Game < State
       draw_digits.call bombs, 7
       # Remaining time for frozen lava
       if map.lava_time_left == 0 then
-        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 8, 0 }
+        0.upto(3) { |x| @@gui[x + 4].draw tile_w * x, tile_h * 8, Z_UI }
       else
         @@gui[40].draw tile_w * 0, tile_h * 8, Z_UI
         @@gui[41].draw tile_w * 1, tile_h * 8, Z_UI

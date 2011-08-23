@@ -17,32 +17,32 @@ class EffectObject < GameObject
       EffectObject.images[[ 7, @phase +  6].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(160), :additive
     when ID_FX_SPARK then
       EffectObject.images[[14, @phase + 13].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
-      # ID_FXBubble:
-      #   Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), Max(21, Phase + 20), 192);
+    when ID_FX_BUBBLE then
+      EffectObject.images[[21, @phase + 20].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(192), :additive
     when ID_FX_RICOCHET then
       EffectObject.images[19 + xdata.to_i].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha([255 - @phase * 3, 0].max)
     when ID_FX_LINE then
       EffectObject.images[28].draw x, y - 11 - game.view_pos, Z_EFFECTS, xdata.to_f / EffectObject.images.first.width, 1, alpha(255 - @phase), :additive
     when ID_FX_BLOCKER_PARTS then
-      EffectObject.images[29].draw_rot x, y - game.view_pos, Z_EFFECTS, (x * 10) % 360, 0.5, 0.5, 1, 1, alpha(255 - @phase), :additive
+      EffectObject.images[29].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - @phase), :additive
     when ID_FX_BREAK, ID_FX_BREAK_2 then
       EffectObject.images[30 + (ID_FX_BREAK_2 - pmid)].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(@phase) # TODO :subtractive
-      # ID_FXBreakingParts:
-      #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 32, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
-      # ID_FXBlood:
-      #   Data.Images[Image_Effects].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), 33, 250 - Phase);
-      # ID_FXFire:
-      #   Data.Images[Image_Effects].DrawAdd(Data.DXDraw.Surface, Bounds(PosX, PosY - Data.ViewPos, 24, 24), 34, Phase);
+    when ID_FX_BREAKING_PARTS then
+      EffectObject.images[32].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - @phase)
+    when ID_FX_BLOOD then
+      EffectObject.images[33].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(250 - @phase)
+    when ID_FX_FIRE then
+      EffectObject.images[34].draw x, y - game.view_pos, Z_EFFECTS, 1, 1, alpha(@phase)
     when ID_FX_FLYING_CAROLIN then
       EffectObject.images[35].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS
     when ID_FX_FLYING_CHAIN then
       EffectObject.images[36].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10 % 360, 0.5, 0.5, 1, 1, alpha(255 - @phase)
-      # ID_FXFlyingBlob:
-      #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 37, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
-      # ID_FXWaterBubble:
-      #   Data.Images[Image_Effects].DrawAlpha(Data.DXDraw.Surface, Bounds(PosX - 11, PosY - 11 - Data.ViewPos, 24, 24), 46, 100 + Random(29));
-      # ID_FXWater:
-      #   Data.Images[Image_Effects].DrawRotateAlpha(Data.DXDraw.Surface, PosX, PosY - Data.ViewPos, 24, 24, 47, 0.5, 0.5, (PosX * 10) mod 256, 255 - Phase);
+    when ID_FX_FLYING_BLOB then
+      EffectObject.images[37].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - @phase)
+    when ID_FX_WATER_BUBBLE then
+      EffectObject.images[46].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(100 + rand(29))
+    when ID_FX_WATER then
+      EffectObject.images[47].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - @phase)
     when ID_FX_SPARKLE then
       EffectObject.images[48].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(255 - @phase), :additive
     when ID_FX_TEXT, ID_FX_SLOW_TEXT then
@@ -63,25 +63,23 @@ class EffectObject < GameObject
       self.y += vy
       @phase += 1 if game.frame % 3 == 0
       kill if @phase > 5
-    # ID_FXBubble: begin
-    #   Inc(PosX, VelX);
-    #   PosY := Data.Map.LavaPos - 12;
-    #   if Data.Frame mod 2 = 0 then Inc(Phase);
-    #   if Phase > 7 then begin Kill; Exit; end;
-    # end;
+    when ID_FX_BUBBLE then
+      self.x += vx
+      self.y = game.map.lava_pos - 12
+      @phase += 1 if game.frame % 2 == 0
+      kill if @phase > 7
     when ID_FX_BLOCKER_PARTS then
       self.x += vx
       self.y += vy
       self.vy += 1
       @phase += 15
       kill if @phase == 255
-    # ID_FXWater: begin
-    #   Inc(PosX, VelX);
-    #   Inc(VelY);
-    #   Inc(PosY, VelY);
-    #   Inc(Phase, 25);
-    #   if Phase = 250 then begin Kill; Exit; end;
-    # end;
+    when ID_FX_WATER then
+      self.x += vx
+      self.vy += 1
+      self.y += vy
+      @phase += 25
+      kill if @phase == 250
     when ID_FX_BREAK, ID_FX_BREAK_2 then
       @phase += 15
       if @phase == 255 then
@@ -92,14 +90,13 @@ class EffectObject < GameObject
         kill
         return
       end
-    # ID_FXFire: begin
-    #   Inc(Phase, 15);
-    #   if Phase = 255 then begin
-    #     Data.Map.Tiles[PosX div 24, PosY div 24] := Tile_BigBlockerBroken;
-    #     Explosion(PosX + 12, PosY + 12, 30, Data^, True);
-    #     Kill; Exit;
-    #   end;
-    # end;
+    when ID_FX_FIRE then
+      @phase += 15
+      if @phase == 255 then
+        game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_BIG_BLOCKER_BROKEN
+        game.explosion x + 12, y + 12, 30, true
+        kill
+      end
     when ID_FX_BREAKING_PARTS, ID_FX_TEXT, ID_FX_RICOCHET, ID_FX_LINE,
         ID_FX_BLOOD, ID_FX_FLYING_CHAIN, ID_FX_FLYING_BLOB, ID_FX_SLOW_TEXT then
       self.x += vx
@@ -111,14 +108,13 @@ class EffectObject < GameObject
       self.x += vx
       self.y += vy
       kill if y < game.view_pos - HEIGHT
-    # ID_FXWaterBubble: begin
-    #   Dec(PosY);
-    #   if Random(4) = 0 then PosX := PosX - 1 + Random(3);
-    #   if not InWater then Kill;
-    # end;
-  when ID_FX_SPARKLE then
-    @phase += 25
-    kill if @phase == 250
+    when ID_FX_WATER_BUBBLE then
+      self.y -= 1
+      self.x += 1 - rand(3) if rand(4) == 0
+      kill if not in_water?
+    when ID_FX_SPARKLE then
+      @phase += 25
+      kill if @phase == 250
     end
   end
 end

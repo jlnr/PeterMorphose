@@ -4,6 +4,8 @@ CONTROLS = {
   :menu_confirm => [:KbEnter, :KbReturn, :KbSpace, :GpButton0],
   :menu_cancel => [:KbEscape, :GpButton2],
   
+  :up => [:KbUp, :GpUp],
+  :down => [:KbDown, :GpDown],
   :left => [:KbLeft, :GpLeft],
   :right => [:KbRight, :GpRight],
   :jump => [:KbUp, :GpButton0],
