@@ -3,7 +3,7 @@
 TILES_X = 24
 TILES_Y = 1024
 TILE_SIZE = 24
-SCRIPT_TIMERS = 10
+SCRIPT_TIMERS = 11
 
 # Distilled with some regexps from PMConst.pas
 

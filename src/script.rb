@@ -28,7 +28,7 @@ module PMScript
   
   def shortcut_to_message shortcut
     case shortcut
-    when 'ex' then :alive?
+    when 'ex' then :existence_as_int
     when 'px' then :x
     when 'py' then :y
     when 'vx' then :vx
@@ -161,7 +161,7 @@ module PMScript
     when /^kill \$(.)$/ then
       letter_to_object($1).kill rescue nil
     when /^mapsolid (....) (....) (....)$/ then
-      set_var $1, map.solid?(evaluate_param($2), evaluate_param($3))
+      set_var $1, (map.solid?(evaluate_param($2), evaluate_param($3)) ? 1 : 0)
     when /^hit \$(.)$/ then
       letter_to_object($1).hit rescue nil
     when /^hurt \$(.)$/ then
@@ -190,6 +190,9 @@ module PMScript
       map[evaluate_param($1), evaluate_param($2)] = evaluate_param($3)
     when /^explosion (....) (....) (....)$/ then
       explosion evaluate_param($1), evaluate_param($2), evaluate_param($3)
+    when /^find \$(.) (....) (....) (....) (....) (....) (....)$/
+      obj_vars[$1.to_i(16)] = find_object evaluate_param($2), evaluate_param($3),
+        ObjectDef::Rect.new(evaluate_param($4), evaluate_param($5), evaluate_param($6), evaluate_param($7))
     else
       throw "Don't know how to #{action}"
     end

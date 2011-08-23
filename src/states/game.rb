@@ -285,7 +285,7 @@ class Game < State
         @@dialogs[1].draw 200, 160, Z_UI, 1, 1, alpha((16 - @frame_fading_box).abs * 15), :additive
       end
     elsif @paused then
-      @@dialgos[2].draw 200, 120, Z_UI, 1, 1, alpha(255), :additive
+      @@dialogs[2].draw 200, 120, Z_UI, 1, 1, alpha(255), :additive
     end
     
     draw_centered_string "#{t 'Punkte'}: #{score}", WIDTH / 2, 5

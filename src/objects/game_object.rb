@@ -1,3 +1,9 @@
+class NilClass
+  def existence_as_int
+    0
+  end
+end
+
 class GameObject
   attr_reader :game
   attr_accessor :pmid, :x, :y, :xdata, :vx, :vy
@@ -6,8 +12,8 @@ class GameObject
     @marked
   end
   
-  def alive?
-    not marked?
+  def existence_as_int
+    marked? ? 0 : 1
   end
   
   def kill
