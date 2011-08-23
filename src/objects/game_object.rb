@@ -263,8 +263,8 @@ class GameObject
   
   def stuck?
     rect = self.rect
-    map.solid?(rect.left, rect.top) or map.solid?(rect.right, rect.top) or
-      map.solid?(rect.left, rect.bottom) or map.solid?(rect.right, rect.bottom)
+    game.map.solid?(rect.left, rect.top) or game.map.solid?(rect.right, rect.top) or
+      game.map.solid?(rect.left, rect.bottom) or game.map.solid?(rect.right, rect.bottom)
   end
   
   def blocked? direction
@@ -291,39 +291,39 @@ class GameObject
       emit_sound :turbo
       fling 0, -21, 0, true, false
       self.y -= 1 unless blocked? DIR_UP
-      self.x = x / 24 * 24 + 11
+      self.x = x / TILE_SIZE * TILE_SIZE + 11
       self.vx = direction.dir_to_vx if pmid.between? ID_ENEMY, ID_ENEMY_MAX
       game.cast_fx 0, 0, 10, x, y, 24, 24, 0, -10, 1
     when TILE_AIR_ROCKET_UP_LEFT then
       emit_sound :turbo
       self.y -= 1 unless blocked? DIR_UP
       fling -10, -16, 0, true, false
-      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      self.y = y / TILE_SIZE * TILE_SIZE + 11
       TILE_SIZE.times { if stuck? then self.vy -= 1 else break end }
       game.cast_fx 0, 0, 10, x, y, 24, 24, -8, -8, 1
     when TILE_AIR_ROCKET_UP_RIGHT then
       emit_sound :turbo
       self.y -= 1 unless blocked? DIR_UP
       fling +10, -16, 0, true, false
-      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      self.y = y / TILE_SIZE * TILE_SIZE + 11
       TILE_SIZE.times { if stuck? then self.vy -= 1 else break end }
       game.cast_fx 0, 0, 10, x, y, 24, 24, +8, -8, 1
     when TILE_AIR_ROCKET_LEFT then
       emit_sound :turbo
       fling -20, -3, 0, true, false
-      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      self.y = y / TILE_SIZE * TILE_SIZE + 11
       TILE_SIZE.times { if stuck? then self.vy -= 1 else break end }
       game.cast_fx 0, 0, 10, x, y, 24, 24, -10, 0, 1
     when TILE_AIR_ROCKET_RIGHT then
       emit_sound :turbo
       fling +20, -3, 0, true, false
-      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      self.y = y / TILE_SIZE * TILE_SIZE + 11
       TILE_SIZE.times { if stuck? then self.vy -= 1 else break end }
       game.cast_fx 0, 0, 10, x, y, 24, 24, +10, 0, 1
     when TILE_AIR_ROCKET_DOWN then
       emit_sound :turbo
       fling 0, 15, 0, true, false
-      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      self.y = y / TILE_SIZE * TILE_SIZE + 11
       self.vx = direction.dir_to_vx if pmid.between? ID_ENEMY, ID_ENEMY_MAX
       game.cast_fx 0, 0, 10, x, y, 24, 24, -10, 0, 1
     when TILE_SLOW_ROCKET_UP then

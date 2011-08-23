@@ -8,7 +8,6 @@ require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
 # Gosu related polish
 # TODO Proper scaling
-# TODO Packaging as gem
 # TODO Deployment tasks
 # TODO Better resource handling
 
@@ -30,7 +29,8 @@ Dir.chdir File.expand_path("#{__FILE__}/../..")
 
 %w(localization script const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection states/game
-   objects/object_def objects/game_object objects/living_object objects/collectible_object objects/effect_object
+   objects/object_def objects/game_object objects/living_object
+    objects/collectible_object objects/effect_object
    ini_file level_info map).each { |fn| require_relative fn }
 
 # Not yet part of gosu-preview

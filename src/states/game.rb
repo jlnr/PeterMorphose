@@ -137,7 +137,7 @@ class Game < State
       end
     end
     
-    return if not @result.nil?
+    return if not @result.nil? or @paused
     
     @frame = (@frame + 1) % 2400
     @message_opacity -= 3 if @message_opacity > 0
@@ -226,7 +226,7 @@ class Game < State
     
     if frame > 2 then
       player.jump     if jump_pressed?
-      #player.use_tile if use_pressed?
+      player.use_tile if use_pressed?
       player.act      if action_pressed?
     end
     
@@ -299,10 +299,10 @@ class Game < State
       elsif @paused then
         @paused = false if id == Gosu::KbP
       else
-        @paused = true  if id == Gosu::KbP
-        player.jump     if jump?    id and fly_time_left == 0
-        player.use_tile if use?     id and fly_time_left == 0
-        player.act      if action?  id
+        @paused = true if id == Gosu::KbP
+        player.jump           if jump?    id and fly_time_left == 0
+        player.use_everything if use?     id and fly_time_left == 0
+        player.act            if action?  id
       end
     when :lost then
       if menu_cancel? id then

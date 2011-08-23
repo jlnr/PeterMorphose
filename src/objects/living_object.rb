@@ -554,7 +554,7 @@ class LivingObject < GameObject
     end
   end
   
-  def use_tile
+  def use_everything
     return if busy?
     
     # Lever behind player
@@ -568,6 +568,12 @@ class LivingObject < GameObject
       self.vx = 0
       return
     end
+    
+    use_tile
+  end
+  
+  def use_tile
+    return if busy?
     
     # Tile below player (magic floor tiles)
     case map_tile = game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE]
