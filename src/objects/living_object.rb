@@ -593,6 +593,7 @@ class LivingObject < GameObject
       return
     when TILE_MORPH_FIGHTER..TILE_MORPH_MAX
       if pmid <= ID_PLAYER_MAX then
+        game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE] = TILE_MORPH_EMPTY
         sound(:morph).play
         self.pmid = ID_PLAYER_FIGHTER + map_tile - TILE_MORPH_FIGHTER
         game.time_left = ObjectDef[pmid].life unless pmid == ID_PLAYER

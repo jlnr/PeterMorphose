@@ -44,7 +44,7 @@ class GameObject
         rect = self.rect
         game.objects.each do |obj|
           if obj.pmid <= ID_LIVING_MAX and obj.pmid != ID_ENEMY_BERSERKER and rect.include? obj then
-            obj.hurt(false)
+            obj.hit
             game.cast_fx rand(3), rand(2), 0, x, y, 12, 12, 0, 0, 2
           end
         end
@@ -284,51 +284,47 @@ class GameObject
       self.x = x / 24 * 24 + 11
       self.vx = direction.dir_to_vx if pmid.between? ID_ENEMY, ID_ENEMY_MAX
       game.cast_fx 0, 0, 10, x, y, 24, 24, 0, -10, 1
-      # Tile_AirRocketUpLeft: begin
-      #   DistSound(PosY, Sound_Turbo, Data^);
-      #   if not Blocked(Dir_Up) then Dec(PosY);
-      #   Fling(-10, -15, 0, True, False);
-      #   PosY := PosY div 24 * 24 + 11;
-      #   for I := 0 to 23 do if Stuck then Dec(PosY);
-      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, -8, -8, 1, Data.OptEffects, Data.ObjEffects);
-      # end;
-      # Tile_AirRocketUpRight: begin
-      #   DistSound(PosY, Sound_Turbo, Data^);
-      #   if not Blocked(Dir_Up) then Dec(PosY);
-      #   Fling(10, -15, 0, True, False);
-      #   PosY := PosY div 24 * 24 + 11;
-      #   for I := 0 to 23 do if Stuck then Dec(PosY);
-      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, +8, -8, 1, Data.OptEffects, Data.ObjEffects);
-      # end;
-      # Tile_AirRocketLeft: begin
-      #   DistSound(PosY, Sound_Turbo, Data^);
-      #   Fling(-20, 2, 0, True, False);
-      #   PosY := PosY div 24 * 24 + 11;
-      #   for I := 0 to 23 do if Stuck then Dec(PosY);
-      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, -10, 0, 1, Data.OptEffects, Data.ObjEffects);
-      # end;
-      # Tile_AirRocketRight: begin
-      #   DistSound(PosY, Sound_Turbo, Data^);
-      #   Fling(20, -2, 0, True, False);
-      #   PosY := PosY div 24 * 24 + 11;
-      #   for I := 0 to 23 do if Stuck then Dec(PosY);
-      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, +10, 0, 1, Data.OptEffects, Data.ObjEffects);
-      # end;
-      # Tile_AirRocketDown: begin
-      #   DistSound(PosY, Sound_Turbo, Data^);
-      #   Fling(0, 15, 0, True, False);
-      #   PosX := PosX div 24 * 24 + 11;
-      #   if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
-      #   CastFX(0, 0, 10, PosX, PosY, 24, 24, 0, 8, 1, Data.OptEffects, Data.ObjEffects);
-      # end;
-      # Tile_SlowRocketUp: begin
-      #   CastFX(0, 0, 1, PosX, PosY, 24, 24, 0, -2, 1, Data.OptEffects, Data.ObjEffects);
-      #   VelX := VelX div 2;
-      #   Dec(VelY, 4);
-      #   if (ID >= ID_Enemy) and (ID <= ID_EnemyMax) then VelX := RealDir(TPMLiving(Self).Direction);
-      #   if Self.ClassType = TPMLiving then
-      #     TPMLiving(Self).Action := Act_Jump;
-      # end;
+    when TILE_AIR_ROCKET_UP_LEFT then
+      emit_sound :turbo
+      self.y -= 1 unless blocked? DIR_UP
+      fling -10, -16, 0, true, false
+      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      TILE_SIZE.times { if stuck? then self.vy -= 1 else break end }
+      game.cast_fx 0, 0, 10, x, y, 24, 24, -8, -8, 1
+    when TILE_AIR_ROCKET_UP_RIGHT then
+      emit_sound :turbo
+      self.y -= 1 unless blocked? DIR_UP
+      fling +10, -16, 0, true, false
+      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      TILE_SIZE.times { if stuck? then self.vy -= 1 else break end }
+      game.cast_fx 0, 0, 10, x, y, 24, 24, +8, -8, 1
+    when TILE_AIR_ROCKET_LEFT then
+      emit_sound :turbo
+      fling -20, -3, 0, true, false
+      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      TILE_SIZE.times { if stuck? then self.vy -= 1 else break end }
+      game.cast_fx 0, 0, 10, x, y, 24, 24, -10, 0, 1
+    when TILE_AIR_ROCKET_RIGHT then
+      emit_sound :turbo
+      fling +20, -3, 0, true, false
+      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      TILE_SIZE.times { if stuck? then self.vy -= 1 else break end }
+      game.cast_fx 0, 0, 10, x, y, 24, 24, +10, 0, 1
+    when TILE_AIR_ROCKET_DOWN then
+      emit_sound :turbo
+      fling 0, 15, 0, true, false
+      self.y = y / TILE_SIZE + TILE_SIZE + 11
+      self.vx = direction.dir_to_vx if pmid.between? ID_ENEMY, ID_ENEMY_MAX
+      game.cast_fx 0, 0, 10, x, y, 24, 24, -10, 0, 1
+    when TILE_SLOW_ROCKET_UP then
+      game.cast_fx 0, 0, 1, x, y, 24, 24, 0, -2, 1
+      self.vy -= 4
+      if pmid.between? ID_ENEMY, ID_ENEMY_MAX then
+        self.vx = direction.dir_to_vx
+      else
+        self.vx /= 2
+      end
+      self.action = ACT_JUMP if pmid <= ID_LIVING_MAX
     when TILE_SPIKES then
       if pmid <= ID_LIVING_MAX and (y + ObjectDef[pmid].rect.bottom) % 24 > 8 then
         hit
