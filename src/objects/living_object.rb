@@ -13,12 +13,6 @@ class LivingObject < GameObject
     return if game.frame == -1
     
     case pmid
-    when ID_PLAYER then
-      return if busy?
-      if game.find_object ID_LEVER, ID_LEVER_RIGHT, rect(10, 3) then
-        self.action = ACT_ACTION_1
-        self.vx = 0
-      end
     when ID_PLAYER_FIGHTER then
       return if action > ACT_LAND
       sound(:sword_whoosh).play
@@ -269,31 +263,7 @@ class LivingObject < GameObject
     
     # Plain Peter: Use levers
     if pmid == ID_PLAYER and action == ACT_ACTION_3 and game.frame % 2 == 0 then
-      if target = game.find_object(ID_LEVER, ID_LEVER_RIGHT, rect(12, 3)) then
-        sound(:lever).play
-        target.pmid =
-          case target.pmid
-          when ID_LEVER then ID_LEVER_DOWN
-          when ID_LEVER_LEFT then ID_LEVER_RIGHT
-          when ID_LEVER_RIGHT then ID_LEVER_LEFT
-          end
-        
-        if not target.xdata.nil? and not target.xdata.empty? then
-          if target.xdata =~ /^[0-9A-F]/ then
-            target.xdata[0, 1].to_i(16).times do |i|
-              tile_x   = target.xdata[2 + i * 10, 2].to_i(16)
-              tile_y   = target.xdata[5 + i * 10, 3].to_i(16)
-              new_tile = target.xdata[9 + i * 10, 2].to_i(16)
-              old_tile = game.map[tile_x, tile_y]
-              game.map[tile_x, tile_y] = new_tile
-              target.xdata[9 + i * 10, 2] = '%02X' % old_tile
-              game.cast_fx 8, 0, 0, tile_x * TILE_SIZE + 10, tile_y * TILE_SIZE + 12, 24, 24, 0, 0, 2
-            end
-          elsif not target.xdata.nil?
-            game.execute_script target.xdata[2..-1], 'do'
-          end
-        end
-      end
+      flip_lever
     end
     
     # Lord Peter: Stab
@@ -502,13 +472,6 @@ class LivingObject < GameObject
     self.action = ACT_STAND
   end
   
-  def dispose
-    return if game.frame == -1 or pmid > ID_PLAYER_MAX
-    @pmid = ID_PLAYER
-    @action = ACT_JUMP unless action == ACT_DEAD
-    game.cast_fx 8, 0, 0, x, y, 24, 24, 0, -1, 4
-  end
-  
   def jump
     # Cannot jump when dead
     return if action >= ACT_DEAD
@@ -559,8 +522,52 @@ class LivingObject < GameObject
     sound(:jump).play if pmid <= ID_PLAYER_MAX
   end
   
+  def can_reach_lever?
+    game.find_object ID_LEVER, ID_LEVER_RIGHT, rect(10, 3)
+  end
+  
+  def flip_lever
+    if target = can_reach_lever? then
+      sound(:lever).play
+      target.pmid =
+        case target.pmid
+        when ID_LEVER then ID_LEVER_DOWN
+        when ID_LEVER_LEFT then ID_LEVER_RIGHT
+        when ID_LEVER_RIGHT then ID_LEVER_LEFT
+        end
+      
+      if not target.xdata.nil? and not target.xdata.empty? then
+        if target.xdata =~ /^[0-9A-F]/ then
+          target.xdata[0, 1].to_i(16).times do |i|
+            tile_x   = target.xdata[2 + i * 10, 2].to_i(16)
+            tile_y   = target.xdata[5 + i * 10, 3].to_i(16)
+            new_tile = target.xdata[9 + i * 10, 2].to_i(16)
+            old_tile = game.map[tile_x, tile_y]
+            game.map[tile_x, tile_y] = new_tile
+            target.xdata[9 + i * 10, 2] = '%02X' % old_tile
+            game.cast_fx 8, 0, 0, tile_x * TILE_SIZE + 10, tile_y * TILE_SIZE + 12, 24, 24, 0, 0, 2
+          end
+        elsif not target.xdata.nil? then
+          game.execute_script target.xdata[2..-1], 'do'
+        end
+      end
+    end
+  end
+  
   def use_tile
     return if busy?
+    
+    # Lever behind player
+    if can_reach_lever? then
+      if pmid == ID_PLAYER then
+        # only the normal player has an animation for that
+        self.action = ACT_ACTION_1
+      else
+        flip_lever
+      end
+      self.vx = 0
+      return
+    end
     
     # Tile below player (magic floor tiles)
     case map_tile = game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE]
@@ -614,7 +621,7 @@ class LivingObject < GameObject
       sound("door#{rand(2) + 1}").play
       use_tile
     when TILE_STAIRS_UP..TILE_STAIRS_UP_2 then
-      return if not game.map.stairs_passable? x / TILE_SIZE, y / TILE_SIZE and pmid >= ID_PLAYER_MAX
+      return if not game.map.stairs_passable? x / TILE_SIZE, y / TILE_SIZE and pmid > ID_PLAYER_MAX
       self.y = y / TILE_SIZE * TILE_SIZE
       self.action = ACT_INV_UP
       self.vx = self.vy = 0

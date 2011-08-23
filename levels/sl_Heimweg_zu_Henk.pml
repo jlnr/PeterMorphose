@@ -10,7 +10,7 @@ Author=Sebastian Ludwig, USLudwig@t-online.de
 [Map]
 Sky=7
 StarsGoal=30
-LavaSpeed=3
+LavaSpeed=2
 LavaMode=0
 LavaPos=1024
 LavaScore=1

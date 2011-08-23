@@ -10,8 +10,7 @@ CONTROLS = {
   :right => [:KbRight, :GpRight],
   :jump => [:KbUp, :GpButton0],
   :action => [:KbSpace, :GpButton1],
-  :use => [:KbDown, :GpDown],
-  :dispose => [:KbEnter, :KbReturn, :KbBackspace, :GpButton2]
+  :use => [:KbDown, :GpDown]
 }
 
 class Object

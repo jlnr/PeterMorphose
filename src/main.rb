@@ -6,10 +6,7 @@ end
 require 'gosu'
 require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
-# Must have
-# TODO Simplify controls
-
-# Gosu related work
+# Gosu related polish
 # TODO Proper scaling
 # TODO Packaging as gem
 # TODO Deployment tasks

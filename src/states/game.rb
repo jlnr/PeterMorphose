@@ -226,9 +226,8 @@ class Game < State
     
     if frame > 2 then
       player.jump     if jump_pressed?
-      player.use_tile if use_pressed?
+      #player.use_tile if use_pressed?
       player.act      if action_pressed?
-      player.dispose  if dispose_pressed?
     end
     
     @objects.each &:update
@@ -304,7 +303,6 @@ class Game < State
         player.jump     if jump?    id and fly_time_left == 0
         player.use_tile if use?     id and fly_time_left == 0
         player.act      if action?  id
-        player.dispose  if dispose? id
       end
     when :lost then
       if menu_cancel? id then
