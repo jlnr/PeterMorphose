@@ -1,5 +1,13 @@
+﻿# Encoding: UTF-8
+
 def font
-  @font ||= Gosu::Font.new(16)
+  $PM_FONT ||= begin
+    font = Gosu::Font.new(16)
+    # Cache some often used glyphs
+    common_symbols = ('A'..'Z').to_a + ('a'..'z').to_a + (0..9).to_a + %w(Ä Ö Ü ä ö ü ß)
+    font.text_width common_symbols.join
+    font
+   end
 end
 
 def draw_string string, x, y, a = 255
