@@ -1,4 +1,4 @@
-﻿# Encoding: UTF-8
+# Encoding: UTF-8
 
 def font
   $PM_FONT ||= begin
