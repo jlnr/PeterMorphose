@@ -1,3 +1,11 @@
+# Workaround: Locale relies on 'dl/win32', but in Ruby 1.9, this
+# file is called 'Win32API'.
+begin
+  require 'dl/win32'
+rescue LoadError
+  require 'Win32API'
+  $LOADED_FEATURES << 'dl/win32'
+end
 require 'locale'
 require 'yaml'
 
