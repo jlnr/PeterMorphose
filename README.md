@@ -4,7 +4,7 @@ http://www.petermorphose.de/
 
 ## What is Peter Morphose?
 
-Peter Morphose is a jump-and-run-and-survive platformer I wrote between 2000 and 2001, using Borland Delphi and the DelphiX. It was available only for Windows and only in German. The integrated level editor was popular with fans, but I never managed to build a community site to share those levels. I made some available in a level pack, though.
+Peter Morphose is a jump-and-run-and-survive platformer I wrote between 2000 and 2001, using Borland Delphi and the DelphiX library. It was available only for Windows and only in German. The integrated level editor was popular with fans, but I never managed to build a community site to share those levels. I made some available in a level pack, though.
 
 ## What is this repository?
 
@@ -26,6 +26,6 @@ This repository is a work-in-progress rewrite of Peter Morphose using Ruby and G
 
 ## But there is still so much wrong about the game!
 
-Feel free to fork it :)
+Feel free to fork it or file issues :)
 
 -- Julian
