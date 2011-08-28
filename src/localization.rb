@@ -5,6 +5,8 @@ begin
 rescue LoadError
   require 'Win32API'
   $LOADED_FEATURES << 'dl/win32'
+rescue LoadError
+  # Maybe we are not even on Windows :)
 end
 require 'locale'
 require 'yaml'
