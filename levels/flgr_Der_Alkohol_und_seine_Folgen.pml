@@ -114,7 +114,7 @@ F4=00038800027C01008500008205008200018900007D01057602008A00027800037E00066C00066
 
 [Scripts]
 956=do(player):set var9 +0001
-Timer0=do(always):add var0 +0001\do(var0=0001):set $Ppx -FFFF\_createobject 001D $Ppx $Ppy $F\_setxd $F x|do(always):set var0 +0036\_message Abbrechen per Leertaste.\do(var0<001E&var0>0005):kill $0\_createobject 004F 007E 5F5D $0\_setxd $0 Z\_set $0vy -0002\_set $0vx +?002\_add $0vx -0001\do(var0=0023):kill $0\_createobject 0050 007E 5F5D $0\_setxd $0 *gähn*\do(var0=0028):kill $0\_createobject 0050 007E 5F5D $0\_setxd $0 Wo bin ich hier?\do(var0=002D):kill $0\_createobject 0050 007E 5F5D $0\_setxd $0 Gestern war ich noch auf einer Party.\do(var0=0032):kill $0\_createobject 0050 007E 5F5D $0\_setxd $0 Naja... mal schaun wo ich bin.\do(var0=0037):set $Ppx +0084\_changetile 0005 03F9 000E
+Timer0=do(always):add var0 +0001\do(var0=0001):set $Ppx -FFFF\_createobject 001D $Ppx $Ppy $F\_setxd $F x|do(always):set var0 +0036\_message Abbrechen per Pfeiltaste runter.\do(var0<001E&var0>0005):kill $0\_createobject 004F 007E 5F5D $0\_setxd $0 Z\_set $0vy -0002\_set $0vx +?002\_add $0vx -0001\do(var0=0023):kill $0\_createobject 0050 007E 5F5D $0\_setxd $0 *gähn*\do(var0=0028):kill $0\_createobject 0050 007E 5F5D $0\_setxd $0 Wo bin ich hier?\do(var0=002D):kill $0\_createobject 0050 007E 5F5D $0\_setxd $0 Gestern war ich noch auf einer Party.\do(var0=0032):kill $0\_createobject 0050 007E 5F5D $0\_setxd $0 Naja... mal schaun wo ich bin.\do(var0=0037):set $Ppx +0084\_changetile 0005 03F9 000E
 Timer9=do(var9=0001):explosion 0204 597E 0014\_find $A 0034 0034 01F8 5970 0018 0018\_kill $A\_createobject 0034 0203 588C $F\_setxd $F 1
 
 [Objects]
