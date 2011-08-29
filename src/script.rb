@@ -156,7 +156,7 @@ module PMScript
       set_var $1, get_var($1) + evaluate_param($2)
     when /^mul (....) (.....)$/ then
       set_var $1, get_var($1) * evaluate_param($2)
-    when /^dev (....) (.....)$/ then
+    when /^div (....) (.....)$/ then
       set_var $1, get_var($1) / evaluate_param($2)
     when /^kill \$(.)$/ then
       letter_to_object($1).kill rescue nil
