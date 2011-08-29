@@ -9,7 +9,7 @@ class LevelSelection < State
     @@ls_sel ||= 0
     @@levels ||= Dir.glob('levels/*.pml').map(&LevelInfo.method(:new)).sort
     
-    song(:menu).play
+    song(:menu).play(true)
   end
   
   def draw

@@ -1,7 +1,7 @@
 class Title < State
   def initialize
     @title = Gosu::Image.new 'media/title.png'
-    song(:menu).play
+    song(:menu).play(true)
   end
   
   def draw

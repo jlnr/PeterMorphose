@@ -70,7 +70,7 @@ class Game < State
   end
     
   def initialize level_info
-    song(:game).play
+    song(:game).play(true)
     
     @view_pos = TILES_Y * TILE_SIZE - HEIGHT # TODO
     
