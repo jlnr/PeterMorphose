@@ -1,3 +1,5 @@
+# TODO: Replace locale gem by a Gosu function
+
 # Workaround: Locale relies on 'dl/win32', but in Ruby 1.9, this
 # file is called 'Win32API'.
 begin
