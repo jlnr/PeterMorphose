@@ -3,10 +3,12 @@
 begin
   require 'dl/win32'
 rescue LoadError
-  require 'Win32API'
-  $LOADED_FEATURES << 'dl/win32'
-rescue LoadError
-  # Maybe we are not even on Windows :)
+  begin
+    require 'Win32API'
+    $LOADED_FEATURES << 'dl/win32'
+  rescue LoadError
+    # We don't have either file, but that may be okay if we are not on Windows.
+  end
 end
 require 'locale'
 require 'yaml'
