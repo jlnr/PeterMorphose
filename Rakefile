@@ -2,7 +2,7 @@ require 'rubygems'
 require 'rubygems/package_task'
 
 PM_VERSION = '2.0.2'
-GOSU_VERSION = '0.7.36.2'
+GOSU_VERSION = /gosu \(([0-9.]+)\)/.match(File.read('Gemfile.lock'))[1]
 GOSU_APP_TARBALL = "gosu-mac-wrapper-#{GOSU_VERSION}.tar.gz"
 GOSU_APP = 'RubyGosu App.app'
 PRETTY_NAME = 'Peter Morphose'
@@ -19,8 +19,7 @@ spec = Gem::Specification.new do |s|
   
   s.required_rubygems_version = ">= 1.3.7"
   
-  s.add_dependency "gosu", "> #{GOSU_VERSION}", "< 0.8"
-  s.add_dependency "locale", "~> 2.0"
+  s.add_dependency "gosu", "> #{GOSU_VERSION}"
   s.add_dependency "require_relative"
   
   s.files        = Dir.glob("{bin,src,media,levels}/**/*") + %w(COPYING README.md objects.ini)
