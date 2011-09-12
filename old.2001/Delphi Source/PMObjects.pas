@@ -663,11 +663,11 @@ begin
       end;
     end;
   end;
-  // Feuerpeter - BRUZZELN!!!11 >>>>>:::::------))))))999
+  // Feuerpeter
   if ID = ID_PlayerBerserker then begin
-    // FX (harlow flekso *rofz)
+    // FX
     CastFX(Random(2), 2 + Random(2), 0, PosX, PosY, 18, 24, 0, -3, 2, Data.OptEffects, Data.ObjEffects);
-    // Gegner fer brenen (höhöhö</köps>)
+    // Gegner verbrennen
     TargetObj := Data.ObjEnemies.Next;
     while TargetObj <> Data.ObjPlayers do begin
       if (TPMLiving(TargetObj).Action < Act_Dead) and TargetObj.RectCollision(GetRect(2, 2)) then begin
@@ -681,11 +681,11 @@ begin
     end;
   end;
 
-  // Feuergegner - KONTERBRUZZELN!!!!11
+  // Feuergegner
   if ID = ID_EnemyBerserker then begin
-    // EFIX
+    // FX
     CastFX(0, Random(3), 0, PosX, PosY, 18, 24, 0, -2, 3, Data.OptEffects, Data.ObjEffects);
-    // Spiler fer brenen (höhöhö</köps>)
+    // Spieler verbrennen
     if (TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead) and Data.ObjPlayers.Next.RectCollision(GetRect(5, 2)) then begin
       TPMLiving(Data.ObjPlayers.Next).Hit;
       Data.ObjPlayers.Next.Fling(8 * RealDir(Direction), -3, 0, True, True);
@@ -694,7 +694,7 @@ begin
     end;
   end;
 
-  // Bombenleger - bei Act_Action4 Bombe hinlegen =)))))9999
+  // Bombenleger - bei Act_Action4 Bombe hinlegen
   if (ID = ID_PlayerBomber) and (Action = Act_Action4) and (Data.Frame mod 3 = 0) then begin
     Dec(Data.Bombs);
     TPMObject.Create(Data.ObjOther, '0', ID_FusingBomb, PosX + RealDir(Direction) * 5, PosY + 2, RealDir(Direction) * 8, -3);
@@ -736,11 +736,11 @@ begin
     or ((ID = ID_EnemyGun) and (Data.Frame mod 100 > 15))
     or (ID in [ID_Enemy, ID_EnemyBerserker, ID_EnemyBomber])
       then Inc(VelX, Data.Defs[ID].Speed * RealDir(Direction));
-    // Spieler in Sicht, ATTACKKKÄÄÄÄHHH!
+    // Spieler in Sicht, mit Schwert angreifen
     if (ID = ID_EnemyFighter) and Data.ObjPlayers.Next.RectCollision(Bounds(PosX - 120 + (Ord(Direction) * 120), PosY - 24, 120, 48))
       and Data.Map.Solid(PosX + RealDir(Direction) * 7, PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom + 1) and (TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead)
         then VelX := Data.Defs[ID].Speed * 2 * RealDir(Direction);
-    // Spieler in Sicht, TOTSNIPEX0RN !!!11
+    // Spieler in Sicht, mit Bogen schießen
     if (ID = ID_EnemyGun) and PointInRect(Point(Data.ObjPlayers.Next.PosX, Data.ObjPlayers.Next.PosY), GetRect(320, 1)) and (TPMLiving(Data.ObjPlayers.Next).Action < Act_Dead)then begin
       Target := 1;
       for Loop := 0 to Abs(Data.ObjPlayers.Next.PosX - PosX) div 24 do
@@ -887,7 +887,7 @@ begin
     if ID <= ID_PlayerMax then Data.Waves.Items[Sound_PlayerArg].Play(False);
     if ID in [ID_Enemy..ID_EnemyMax] then DistSound(PosY, Sound_Arg + Random(2), Data^);
   end;
-  // B1U7F15CH r0lz
+  // Blut
   if Data.OptBlood = 1 then CastObjects(ID_FXBlood, 8, 0, 2, 2, Data.OptEffects, GetRect(0, 0), Data.ObjEffects);
   // Kamikazehonks: Explodieren
   if (ID = ID_EnemyBomber) and (Action = Act_Dead) then begin
@@ -926,7 +926,7 @@ begin
     if (ID <= ID_PlayerMax) and (ToDoDamage > 0) then Data.Waves.Items[Sound_PlayerArg].Play(False);
     if ID in [ID_Enemy..ID_EnemyMax] then DistSound(PosY, Sound_Arg + Random(2), Data^);
   end;
-  // B1U7F15CH r0lz
+  // Blut
   if Data.OptBlood = 1 then CastObjects(ID_FXBlood, ToDoDamage * 8, 0, 2, 2, Data.OptEffects, GetRect(0, 0), Data.ObjEffects);
   // Kamikazehonks: Explodieren
   if (ID = ID_EnemyBomber) and (Action = Act_Dead) then begin
@@ -1059,10 +1059,10 @@ begin
   if (not (ID in [ID_EdibleFish, ID_EdibleFish2])) and (Length(ExtraData) > 0) and (ExtraData[1] = '1') then begin Fall; CheckTile; end;
   // In Lava verbrennen
   if PosY + Data.Defs[ID].Rect.Top + Data.Defs[ID].Rect.Bottom > Data.Map.LavaPos then begin CastFX(2, 2, 0, PosX, PosY, 16, 16, 0, -3, 1, Data.OptEffects, Data.ObjEffects); Kill; DistSound(PosY, Sound_Shshsh, Data^); if ID = ID_Carolin then Data.State := State_Dead; end;
-  // HHIIIIILFE RÄTET MISCH
+  // Hilfe! Hilfe!
   if (ID = ID_Carolin) and (Data.Frame mod 20 = 0) and (Random(4) = 0) then
     DistSound(PosY, Sound_Help + Random(2), Data^);
-  // Süse fischli`z
+  // Fische
   if ID = ID_EdibleFish then begin
     if not InWater then begin
       if (Length(ExtraData) > 0) and (ExtraData[1] = '1') then begin Fall; CheckTile; end;
@@ -1386,7 +1386,7 @@ procedure CastFX(SmokeNum, FlameNum, SparkNum, X, Y, Width, Height, XLvl, YLvl, 
 var
   Loop: Integer;
 begin
-  // Nicht, wenn zu weit weg (CYCLEZ R B R0X)
+  // Nicht, wenn zu weit weg (Optimierung)
   if Abs(Y - FXObj.Data.ObjPlayers.Next.PosY) > FXObj.Data.OptEffectsDistance then Exit;
   // Rauch
   if Round(SmokeNum / 100 * Level) > 0 then for Loop := 1 to Max(Round(SmokeNum / 100 * Level), 1) do
@@ -1423,15 +1423,15 @@ var
   I, R, P: Integer;
   TempObj: TPMObject;
 begin
-  // SAUNT KRACH BUM RLOZLRZORZLRzrozrzrlrRZrol
+  // Soundeffekt
   DistSound(Y, Sound_Explosion, Data);
-  // Effekte machen n stuff
+  // Partikeleffekte
   if Data.OptEffects > 0 then for I := 0 to (Data.OptEffects + 3) div 3 do begin
     R := Random(360);
     P := Random(6) + 6;
     TPMEffect.Create(Data.ObjEffects, '', ID_FXSmoke + Random(2), X, Y, Round(Sin(R) * Radius / P), Round(Cos(R) * Radius / P));
   end;
-  // Alle Lebewesen puttmachen MAIN GOT SCHAISE ARME FIECHER :((((888
+  // Schaden an Lebewesen
   TempObj := Data.ObjEnemies.Next;
   while TempObj <> Data.ObjEffects do begin
     if (TempObj.ClassType = TPMLiving) and (TPMLiving(TempObj).Action < Act_Dead) then begin
@@ -1444,7 +1444,7 @@ begin
     end;
     TempObj := TempObj.Next;
   end;
-  // Und jetze noch f0l Kisten büm´zen =))99
+  // Schaden an Kisten
   for I := (X - Radius) div 24 to (X + Radius) div 24 do
     for P := (Y - Radius) div 24 to (Y + Radius) div 24 do begin
       if (Sqrt(Power(Abs(X div 24 - I), 2) + Power(Abs(Y div 24 - P), 2)) < Radius / 24)

@@ -1111,7 +1111,7 @@ begin
   // Neues Objekt laden
   OptObj := PMObject;
 
-  // Wenn kein Objekt ausgewählt, dann kr4ss alles grau man
+  // Kein Objekt ausgewählt?
   if PMObject = nil then begin
     SdtXPos.Enabled := False;
     SdtYPos.Enabled := False;
