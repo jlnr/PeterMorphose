@@ -5,7 +5,7 @@ Title=Heimweg zu Henk
 Skill=Leicht
 Desc=Leichtes, kurzes Level ohne viele Gegner.
 Theme=Ritter
-Author=Sebastian Ludwig, USLudwig@t-online.de
+Author=Sebastian Ludwig, sebastian@lurado.de@t-online.de
 
 [Map]
 Sky=7
