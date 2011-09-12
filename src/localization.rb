@@ -1,21 +1,6 @@
-# TODO: Replace locale gem by a Gosu function
-
-# Workaround: Locale relies on 'dl/win32', but in Ruby 1.9, this
-# file is called 'Win32API'.
-begin
-  require 'dl/win32'
-rescue LoadError
-  begin
-    require 'Win32API'
-    $LOADED_FEATURES << 'dl/win32'
-  rescue LoadError
-    # We don't have either file, but that may be okay if we are not on Windows.
-  end
-end
-require 'locale'
 require 'yaml'
 
-if Locale.current.language == 'de' then
+if Gosu::language.downcase == 'de' then
   def t string
     string
   end

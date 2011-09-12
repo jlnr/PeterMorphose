@@ -1,12 +1,10 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    gosu (0.7.35)
-    locale (2.0.5)
+    gosu (0.7.37)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   gosu
-  locale
