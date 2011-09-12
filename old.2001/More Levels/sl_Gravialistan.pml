@@ -5,7 +5,7 @@ Title=Gravialistan
 Skill=Schwer und lang
 Desc=Langes Level mit vielen Rätseln und wenigen schnellen Passagen.
 Theme=Ritter
-Author=Sebastian Ludwig, sebastian@lurado.de@t-online.de
+Author=Sebastian Ludwig, sebastian@lurado.de
 
 [Map]
 Sky=4

@@ -10,7 +10,7 @@ State_Credits: begin
   DrawBMPText('http://www.petermorphose.de/',                200, 100, 255, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
   DrawBMPText('Zus‰tzliche Sounds und Himmel',               100, 140, 192, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
   DrawBMPText('Sandro Mascia, xxsgrrs-@gmx.de',              200, 160, 255, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
-  DrawBMPText('Sebastian Ludwig, usludwig@t-online.de',      200, 180, 255, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
+  DrawBMPText('Sebastian Ludwig, sebastian@lurado.de',       200, 180, 255, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
   DrawBMPText('Sˆren Bevier, soeren.bevier@dtp-isw.de',      200, 200, 255, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
   DrawBMPText('Sebastian Burkhart, buggi@buggi.com',         200, 220, 255, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
   DrawBMPText('Florian Groﬂ, flgr@gmx.de',                   200, 240, 255, DXImageList.Items[Image_Font], DXDraw.Surface, 1);
