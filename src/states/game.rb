@@ -64,6 +64,14 @@ class Game < State
           map[tile_x, tile_y] = 0
           emit_sound "break#{rand(2) + 1}", y
           cast_objects ID_FX_BREAKING_PARTS, 20, 0, 3, 3, ObjectDef::Rect.new(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+        when TILE_BLOCKER..TILE_BLOCKER_3 then
+          if map[tile_x, tile_y] == TILE_BLOCKER_3 then
+            map[tile_x, tile_y] = TILE_BLOCKER_3_BROKEN
+          else
+            map[tile_x, tile_y] = TILE_BLOCKER_BROKEN
+          end
+          emit_sound :blocker_break, y
+          cast_objects ID_FX_BLOCKER_PARTS, 10, 0, -2, 5, ObjectDef::Rect.new(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
         end
       end
     end
