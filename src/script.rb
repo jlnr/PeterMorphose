@@ -5,7 +5,9 @@ module PMScript
   
   def convert_sound_name name
     case name.downcase
-    when /^(.*)Collect/ then
+    when "pointcollect" then
+      "collect_points"
+    when /^(.+)collect$/ then
       "collect_#{$1}"
     when "jeepee" then
       "yippie"
