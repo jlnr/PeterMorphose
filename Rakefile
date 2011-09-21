@@ -51,9 +51,11 @@ task :app_contents => "pkg/#{GOSU_APP_TARBALL}" do
   cp_r Dir['src'],    "pkg/#{PRETTY_NAME}.app/Contents/Resources/"
   cp_r Dir['media'],  "pkg/#{PRETTY_NAME}.app/Contents/Resources/"
   cp_r Dir['levels'], "pkg/#{PRETTY_NAME}.app/Contents/Resources/"
-  # Copy locale gem
-  locale_lib = File.dirname(`gem which locale`)
-  cp_r Dir["#{locale_lib}/*"], "pkg/#{PRETTY_NAME}.app/Contents/Resources/"
+  # Move icon file to right position and delete original icon
+  Dir.chdir("pkg/#{PRETTY_NAME}.app/Contents/Resources") do
+    mv 'media/PeterMorphose.icns', 'PeterMorphose.icns'
+    rm 'Gosu.icns'
+  end
   # Stub main.rb that just forwards
   File.open("pkg/#{PRETTY_NAME}.app/Contents/Resources/main.rb", 'w') do |rb|
     rb.puts "require_relative 'src/main'"
@@ -67,8 +69,8 @@ task :app_plist do
   plist = Plist::parse_xml(plist_filename)
   plist['CFBundleIdentifier'] = 'de.petermorphose.PeterMorphose'
   plist['CFBundleVersion'] = PM_VERSION.to_s
+  plist['CFBundleIconFile'] = 'PeterMorphose.icns'
   File.open(plist_filename, 'w') { |xml| xml.puts plist.to_plist }
-  # TODO Icon
 end
 
 desc "Builds pkg/#{PRETTY_NAME}.app"
