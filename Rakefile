@@ -81,4 +81,8 @@ task :release_app => :package_app do
   # TODO push to petermorphose.de
 end
 
-task :release => [:release_gem, :release_app]
+task :package_exe do
+  sh "ocra --icon 'media/PeterMorphose.ico' --windows --no-enc --output '#{PRETTY_NAME}.exe' src/main.rb src/en.yml"
+end
+
+task :release => [:release_gem, :release_app, :release_exe]

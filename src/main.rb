@@ -8,7 +8,6 @@ require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
 
 # Gosu related polish
 # TODO Proper scaling
-# TODO Deployment tasks
 # TODO Better resource handling
 
 # Polish
@@ -21,11 +20,19 @@ def debug binding
   Pry.start binding
 end
 
-# Save ARGV[1] if existing
+# This allows a level filename to be passed as the first argument to
+# the script. 
 ARGV[0] = File.expand_path(ARGV[0]) if ARGV[0]
 
-# For resource loading.
-Dir.chdir File.expand_path("#{__FILE__}/../..")
+if EXE_PATH = ENV['OCRA_EXECUTABLE'] then
+  # We are running an Ocra-generated EXE on Windows:
+  # The current directory is that of the EXE file.
+  Dir.chdir File.dirname(EXE_PATH)
+else
+  # We are running in any other way:
+  # The current directory is one above the source (__FILE__).
+  Dir.chdir File.expand_path("#{__FILE__}/../..")
+end
 
 %w(localization script const helpers/graphics helpers/audio helpers/input
    states/state states/title states/menu states/level_selection states/game
@@ -83,4 +90,4 @@ class Window < Gosu::Window
   end
 end
 
-Window.new.show
+Window.new.show unless defined? Ocra

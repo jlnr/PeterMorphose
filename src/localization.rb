@@ -5,7 +5,7 @@ if Gosu::language.downcase == 'de' then
     string
   end
 else
-  LOCALIZATION_FILE = File.expand_path("#{__FILE__}/../en.yml")
+  LOCALIZATION_FILE = File.expand_path("#{File.dirname __FILE__}/en.yml")
   TRANSLATIONS = YAML.load_file(LOCALIZATION_FILE)
   
   def t string
