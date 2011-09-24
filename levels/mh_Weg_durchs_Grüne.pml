@@ -2,7 +2,7 @@
 [Info]
 Version=Final
 Title=Weg durchs Grüne
-Skill=Sehr Schwer
+Skill=Sehr schwer
 Desc=Schwere Runde für schnelle Hüpfer
 Theme=Ritter
 Author=Merlin Hilbertz, merlin.hilbertz@web.de

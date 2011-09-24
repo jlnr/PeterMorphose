@@ -3,7 +3,7 @@
 Version=Final
 Title=Tal der Tratanten
 Skill=Schwer
-Desc=Kniflige Karte ohne Lawa aber mit ein paar Rätseln.
+Desc=Knifflige Karte ohne Lava aber mit ein paar Rätseln.
 Theme=Ritter
 Author=Merlin Hilbertz, merlin.hilbertz@web.de
 
