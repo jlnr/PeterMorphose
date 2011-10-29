@@ -1,10 +1,9 @@
-if RUBY_VERSION < '1.9' then
-  require 'rubygems'
-  require 'require_relative'
-end
+require 'rubygems'
+require 'bundler/setup'
+Bundler.require
 
-require 'gosu'
-require_relative 'gosu-preview' # upcoming Gosu 0.8 interface wrapper
+# Gosu 0.8 preview wrapper
+require 'gosu/preview'
 
 # Gosu related polish
 # TODO Proper scaling
