@@ -1,8 +1,8 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    gosu (0.7.38)
-    gosu (0.7.38-x86-mingw32)
+    gosu (0.7.39)
+    gosu (0.7.39-x86-mingw32)
     require_relative (1.0.3)
 
 PLATFORMS

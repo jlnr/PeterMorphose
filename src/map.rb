@@ -82,6 +82,7 @@ class Map
   end
   
   def []=(x, y, tile)
+    @map_image = nil
     if (0...TILES_X).include? x and (0...TILES_Y).include? y then
       @tiles[y * TILES_X + x] = tile
     end
@@ -111,25 +112,36 @@ class Map
   end
   
   def draw
+    # TODO: Workaround around a Gosu bug
+    $window.scale(1/1.5) do
+      @map_image ||= $window.record(TILES_X * TILE_SIZE, TILES_Y * TILE_SIZE) { render_map }
+      @sky_image ||= $window.record(TILES_X * TILE_SIZE, HEIGHT) { render_sky }
+    end
+  
     if @sky == 0 then
-      4.times do |y|
-        4.times do |x|
-          @@skies.first.draw x * 144, y * 120, 0
-        end
-      end
+      @sky_image.draw 0, 0, 0
     else
-      5.times do |y|
-        4.times do |x|
-          @@skies[@sky].draw x * 144, y * 120 - @game.view_pos % 120, 0
-        end
-      end
+      @sky_image.draw 0, 120 - @game.view_pos % 120, 0
     end
     
-    offset = @game.view_pos % TILE_SIZE
-    row = @game.view_pos / TILE_SIZE
-    (HEIGHT / TILE_SIZE + 1).times do |y|
+    @map_image.draw 0, -@game.view_pos, 0
+  end
+  
+  private
+  
+  def render_sky
+    5.times do |y|
+      4.times do |x|
+        @@skies[@sky].draw x * 144, y * 120 - @game.view_pos % 120, 0
+      end
+    end
+  end
+  
+  def render_map
+    (@level_top / TILE_SIZE).upto(TILES_Y - 1).each do |y|
       TILES_X.times do |x|
-        @tile_images[self[x, row + y] || 0].draw x * TILE_SIZE, y * TILE_SIZE - offset, 0
+        index = self[x, y]
+        @tile_images[index].draw x * TILE_SIZE, y * TILE_SIZE, 0 if index and index > 0
       end
     end
   end
