@@ -37,7 +37,7 @@ This repository is a work-in-progress rewrite of Peter Morphose using Ruby and G
 * The Gosu gamedev library, http://www.libgosu.org/
 * KaiserBiddy’s German info page, with screenshots of many levels, http://www.petermorphose.de/biddy/
 * Christopher Hauck’s German fansite, with more downloadable levels, http://www.christopherhauck.de/f2_pm.php
-* Its lonely Facebook page I didn’t even know about, https://www.facebook.com/pages/Peter-Morphose/124840104250204
+* Peter’s lonely Facebook page I didn’t even know about, https://www.facebook.com/pages/Peter-Morphose/124840104250204
 
 ## But there is still so much wrong about the game!
 

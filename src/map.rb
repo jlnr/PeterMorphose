@@ -112,12 +112,9 @@ class Map
   end
   
   def draw
-    # TODO: Workaround around a Gosu bug
-    $window.scale(1/1.5) do
-      @map_image ||= $window.record(TILES_X * TILE_SIZE, TILES_Y * TILE_SIZE) { render_map }
-      @sky_image ||= $window.record(TILES_X * TILE_SIZE, HEIGHT) { render_sky }
-    end
-  
+    @map_image ||= $window.record(TILES_X * TILE_SIZE, TILES_Y * TILE_SIZE) { render_map }
+    @sky_image ||= $window.record(TILES_X * TILE_SIZE, HEIGHT) { render_sky }
+    
     if @sky == 0 then
       @sky_image.draw 0, 0, 0
     else

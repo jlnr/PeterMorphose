@@ -51,7 +51,7 @@ Z_EFFECTS, Z_LAVA, Z_UI, Z_TEXT = *0..255
 # Simple implementation of the Gosu "State-Based" game pattern
 class Window < Gosu::Window
   def initialize
-    super WIDTH*3/2, HEIGHT*3/2, :update_interval => 1000.0 / TARGET_FPS
+    super WIDTH, HEIGHT, :update_interval => 1000.0 / TARGET_FPS
     
     self.caption = 'Peter Morphose'
     
@@ -71,9 +71,7 @@ class Window < Gosu::Window
   end
   
   def draw
-    scale(1.5) do
-      State.current.draw if State.current
-    end
+    State.current.draw if State.current
   end
   
   def button_down id

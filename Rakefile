@@ -77,8 +77,7 @@ desc "Builds pkg/#{PRETTY_NAME}.app"
 task :package_app => [:app_contents, :app_plist]
 
 task :release_app => :package_app do
-  # TODO zip the .app
-  # TODO push to petermorphose.de
+  # TODO use releasy
 end
 
 task :package_exe do
