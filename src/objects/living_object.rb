@@ -30,9 +30,9 @@ class LivingObject < GameObject
         sound(:blocker_break).play
       end
     when ID_PLAYER_GUN
-      self.action = ACT_ACTION_1 if action < ACT_LAND and game.ammo > 0
+      self.action = ACT_ACTION_1 if action <= ACT_LAND and game.ammo > 0
     when ID_PLAYER_BOMBER
-      self.action = ACT_ACTION_1 if action < ACT_LAND and game.bombs > 0
+      self.action = ACT_ACTION_1 if action <= ACT_LAND and game.bombs > 0
     end;
   end
   
