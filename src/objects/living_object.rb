@@ -547,7 +547,7 @@ class LivingObject < GameObject
             target.xdata[9 + i * 10, 2] = '%02X' % old_tile
             game.cast_fx 8, 0, 0, tile_x * TILE_SIZE + 10, tile_y * TILE_SIZE + 12, 24, 24, 0, 0, 2
           end
-        elsif not target.xdata.nil? then
+        else
           game.execute_script target.xdata[2..-1], 'do'
         end
       end
@@ -650,7 +650,6 @@ class LivingObject < GameObject
   private
   
   def break_floor x, y
-    debug binding if pmid == ID_PLAYER and $window.button_down? Gosu::KbD
     if (TILE_BRIDGE..TILE_BRIDGE_4).include? game.map[x / TILE_SIZE, y / TILE_SIZE] and
       not game.find_object(ID_FX_BREAK, ID_FX_BREAK_2,
         ObjectDef::Rect.new(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, 24, 24)) then

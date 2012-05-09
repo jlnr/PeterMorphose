@@ -134,9 +134,7 @@ class Game < State
     sound(name).play 1 - distance / MAX_SOUND_DISTANCE
   end
   
-  def update
-    debug binding if $window.button_down? Gosu::KbD
-    
+  def update    
     if @result.nil? and (player.action == ACT_DEAD or player.marked?) then
       lose t("Du bist gestorben.")
     elsif @result.nil? and player.y < map.level_top then
@@ -367,10 +365,14 @@ class Game < State
 
   def create_object pmid, x, y, xdata
     cls = case pmid
-      when 0..ID_LIVING_MAX then LivingObject
-      when ID_OTHER_OBJECTS_MIN..ID_OTHER_OBJECTS_MAX then GameObject
-      when ID_COLLECTIBLE_MIN..ID_COLLECTIBLE_MAX then CollectibleObject
-      when ID_FX_MIN..ID_FX_MAX then EffectObject
+      when 0..ID_LIVING_MAX then
+        LivingObject
+      when ID_OTHER_OBJECTS_MIN..ID_OTHER_OBJECTS_MAX then
+        GameObject
+      when ID_COLLECTIBLE_MIN..ID_COLLECTIBLE_MAX then
+        CollectibleObject
+      when ID_FX_MIN..ID_FX_MAX then
+        EffectObject
     end
     
     obj = cls.new(self, pmid, x, y, xdata)

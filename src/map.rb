@@ -36,33 +36,30 @@ class Map
     
     @sky = (ini_file['Map', 'Sky'] || 0).to_i
     
-    @lava_speed = (ini_file['Map', 'LavaSpeed'] || 1).to_i
-    @lava_mode = (ini_file['Map', 'LavaMode'] || 0).to_i
-    @lava_pos = (ini_file['Map', 'LavaPos'] || TILES_Y).to_i * TILE_SIZE
-    @lava_score = (ini_file['Map', 'LavaScore'] || 1).to_i
     @lava_frame = @lava_time_left = 0
-    
-    @level_top = (ini_file['Map', 'LevelTop'] || 0).to_i * TILE_SIZE
+    @lava_speed = (ini_file['Map', 'LavaSpeed'] || 1).to_i
+    @lava_mode  = (ini_file['Map', 'LavaMode']  || 0).to_i
+    @lava_pos   = (ini_file['Map', 'LavaPos']   || TILES_Y).to_i * TILE_SIZE
+    @lava_score = (ini_file['Map', 'LavaScore'] || 1).to_i
+    @level_top  = (ini_file['Map', 'LevelTop']  || 0).to_i * TILE_SIZE
     @level_bottom = [1024, @lava_pos / TILE_SIZE].min
     
     # Overloaded map tiles
     @tile_images = []
     @@tiles.each_with_index do |original_tile, index|
-      transparency = "\0\0\0\0"
       if (override = ini_file['Tiles', '%02X' % index]) and override.length == 3456 then
-        data = "\xff" * (TILE_SIZE * TILE_SIZE * 4)
+        data = "\0\0\0\0" * (TILE_SIZE * TILE_SIZE)
         
         (TILE_SIZE * TILE_SIZE).times do |i|
           inv_x = i % TILE_SIZE
           inv_y = i / TILE_SIZE
           src_i = inv_x * TILE_SIZE + inv_y
           rrggbb = override[src_i * 6, 6]
-          if rrggbb == 'FF00FF' then
-            data[i * 4, 4] = transparency
-          else
+          if rrggbb != 'FF00FF' then
             data[i * 4 + 0] = rrggbb[0, 2].to_i(16).chr
             data[i * 4 + 1] = rrggbb[2, 2].to_i(16).chr
             data[i * 4 + 2] = rrggbb[4, 2].to_i(16).chr
+            data[i * 4 + 3] = "\xff"
           end
         end
         
@@ -83,13 +80,13 @@ class Map
   
   def []=(x, y, tile)
     @map_image = nil
-    if (0...TILES_X).include? x and (0...TILES_Y).include? y then
+    if x.between? 0, TILES_X - 1 and y.between? 0, TILES_Y - 1 then
       @tiles[y * TILES_X + x] = tile
     end
   end
   
   def solid? x, y
-    y > @lava_pos or (0x70...0xe0).include? self[x / TILE_SIZE, y / TILE_SIZE]
+    y > @lava_pos or self[x / TILE_SIZE, y / TILE_SIZE].between? 0x70, 0xe0
   end
   
   ALL_STAIRS_UP   = [TILE_STAIRS_UP,   TILE_STAIRS_UP_2]
