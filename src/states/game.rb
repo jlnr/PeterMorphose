@@ -117,7 +117,11 @@ class Game < State
     i = 0
     while obj_string = level_info.ini_file['Objects', i] do
       pmid, x, y = obj_string.split('|').map { |str| str.to_i(16) }
-      create_object pmid, x, y, level_info.ini_file['Objects', "#{i}Y"]
+      xdata = level_info.ini_file['Objects', "#{i}Y"]
+      # The dup is very important - otherwise it will be a reference
+      # straight into the INI file that levers will write to.
+      xdata = xdata.dup if xdata
+      create_object pmid, x, y, xdata
       i += 1
     end
   end
