@@ -5,8 +5,21 @@ class NilClass
 end
 
 class GameObject
-  attr_reader :game
-  attr_accessor :pmid, :x, :y, :xdata, :vx, :vy
+  attr_reader :game, :x, :y
+  attr_accessor :pmid, :xdata, :vx, :vy
+  
+  def position_changed; end
+  protected :position_changed
+  
+  def x=(x)
+    @x = x
+    position_changed
+  end
+  
+  def y=(y)
+    @y = y
+    position_changed
+  end
   
   def marked?
     @marked

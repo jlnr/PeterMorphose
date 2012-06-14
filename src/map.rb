@@ -71,11 +71,9 @@ class Map
   end
   
   def [](x, y)
-    if x.between? 0, TILES_X - 1 and y.between? 0, TILES_Y - 1 then
-      @tiles[y * TILES_X + x]
-    else
-      0x70
-    end
+    # Check for y is implicit in the ||
+    return 0x70 if x < 0 or x >= TILES_X
+    @tiles[y * TILES_X + x] || 0x70
   end
   
   def []=(x, y, tile)

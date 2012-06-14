@@ -38,7 +38,7 @@ class CollectibleObject < GameObject
     # Cannot be collected...
     return if game.player.action >= ACT_DEAD
     
-    if collide_with? game.player.rect(3, 3) then
+    if collide_with? game.player.collecting_rect then
       case pmid
       when ID_CAROLIN then
         game.cast_objects ID_FX_FLYING_CHAIN, 8, 0, -1, 3, rect(1, -1)

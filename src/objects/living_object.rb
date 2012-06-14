@@ -9,6 +9,14 @@ class LivingObject < GameObject
     @direction = rand(2)
   end
   
+  def collecting_rect
+    @collecting_rect ||= rect(3, 3)
+  end
+  
+  def position_changed
+    @collecting_rect = nil
+  end
+  
   def act
     return if game.frame == -1
     
@@ -327,7 +335,7 @@ class LivingObject < GameObject
     if pmid <= ID_PLAYER_MAX and not busy? then
       self.direction = DIR_LEFT  if vx < 0
       self.direction = DIR_RIGHT if vx > 0
-    end;
+    end
     
     if pmid == ID_ENEMY_GUN and action == ACT_ACTION_4 then
       self.action = ACT_ACTION_5 # TODO this was better before?!
@@ -442,6 +450,7 @@ class LivingObject < GameObject
       return
     end
     
+    # Slime walking
     if pmid <= ID_ENEMY_MAX and
        game.map[x / TILE_SIZE, (y + ObjectDef[pmid].rect.bottom + 1) / TILE_SIZE].between? TILE_SLIME, TILE_SLIME_3 then
       # Only when walking...
