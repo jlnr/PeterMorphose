@@ -1,3 +1,7 @@
+PM_VERSION = "2.0.3"
+PM_WEBSITE = "https://github.com/jlnr/petermorphose"
+PM_WEBSITE_DESC = "GitHub project"
+
 # New constants
 
 TILES_X = 24
