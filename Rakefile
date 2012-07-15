@@ -6,6 +6,8 @@ require 'rubygems/package_task'
 require_relative 'src/const'
 
 Releasy::Project.new do
+  verbose
+  
   name "Peter Morphose"
   version PM_VERSION
 
@@ -24,20 +26,21 @@ Releasy::Project.new do
 
   add_build :windows_folder do
     icon "media/PeterMorphose.ico"
-    executable_type :windows
+    executable_type :console
     add_package :exe
   end
 
   add_deploy :github # Upload to a github project.
 end
 
-spec = eval File.read("petermorphose.gemspec")
-
-Gem::PackageTask.new(spec) do
+namespace :gem do
+  Gem::PackageTask.new(Gem::Specification.load("petermorphose.gemspec")) do
+  end
+  
+  task :release=> :"gem:package" do
+    raise "Error: Only do this after the NoMethodError from running 'petermorphose' has been fixed"
+    system "gem push 'pkg/petermorphose-#{PM_VERSION}.gem'"
+  end
 end
 
-task :release_gem => :package do
-  system "gem push 'pkg/petermorphose-#{PM_VERSION}.gem'"
-end
-
-task :release => [:release_gem, :"deploy:osx:app:zip:github", :"deploy:windows:folder:exe:github"]
+task :release => %w(gem:release deploy:osx:app:zip:github deploy:windows:folder:exe:github).map(&:to_sym)
