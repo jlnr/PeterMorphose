@@ -11,8 +11,8 @@ Releasy::Project.new do
   name "Peter Morphose"
   version PM_VERSION
 
-  executable "bin/petermorphose"
-  files %w(objects.ini src/**/* media/**/* levels/**/*)
+  executable "src/main.rb"
+  files %w(src/**/*.* objects.ini media/**/*.* levels/**/*.*)
   exposed_files %w(README.md COPYING)
   add_link PM_WEBSITE, PM_WEBSITE_DESC
   exclude_encoding
@@ -37,7 +37,7 @@ namespace :gem do
   Gem::PackageTask.new(Gem::Specification.load("petermorphose.gemspec")) do
   end
   
-  task :release=> :"gem:package" do
+  task :release => :"gem:package" do
     raise "Error: Only do this after the NoMethodError from running 'petermorphose' has been fixed"
     system "gem push 'pkg/petermorphose-#{PM_VERSION}.gem'"
   end

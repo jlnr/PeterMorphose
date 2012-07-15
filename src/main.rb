@@ -1,8 +1,4 @@
-require 'rubygems'
-require 'bundler/setup'
-Bundler.require
-require 'require_relative' # Not sure why this is necessary
-
+require 'require_relative'
 # Gosu 0.8 preview wrapper
 require 'gosu/preview'
 
