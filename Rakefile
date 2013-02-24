@@ -29,8 +29,6 @@ Releasy::Project.new do
     executable_type :console
     add_package :exe
   end
-
-  add_deploy :github # Upload to a github project.
 end
 
 namespace :gem do
