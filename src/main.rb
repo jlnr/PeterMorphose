@@ -1,6 +1,5 @@
 require 'require_relative'
-# Gosu 0.8 preview wrapper
-require 'gosu/preview'
+require 'gosu'
 
 # Gosu related polish
 # TODO Proper scaling

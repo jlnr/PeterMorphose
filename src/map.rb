@@ -107,8 +107,8 @@ class Map
   end
   
   def draw
-    @map_image ||= $window.record(TILES_X * TILE_SIZE, TILES_Y * TILE_SIZE) { render_map }
-    @sky_image ||= $window.record(TILES_X * TILE_SIZE, HEIGHT) { render_sky }
+    @map_image ||= Gosu::record(TILES_X * TILE_SIZE, TILES_Y * TILE_SIZE) { render_map }
+    @sky_image ||= Gosu::record(TILES_X * TILE_SIZE, HEIGHT) { render_sky }
     
     if @sky == 0 then
       @sky_image.draw 0, 0, 0

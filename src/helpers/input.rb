@@ -22,7 +22,7 @@ class Object
     end
     
     define_method "#{key}_pressed?" do
-      ids.any? { |id| $window.button_down? id }
+      ids.any? { |id| Gosu::button_down? id }
     end
   end
 end
