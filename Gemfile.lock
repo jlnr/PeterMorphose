@@ -1,5 +1,6 @@
-PATH
-  remote: /Users/jlnr/Projects/Gosu/motion-gosu
+GIT
+  remote: https://github.com/gosu/motion-gosu
+  revision: 79403f211af4a699ee7578da28ab2f35f8aa8637
   specs:
     motion-gosu (0.0.1)
 

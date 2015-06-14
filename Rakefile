@@ -17,8 +17,8 @@ Motion::Project::App.setup do |app|
   
   app.libs << '/usr/local/lib/libSDL2.a'  
   app.pods do
-    pod 'Gosu/Gosu', :path => '/Users/jlnr/Projects/Gosu/Gosu'
-    pod 'GosuKit', :path => '/Users/jlnr/Projects/Gosu/motion-gosu'
+    pod 'Gosu/Gosu', :git => 'https://github.com/gosu/gosu'
+    pod 'GosuKit', :git => 'https://github.com/gosu/motion-gosu'
   end
   
   # ...for now
