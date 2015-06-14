@@ -58,11 +58,11 @@ class LivingObject < GameObject
         color = alpha([game.fly_time_left * 2 + 16, 255].min)
         case direction
           when DIR_LEFT then
-            EffectObject.images[38 + (game.frame / 2) % 4].draw x - 18, y - 12 - game.view_pos, 0, 0.75, 1, color, :additive
-            EffectObject.images[42 + (game.frame / 2) % 4].draw x,      y - 12 - game.view_pos, 0, 1.00, 1, color, :additive
+            EffectObject.images[38 + (game.frame / 2) % 4].draw x - 18, y - 12 - game.view_pos, 0, 0.75, 1, color, :add
+            EffectObject.images[42 + (game.frame / 2) % 4].draw x,      y - 12 - game.view_pos, 0, 1.00, 1, color, :add
           when DIR_RIGHT then
-            EffectObject.images[38 + (game.frame / 2) % 4].draw x - 24, y - 12 - game.view_pos, 0, 1.00, 1, color, :additive
-            EffectObject.images[42 + (game.frame / 2) % 4].draw x,      y - 12 - game.view_pos, 0, 0.75, 1, color, :additive
+            EffectObject.images[38 + (game.frame / 2) % 4].draw x - 24, y - 12 - game.view_pos, 0, 1.00, 1, color, :add
+            EffectObject.images[42 + (game.frame / 2) % 4].draw x,      y - 12 - game.view_pos, 0, 0.75, 1, color, :add
         end
       end
       # Transparency while invincible

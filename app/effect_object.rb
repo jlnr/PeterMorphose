@@ -12,19 +12,19 @@ class EffectObject < GameObject
   def draw
     case pmid
     when ID_FX_SMOKE then
-      EffectObject.images[[ 0, @phase -  1].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
+      EffectObject.images[[ 0, @phase -  1].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :add
     when ID_FX_FLAME then
-      EffectObject.images[[ 7, @phase +  6].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(160), :additive
+      EffectObject.images[[ 7, @phase +  6].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(160), :add
     when ID_FX_SPARK then
-      EffectObject.images[[14, @phase + 13].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :additive
+      EffectObject.images[[14, @phase + 13].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(128), :add
     when ID_FX_BUBBLE then
-      EffectObject.images[[21, @phase + 20].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(192), :additive
+      EffectObject.images[[21, @phase + 20].max].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(192), :add
     when ID_FX_RICOCHET then
       EffectObject.images[19 + xdata.to_i].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha([255 - @phase * 3, 0].max)
     when ID_FX_LINE then
-      EffectObject.images[28].draw x, y - 11 - game.view_pos, Z_EFFECTS, xdata.to_f / EffectObject.images.first.width, 1, alpha(255 - @phase), :additive
+      EffectObject.images[28].draw x, y - 11 - game.view_pos, Z_EFFECTS, xdata.to_f / EffectObject.images.first.width, 1, alpha(255 - @phase), :add
     when ID_FX_BLOCKER_PARTS then
-      EffectObject.images[29].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - @phase), :additive
+      EffectObject.images[29].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - @phase), :add
     when ID_FX_BREAK, ID_FX_BREAK_2 then
       EffectObject.images[30 + (ID_FX_BREAK_2 - pmid)].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(@phase) # TODO :subtractive
     when ID_FX_BREAKING_PARTS then
@@ -44,7 +44,7 @@ class EffectObject < GameObject
     when ID_FX_WATER then
       EffectObject.images[47].draw_rot x, y - game.view_pos, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - @phase)
     when ID_FX_SPARKLE then
-      EffectObject.images[48].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(255 - @phase), :additive
+      EffectObject.images[48].draw x - 11, y - 11 - game.view_pos, Z_EFFECTS, 1, 1, alpha(255 - @phase), :add
     when ID_FX_TEXT, ID_FX_SLOW_TEXT then
       # TODO: Force text inside portion @ x=0..576
       draw_centered_string xdata, x, y - 7 - game.view_pos, 255 - @phase

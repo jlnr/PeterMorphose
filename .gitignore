@@ -1,2 +1,4 @@
 /pkg/
 wrappers/
+build
+vendor

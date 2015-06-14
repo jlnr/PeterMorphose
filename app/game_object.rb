@@ -144,7 +144,7 @@ class GameObject
     
     if [ID_FIREWALL_1, ID_FIREWALL_2, ID_FIRE].include? pmid then
       color = alpha(127 + (xdata && xdata.to_i || 128))
-      mode = :additive
+      mode = :add
     elsif pmid == ID_HELP_ARROW then
       color = alpha(127 + (game.frame / 8 % 2) * 64)
     end

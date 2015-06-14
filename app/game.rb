@@ -291,10 +291,10 @@ class Game < State
       if @result == :lost then
         draw_centered_string @reason, WIDTH / 2, 220, (16 - @frame_fading_box).abs * 15
       else
-        @@dialogs[1].draw 200, 160, Z_UI, 1, 1, alpha((16 - @frame_fading_box).abs * 15), :additive
+        @@dialogs[1].draw 200, 160, Z_UI, 1, 1, alpha((16 - @frame_fading_box).abs * 15), :add
       end
     elsif @paused then
-      @@dialogs[2].draw 200, 120, Z_UI, 1, 1, alpha(255), :additive
+      @@dialogs[2].draw 200, 120, Z_UI, 1, 1, alpha(255), :add
     end
     
     draw_centered_string "#{t 'Punkte'}: #{score}", WIDTH / 2, 5
