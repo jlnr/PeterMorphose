@@ -1,0 +1,31 @@
+PATH
+  remote: .
+  specs:
+    petermorphose (2.0.3)
+      gosu
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    gosu (1.4.6)
+
+PLATFORMS
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  arm-linux-gnu
+  arm-linux-musl
+  arm64-darwin
+  x86_64-darwin
+  x86_64-linux-gnu
+  x86_64-linux-musl
+
+DEPENDENCIES
+  petermorphose!
+
+CHECKSUMS
+  bundler (4.0.11) sha256=5bcec0fb78302e48d02ee46f10ee6e6942be647ba5b44a6d1ddfda9a240ce785
+  gosu (1.4.6) sha256=80c7fa48cf61f4960ef067fdd1c000d98b4adc8e11faeaa486543d00908a5c15
+  petermorphose (2.0.3)
+
+BUNDLED WITH
+  4.0.11

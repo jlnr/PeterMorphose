@@ -1,7 +1,5 @@
 # A wrapper for INI files, used for levels and other stuff.
 
-require 'iconv'
-
 class INIFile
   def initialize filename
     @sections = {}
@@ -9,7 +7,9 @@ class INIFile
 
     File.open(filename) do |file|
       file.each_line do |line|
-        case Iconv.conv('utf-8', 'ISO-8859-1', line.chomp)
+        latin1_line = line.force_encoding('ISO-8859-1')
+        utf8_line = latin1_line.encode("UTF-8")
+        case utf8_line.chomp
         when /^\[(.+)\]$/ then
           current_section = @sections[$1] = {}
         when /^([^=]*)=(.*)$/ then

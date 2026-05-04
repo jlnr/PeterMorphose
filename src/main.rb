@@ -1,4 +1,3 @@
-require 'require_relative'
 require 'gosu'
 
 # Gosu related polish
