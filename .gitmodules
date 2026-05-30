@@ -1,0 +1,3 @@
+[submodule "vendor/gosu"]
+	path = vendor/gosu
+	url = git@github.com:gosu/gosu.git
