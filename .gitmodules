@@ -1,3 +1,6 @@
 [submodule "vendor/gosu"]
 	path = vendor/gosu
 	url = git@github.com:gosu/gosu.git
+[submodule "vendor/doctest"]
+	path = vendor/doctest
+	url = https://github.com/doctest/doctest.git
