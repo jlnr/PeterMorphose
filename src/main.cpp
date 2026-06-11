@@ -1,4 +1,4 @@
-#include <Gosu/Gosu.hpp>
+#include "Window.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest.h>
@@ -15,7 +15,6 @@ int main(int argc, const char* argv[])
     }
 #endif
 
-    Gosu::Window window(640, 480);
-    window.show();
+    Window().show();
     return 0;
 }
