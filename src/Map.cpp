@@ -1,5 +1,6 @@
 #include "Map.hpp"
 #include "helpers/IniFile.hpp"
+#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
