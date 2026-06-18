@@ -4,6 +4,10 @@
 
 IniFile::IniFile(std::istream&& input)
 {
+    if (!input) {
+        throw std::runtime_error("Cannot read the given INI file");
+    }
+
     static const std::regex section_regex(R"(^\[(.+)\]\r?$)");
     static const std::regex entry_regex(R"(^([^=]*)=(.*)\r?$)");
 
