@@ -7,6 +7,7 @@
 struct LevelInfo
 {
     std::string filename;
+    IniFile ini_file;
     std::string title;
     std::string difficulty;
     std::string description;

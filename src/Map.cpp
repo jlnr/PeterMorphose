@@ -30,6 +30,9 @@ Map::Map(const IniFile& ini_file)
 
     m_sky = std::stoi(ini_file["Map", "Sky"].value_or("0"));
 
+    m_lava_frame = 0;
+    m_lava_time_left = 0;
+
     m_lava_speed = std::stoi(ini_file["Map", "LavaSpeed"].value_or("1"));
 
     m_lava_mode = std::stoi(ini_file["Map", "LavaMode"].value_or("0"));
@@ -42,7 +45,7 @@ Map::Map(const IniFile& ini_file)
     m_level_bottom = std::min(1024.0, m_lava_pos / TILE_SIZE);
 
     // Load tile images (simplified, not handling overrides yet)
-    auto original_tiles = Gosu::load_tiles("media/tiles.bmp", 16, 16);
+    auto original_tiles = Gosu::load_tiles("media/tiles.bmp", TILE_SIZE, TILE_SIZE);
     for (auto& tile : original_tiles) {
         m_tile_images.push_back(std::make_unique<Gosu::Image>(tile));
     }
@@ -89,7 +92,7 @@ void Map::draw(double camera_y)
     }
     if (!m_sky_image) {
         m_sky_image = std::make_unique<Gosu::Image>(
-            Gosu::record(TILES_X * TILE_SIZE, HEIGHT, [&] { render_sky(camera_y); }));
+            Gosu::record(TILES_X * TILE_SIZE, WINDOW_HEIGHT, [&] { render_sky(camera_y); }));
     }
 
     if (m_sky == 0) {

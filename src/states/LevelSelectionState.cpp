@@ -1,8 +1,8 @@
 #include "LevelSelectionState.hpp"
+#include "GameState.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/InputAction.hpp"
-#include <iostream>
 
 static constexpr int LEVELS_ON_SCREEN = 4;
 
@@ -75,6 +75,6 @@ void LevelSelectionState::button_down(Gosu::Button id)
         }
     }
     else if (is_mapped_to(InputAction::MenuConfirm, id)) {
-        std::cerr << "Transition to GameState not implemented yet." << std::endl;
+        push_state(std::make_unique<GameState>(m_levels[m_selected_index].ini_file));
     }
 }
