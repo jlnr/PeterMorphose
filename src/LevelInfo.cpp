@@ -6,15 +6,9 @@
 #include <string_view>
 
 LevelInfo::LevelInfo(const std::string& filename)
-    : filename(filename)
+    : filename(filename),
+      ini_file(std::ifstream(filename))
 {
-    std::ifstream file(filename);
-    if (!file) {
-        throw std::runtime_error("Could not open level file '" + filename + "'");
-    }
-
-    const IniFile ini_file(std::move(file));
-
     title = ini_file["Info", "Title"].value_or("Unbenanntes Level");
     difficulty = ini_file["Info", "Skill"].value_or("");
     description = ini_file["Info", "Desc"].value_or("");

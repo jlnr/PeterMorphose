@@ -1,9 +1,10 @@
 #include "Window.hpp"
+#include "Map.hpp"
 #include "states/State.hpp"
 #include "states/TitleState.hpp"
 
 Window::Window()
-    : Gosu::Window(640, 480, Gosu::WF_WINDOWED, 1000.0 / 30.0)
+    : Gosu::Window(WINDOW_WIDTH, WINDOW_HEIGHT, Gosu::WF_WINDOWED, 1000.0 / TARGET_FPS)
 {
     set_caption("Peter Morphose");
     State::push_state(std::make_unique<TitleState>());
