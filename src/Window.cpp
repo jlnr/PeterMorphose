@@ -1,4 +1,5 @@
 #include "Window.hpp"
+#include "Constants.hpp"
 #include "Map.hpp"
 #include "states/State.hpp"
 #include "states/TitleState.hpp"

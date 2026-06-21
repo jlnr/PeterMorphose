@@ -8,13 +8,6 @@ class IniFile;
 
 using Tile = std::uint8_t;
 
-const int TILES_X = 24;
-const int TILES_Y = 1024;
-const int TILE_SIZE = 24;
-const int WINDOW_WIDTH = 640;
-const int WINDOW_HEIGHT = 480;
-const int TARGET_FPS = 30;
-
 class Map {
 public:
     explicit Map(const IniFile& ini_file);
