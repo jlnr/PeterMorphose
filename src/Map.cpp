@@ -46,10 +46,10 @@ Map::Map(const IniFile& ini_file)
 
     m_level_bottom = std::min(1024.0, m_lava_pos / TILE_SIZE);
 
-    // Load tile images (simplified, not handling overrides yet)
-    auto original_tiles = Gosu::load_tiles("media/tiles.bmp", TILE_SIZE, TILE_SIZE);
+    auto original_tiles = Gosu::load_tiles("media/tiles.bmp", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);
     for (auto& tile : original_tiles) {
-        m_tile_images.push_back(std::make_unique<Gosu::Image>(tile));
+        // TODO: Handle level-specific tile overrides.
+        m_tile_images.push_back(std::move(tile));
     }
 }
 
@@ -109,7 +109,8 @@ void Map::draw(double camera_y)
 
 void Map::render_sky(double camera_y)
 {
-    static const std::vector<Gosu::Image> skies = Gosu::load_tiles("media/skies.png", 144, 120);
+    static const std::vector<Gosu::Image> skies
+        = Gosu::load_tiles("media/skies.png", 144, 120, Gosu::IF_RETRO);
     for (int y = 0; y < 5; ++y) {
         for (int x = 0; x < 4; ++x) {
             skies[m_sky].draw(x * 144, y * 120 - std::fmod(camera_y, 120), 0);
@@ -123,7 +124,7 @@ void Map::render_map()
         for (int x = 0; x < TILES_X; ++x) {
             int index = (*this)[x, y];
             if (index > 0) {
-                m_tile_images[index]->draw(x * TILE_SIZE, y * TILE_SIZE, 0);
+                m_tile_images[index].draw(x * TILE_SIZE, y * TILE_SIZE, 0);
             }
         }
     }
