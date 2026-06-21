@@ -61,7 +61,7 @@ private:
     double m_level_top;
     double m_level_bottom;
 
-    std::vector<std::unique_ptr<Gosu::Image>> m_tile_images;
+    std::vector<Gosu::Image> m_tile_images;
 
     std::unique_ptr<Gosu::Image> m_map_image;
     std::unique_ptr<Gosu::Image> m_sky_image;
