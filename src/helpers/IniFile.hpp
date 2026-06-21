@@ -20,9 +20,6 @@ public:
     std::optional<std::string> operator[](const std::string& section,
                                           const std::string& name) const;
 
-    /// Converts a key from ISO Latin-1 to UTF-8. Public for testing.
-    static void convert_latin1_to_utf8(std::string& str);
-
 private:
     std::map<std::string, std::map<std::string, std::string>> m_sections;
 };
