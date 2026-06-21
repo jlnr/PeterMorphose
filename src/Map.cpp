@@ -1,5 +1,6 @@
 #include "Map.hpp"
 #include "helpers/IniFile.hpp"
+#include "helpers/String.hpp"
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -18,7 +19,7 @@ Map::Map(const IniFile& ini_file)
         for (int x = 0; x < TILES_X; ++x) {
             if (x * 2 + 1 < row.length()) {
                 std::string hex = row.substr(x * 2, 2);
-                m_tiles[y * TILES_X + x] = std::stoi(hex, nullptr, 16);
+                m_tiles[y * TILES_X + x] = string_to_int(hex, 16);
             }
         }
         m_scripts[y] = ini_file["Scripts", std::to_string(y)].value_or("");
@@ -28,19 +29,19 @@ Map::Map(const IniFile& ini_file)
         m_timers.push_back(ini_file["Scripts", "Timer" + std::to_string(i)].value_or(""));
     }
 
-    m_sky = std::stoi(ini_file["Map", "Sky"].value_or("0"));
+    m_sky = string_to_int(ini_file["Map", "Sky"].value_or("0"));
 
     m_lava_frame = 0;
     m_lava_time_left = 0;
 
-    m_lava_speed = std::stoi(ini_file["Map", "LavaSpeed"].value_or("1"));
+    m_lava_speed = string_to_int(ini_file["Map", "LavaSpeed"].value_or("1"));
 
-    m_lava_mode = std::stoi(ini_file["Map", "LavaMode"].value_or("0"));
+    m_lava_mode = string_to_int(ini_file["Map", "LavaMode"].value_or("0"));
 
     m_lava_pos
-        = std::stoi(ini_file["Map", "LavaPos"].value_or(std::to_string(TILES_Y))) * TILE_SIZE;
+        = string_to_int(ini_file["Map", "LavaPos"].value_or(std::to_string(TILES_Y))) * TILE_SIZE;
 
-    m_level_top = std::stoi(ini_file["Map", "LevelTop"].value_or("0")) * TILE_SIZE;
+    m_level_top = string_to_int(ini_file["Map", "LevelTop"].value_or("0")) * TILE_SIZE;
 
     m_level_bottom = std::min(1024.0, m_lava_pos / TILE_SIZE);
 
