@@ -3,6 +3,8 @@
 #include "helpers/String.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/InputAction.hpp"
+#include "helpers/String.hpp"
+#include "Constants.hpp"
 #include <algorithm>
 #include <cmath>
 

@@ -1,4 +1,5 @@
 #include "Map.hpp"
+#include "Constants.hpp"
 #include "helpers/IniFile.hpp"
 #include "helpers/String.hpp"
 #include <cmath>
