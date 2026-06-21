@@ -1,5 +1,6 @@
 #include "GameState.hpp"
 #include "helpers/Audio.hpp"
+#include "helpers/String.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/InputAction.hpp"
 #include <algorithm>
@@ -11,7 +12,7 @@ GameState::GameState(const IniFile& ini_file)
 {
     song("game").play(true);
 
-    m_stars_goal = std::stoi(ini_file["Map", "StarsGoal"].value_or("100"));
+    m_stars_goal = string_to_int(ini_file["Map", "StarsGoal"].value_or("100"));
 
     // TODO: Create the player and everything else from [Objects].
 }
