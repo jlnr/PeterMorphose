@@ -10,6 +10,24 @@ class IniFile;
 class GameState : public State
 {
 public:
+    // The public state is inspired by TPMData in the original Delphi source code.
+    Map map;
+    int view_pos = 0;
+    // Initial values taken from TFormPeterM.StartGame.
+    int frame = 1;
+    // All "time" measured in frames.
+    int time_left = 0;
+    int inv_time_left = 0;
+    int speed_time_left = 0;
+    int jump_time_left = 0;
+    int fly_time_left = 0;
+
+    int keys = 0;
+    int stars = 0;
+    int ammo = 0;
+    int bombs = 0;
+    int score = 0;
+
     explicit GameState(const IniFile& ini_file);
 
     void update() override;
@@ -27,27 +45,14 @@ private:
     void lose(const std::string& reason);
     void draw_status_bar();
 
-    Map m_map;
-
     Result m_result = Result::PLAYING;
     bool m_paused = false;
     std::string m_reason;
 
-    double m_view_pos;
-    int m_frame = -1;
     int m_frame_fading_box = 16;
-
-    int m_player_top_pos = 1024;
-    int m_lava_top_pos = 1024;
-
     std::string m_message_text;
     int m_message_opacity = 0;
 
-    int m_score = 0;
-    int m_keys = 0;
-    int m_stars = 0;
-    int m_ammo = 0;
-    int m_bombs = 0;
     int m_stars_goal = 0;
 
     // TODO: The object system and PMScript have not been ported yet.

@@ -2,17 +2,12 @@
 #include "Constants.hpp"
 #include "helpers/IniFile.hpp"
 #include "helpers/String.hpp"
-#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 
 Map::Map(const IniFile& ini_file)
 {
-    m_tiles.resize(TILES_X * TILES_Y);
-    m_scripts.resize(TILES_Y);
-    m_vars.resize(16, 0);
-
     for (int y = 0; y < TILES_Y; ++y) {
         std::string row
             = ini_file["Map", std::to_string(y)].value_or(std::string(TILES_X * 2, '0'));
@@ -23,28 +18,19 @@ Map::Map(const IniFile& ini_file)
                 m_tiles[y * TILES_X + x] = string_to_int(hex, 16);
             }
         }
-        m_scripts[y] = ini_file["Scripts", std::to_string(y)].value_or("");
-    }
-
-    for (int i = 0; i <= 10; ++i) {
-        m_timers.push_back(ini_file["Scripts", "Timer" + std::to_string(i)].value_or(""));
     }
 
     m_sky = string_to_int(ini_file["Map", "Sky"].value_or("0"));
 
-    m_lava_frame = 0;
-    m_lava_time_left = 0;
-
-    m_lava_speed = string_to_int(ini_file["Map", "LavaSpeed"].value_or("1"));
-
-    m_lava_mode = string_to_int(ini_file["Map", "LavaMode"].value_or("0"));
-
-    m_lava_pos
+    lava_frame = 0;
+    lava_time_left = 0;
+    lava_speed = string_to_int(ini_file["Map", "LavaSpeed"].value_or("1"));
+    lava_mode = string_to_int(ini_file["Map", "LavaMode"].value_or("0"));
+    lava_pos
         = string_to_int(ini_file["Map", "LavaPos"].value_or(std::to_string(TILES_Y))) * TILE_SIZE;
 
     m_level_top = string_to_int(ini_file["Map", "LevelTop"].value_or("0")) * TILE_SIZE;
-
-    m_level_bottom = std::min(1024.0, m_lava_pos / TILE_SIZE);
+    m_level_bottom = std::min(1024, lava_pos / TILE_SIZE);
 
     auto original_tiles = Gosu::load_tiles("media/tiles.bmp", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);
     for (auto& tile : original_tiles) {
@@ -75,18 +61,18 @@ Tile& Map::operator[](int x, int y)
     return m_tiles[y * TILES_X + x];
 }
 
-bool Map::is_solid(double x, double y) const
+bool Map::is_solid(int x, int y) const
 {
-    if (y > m_lava_pos) {
+    if (x < 0 || y < 0 || (y > lava_pos && lava_time_left > 0)) {
         return true;
     }
-    int tile_x = (int)x / TILE_SIZE;
-    int tile_y = (int)y / TILE_SIZE;
+    int tile_x = x / TILE_SIZE;
+    int tile_y = y / TILE_SIZE;
     int tile = (*this)[tile_x, tile_y];
     return tile >= 0x70 && tile <= 0xe0;
 }
 
-void Map::draw(double camera_y)
+void Map::draw(int camera_y)
 {
     if (!m_map_image) {
         m_map_image = std::make_unique<Gosu::Image>(
@@ -94,26 +80,26 @@ void Map::draw(double camera_y)
     }
     if (!m_sky_image) {
         m_sky_image = std::make_unique<Gosu::Image>(
-            Gosu::record(TILES_X * TILE_SIZE, WINDOW_HEIGHT, [&] { render_sky(camera_y); }));
+            Gosu::record(TILES_X * TILE_SIZE, WINDOW_HEIGHT + 120, [&] { render_sky(); }));
     }
 
     if (m_sky == 0) {
-        m_sky_image->draw(0, 0, 0);
+        m_sky_image->draw(0, 0);
     }
     else {
-        m_sky_image->draw(0, 120 - std::fmod(camera_y, 120), 0);
+        m_sky_image->draw(0, -(camera_y % 120));
     }
 
-    m_map_image->draw(0, -camera_y, 0);
+    m_map_image->draw(0, -camera_y);
 }
 
-void Map::render_sky(double camera_y)
+void Map::render_sky()
 {
     static const std::vector<Gosu::Image> skies
         = Gosu::load_tiles("media/skies.png", 144, 120, Gosu::IF_RETRO);
     for (int y = 0; y < 5; ++y) {
         for (int x = 0; x < 4; ++x) {
-            skies[m_sky].draw(x * 144, y * 120 - std::fmod(camera_y, 120), 0);
+            skies[m_sky].draw(x * 144, y * 120, 120);
         }
     }
 }
@@ -124,7 +110,7 @@ void Map::render_map()
         for (int x = 0; x < TILES_X; ++x) {
             int index = (*this)[x, y];
             if (index > 0) {
-                m_tile_images[index].draw(x * TILE_SIZE, y * TILE_SIZE, 0);
+                m_tile_images[index].draw(x * TILE_SIZE, y * TILE_SIZE);
             }
         }
     }
@@ -185,9 +171,22 @@ TEST_CASE("Map")
         CHECK(map.is_solid(0 * TILE_SIZE, 0 * TILE_SIZE) == false); // 0x00
         CHECK(map.is_solid(0 * TILE_SIZE, 1 * TILE_SIZE) == true); // 0x70
 
-        // Lava position
-        map.set_lava_pos(10 * TILE_SIZE);
+        // Check that everything to the left and right of, or above the level, is considered solid.
+        CHECK(map.is_solid(0, -1) == true);
+        CHECK(map.is_solid(0, -547324) == true);
+        CHECK(map.is_solid(-1, 0) == true);
+        CHECK(map.is_solid(-84294, 0) == true);
+        CHECK(map.is_solid(TILES_X * TILE_SIZE, 0) == true);
+        CHECK(map.is_solid(251863, 0) == true);
+
+        // If the lava is frozen (lava_time_left > 0), then it is also considered solid.
+        map.lava_pos = 10 * TILE_SIZE;
+        map.lava_time_left = 1;
         CHECK(map.is_solid(0, 11 * TILE_SIZE) == true);
+
+        // Otherwise, it is not solid, so that objects can fall into it.
+        map.lava_time_left = 0;
+        CHECK(map.is_solid(0, 11 * TILE_SIZE) == false);
     }
 
     SUBCASE("can read the first level")
