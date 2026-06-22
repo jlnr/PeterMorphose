@@ -1,18 +1,18 @@
 #include "GameState.hpp"
+#include "Constants.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/String.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/InputAction.hpp"
 #include "helpers/String.hpp"
-#include "Constants.hpp"
+#include "objects/ObjectDef.hpp"
 #include <algorithm>
 #include <cmath>
 
 GameState::GameState(const IniFile& ini_file)
-    : m_map(ini_file),
-      m_view_pos(TILES_Y * TILE_SIZE - WINDOW_HEIGHT)
+    : map(ini_file)
 {
-    song("game").play(true);
+    view_pos = TILES_Y * TILE_SIZE - WINDOW_HEIGHT;
 
     m_stars_goal = string_to_int(ini_file["Map", "StarsGoal"].value_or("100"));
 
@@ -29,11 +29,14 @@ void GameState::update()
 {
     // TODO: Detect win/loss once the player object exists (death, reaching the top, hostages, ...).
 
+    song("game").play(true);
+
     if (m_result != Result::PLAYING || m_paused) {
         return;
     }
 
-    m_frame = (m_frame + 1) % 2400;
+    frame += 1;
+    frame %= 2400;
     if (m_message_opacity > 0) {
         m_message_opacity -= 3;
     }
@@ -41,24 +44,25 @@ void GameState::update()
     // TODO: Run the per-tile and timer scripts (execute_script) once we have PMScript.
 
     // Rising lava.
-    if (m_map.lava_time_left() == 0) {
-        if (m_map.lava_speed() != 0) {
-            if (m_map.lava_mode() == 0 && m_frame % m_map.lava_speed() == 0) {
-                m_map.set_lava_pos(m_map.lava_pos() - 1);
+    if (map.lava_time_left == 0) {
+        if (map.lava_speed != 0) {
+            if (map.lava_mode == 0 && frame % map.lava_speed == 0) {
+                map.lava_pos -= 1;
             }
-            if (m_map.lava_mode() == 1) {
-                m_map.set_lava_pos(m_map.lava_pos() - m_map.lava_speed());
+            else if (map.lava_mode == 1) {
+                map.lava_pos -= map.lava_speed;
             }
-            m_map.set_lava_frame((m_map.lava_frame() + 1) % 120);
+            map.lava_frame += 1;
+            map.lava_frame %= 120;
             // TODO: Emit the positional lava sound.
         }
     }
     else {
-        m_map.set_lava_time_left(m_map.lava_time_left() - 1);
+        map.lava_time_left -= 1;
     }
 
     // The view follows the lava (TODO: and the player).
-    m_view_pos = std::max(std::min(m_map.lava_pos() - 432, 24096.0), m_map.level_top());
+    view_pos = std::max(std::min(map.lava_pos - 432, 24096), map.level_top());
 
     // TODO: Player movement/input handling.
 
@@ -67,7 +71,7 @@ void GameState::update()
 
 void GameState::draw()
 {
-    m_map.draw(m_view_pos);
+    map.draw(view_pos);
 
     // TODO: Draw objects.
 
@@ -80,17 +84,17 @@ void GameState::draw()
     };
     static const std::vector<Gosu::Image> lava_tiles
         = Gosu::load_tiles("media/danger.png", -2, -2, Gosu::IF_RETRO);
-    const bool lava_active = m_map.lava_time_left() == 0;
-    const int scroll = m_map.lava_frame() + (lava_active ? m_frame / 2 % 2 : 0);
+    const bool lava_active = map.lava_time_left == 0;
+    const int scroll = map.lava_frame + (lava_active ? frame / 2 % 2 : 0);
     for (int x = -1; x <= 4; ++x) {
         lava_tiles[lava_active ? ACTIVE_SURFACE : FROZEN_SURFACE].draw(
-            x * 120 + scroll, m_map.lava_pos() - m_view_pos, Z_LAVA);
+            x * 120 + scroll, map.lava_pos - view_pos, Z_LAVA);
     }
-    if (m_map.lava_pos() < m_map.level_top() + 432) {
+    if (map.lava_pos < map.level_top() + 432) {
         for (int x = -1; x <= 4; ++x) {
-            for (int y = 0; y <= (m_map.level_top() + 432 - m_map.lava_pos()) / 48 + 1; ++y) {
+            for (int y = 0; y <= (map.level_top() + 432 - map.lava_pos) / 48 + 1; ++y) {
                 lava_tiles[lava_active ? ACTIVE_FILL : FROZEN_FILL].draw(
-                    x * 120 + scroll, m_map.lava_pos() - m_view_pos + 48 + y * 48, Z_LAVA);
+                    x * 120 + scroll, map.lava_pos - view_pos + 48 + y * 48, Z_LAVA);
             }
         }
     }
@@ -122,7 +126,7 @@ void GameState::draw()
         dialogs[2].draw(200, 120, Z_UI, 1, 1, Gosu::Color::WHITE, Gosu::BM_ADD);
     }
 
-    draw_centered_string("Punkte: " + std::to_string(m_score), WINDOW_WIDTH / 2, 5);
+    draw_centered_string("Punkte: " + std::to_string(score), WINDOW_WIDTH / 2, 5);
 }
 
 void GameState::draw_status_bar()
@@ -158,12 +162,12 @@ void GameState::draw_status_bar()
         // Keys
         gui[10].draw(tile_w * 0, tile_h * 3, Z_UI);
         gui[11].draw(tile_w * 1, tile_h * 3, Z_UI);
-        draw_digits(m_keys, 3);
+        draw_digits(keys, 3);
         // Stars
         gui[12].draw(tile_w * 0, tile_h * 4, Z_UI);
         gui[13].draw(tile_w * 1, tile_h * 4, Z_UI);
-        draw_digits(m_stars, 4);
-        if (m_stars > m_stars_goal) {
+        draw_digits(stars, 4);
+        if (stars > m_stars_goal) {
             // Enough stars - draw checkmark
             gui[42].draw(tile_w * 2, tile_h * 4, Z_UI);
             gui[43].draw(tile_w * 3, tile_h * 4, Z_UI);
@@ -177,19 +181,19 @@ void GameState::draw_status_bar()
         // Ammo
         gui[16].draw(tile_w * 0, tile_h * 6, Z_UI);
         gui[17].draw(tile_w * 1, tile_h * 6, Z_UI);
-        draw_digits(m_ammo, 6);
+        draw_digits(ammo, 6);
         // Bombs
         gui[18].draw(tile_w * 0, tile_h * 7, Z_UI);
         gui[19].draw(tile_w * 1, tile_h * 7, Z_UI);
-        draw_digits(m_bombs, 7);
+        draw_digits(bombs, 7);
         // Remaining time for frozen lava.
-        if (m_map.lava_time_left() == 0) {
+        if (map.lava_time_left == 0) {
             blank_line(8);
         }
         else {
             gui[40].draw(tile_w * 0, tile_h * 8, Z_UI);
             gui[41].draw(+tile_w * 1, tile_h * 8, Z_UI);
-            draw_digits(m_map.lava_time_left() / TARGET_FPS, 8);
+            draw_digits(map.lava_time_left / TARGET_FPS, 8);
         }
         // Spacing
         blank_line(9);
