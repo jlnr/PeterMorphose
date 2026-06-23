@@ -1,12 +1,17 @@
 #pragma once
 
-#include "LevelInfo.hpp"
+#include "Constants.hpp"
 #include "Map.hpp"
 #include "State.hpp"
-#include "helpers/IniFile.hpp"
+#include "helpers/Rect.hpp"
+#include <memory>
 #include <string>
+#include <vector>
 
 class IniFile;
+class GameObject;
+class LivingObject;
+
 class GameState : public State
 {
 public:
@@ -34,6 +39,19 @@ public:
     void draw() override;
     void button_down(Gosu::Button id) override;
 
+    /// x/y/width/height is a centered rectangle in this case, hence no "const Rect&" for now.
+    void cast_fx(int smoke, int flames, int sparks, int x, int y, int width, int height, //
+                 int vx, int vy, int count);
+    void cast_objects(PMID pmid, int count, int vx, int vy, int randomness, const Rect& rect);
+    GameObject* create_object(int pmid, int x, int y, std::optional<std::string> xdata);
+    void explosion(int x, int y, int radius, bool do_score);
+    /// Plays a sound the louder the closer it is to the player.
+    void emit_sound(int y, const std::string& name);
+    GameObject* find_object(PMID min_id, PMID max_id, const Rect& rect);
+    GameObject* find_living(PMID min_id, PMID max_id, Action min_act, Action max_act,
+                            const Rect& rect);
+    GameObject* launch_projectile(int x, int y, Direction direction, PMID min_id, PMID max_id);
+
 private:
     enum class Result
     {
@@ -55,5 +73,6 @@ private:
 
     int m_stars_goal = 0;
 
-    // TODO: The object system and PMScript have not been ported yet.
+    std::shared_ptr<LivingObject> m_player;
+    std::vector<std::shared_ptr<GameObject>> m_objects;
 };
