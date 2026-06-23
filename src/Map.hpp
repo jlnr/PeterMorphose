@@ -17,7 +17,7 @@ public:
     int lava_time_left;
     int lava_frame;
 
-    explicit Map(const IniFile& ini_file);
+    explicit Map(const IniFile& ini);
 
     int level_top() const { return m_level_top; }
     int level_bottom() const { return m_level_bottom; }

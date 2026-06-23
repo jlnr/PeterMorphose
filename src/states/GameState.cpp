@@ -12,24 +12,23 @@
 #include <memory>
 #include <optional>
 
-GameState::GameState(const IniFile& ini_file)
-    : map(ini_file)
+GameState::GameState(const IniFile& ini)
+    : map(ini)
 {
     view_pos = TILES_Y * TILE_SIZE - WINDOW_HEIGHT;
 
-    m_stars_goal = string_to_int(ini_file["Map", "StarsGoal"].value_or("100"));
+    m_stars_goal = ini.integer("Map", "StarsGoal").value_or(100);
 
-    int player_id = string_to_int(ini_file["Objects", "PlayerID"].value_or("0"));
-    int player_x = string_to_int(ini_file["Objects", "PlayerX"].value_or("288"));
-    int player_y = string_to_int(ini_file["Objects", "PlayerY"].value_or("24515"));
-    int player_vx = string_to_int(ini_file["Objects", "PlayerVX"].value_or("0"));
-    int player_vy = string_to_int(ini_file["Objects", "PlayerVY"].value_or("0"));
-    int player_life = string_to_int(
-        ini_file["Objects", "PlayerLife"].value_or(std::to_string(ObjectDef::get(ID_PLAYER).life)));
-    Direction player_direction = Direction(
-        string_to_int(ini_file["Objects", "PlayerDirection"].value_or(std::to_string(rand(2)))));
+    PMID player_id = PMID(ini.integer("Objects", "PlayerID").value_or(0));
+    int player_x = ini.integer("Objects", "PlayerX").value_or(288);
+    int player_y = ini.integer("Objects", "PlayerY").value_or(24515);
+    int player_vx = ini.integer("Objects", "PlayerVX").value_or(0);
+    int player_vy = ini.integer("Objects", "PlayerVY").value_or(0);
+    int player_life = ini.integer("Objects", "PlayerLife").value_or(ObjectDef::get(ID_PLAYER).life);
+    Direction player_direction
+        = Direction(ini.integer("Objects", "PlayerDirection").value_or(rand(2)));
     Action player_action = ACT_STAND;
-    m_player = std::make_shared<LivingObject>(*this, "", PMID(player_id), //
+    m_player = std::make_shared<LivingObject>(*this, "", player_id, //
                                               player_x, player_y, player_vx, player_vy, //
                                               player_life, player_action, player_direction);
 
