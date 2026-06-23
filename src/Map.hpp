@@ -28,6 +28,11 @@ public:
     /// Whether the given point (not tile coordinate!) is solid.
     bool is_solid(int x, int y) const;
 
+    /// Whether the stairs at the given tile coordinates lead anywhere on the map.
+    /// Enemies will not use stairs that lead out of the level.
+    /// Ported from TPMMap.StairsEnd.
+    bool do_stairs_end(int x, int y) const;
+
     void draw(int camera_y);
 
 private:

@@ -185,6 +185,10 @@ void GameState::update()
         if (is_down(InputAction::Jump)) {
             m_player->jump();
         }
+        // Holding down makes the player use stairs and other map tiles.
+        if (is_down(InputAction::Use)) {
+            m_player->use_tile();
+        }
     }
 
     // Update every object, then delete those objects that were marked.
