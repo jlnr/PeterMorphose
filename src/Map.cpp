@@ -72,6 +72,40 @@ bool Map::is_solid(int x, int y) const
     return tile >= 0x70 && tile <= 0xe0;
 }
 
+bool Map::do_stairs_end(int x, int y) const
+{
+    Tile tile = (*this)[x, y];
+    // Downstairs: look for a matching door leading upstairs, or a hole to fall out of.
+    if (tile == TILE_STAIRS_DOWN || tile == TILE_STAIRS_DOWN_2) {
+        while (true) {
+            ++y;
+            if (y >= TILES_Y) {
+                return false;
+            }
+            tile = (*this)[x, y];
+            if (tile == TILE_STAIRS_UP || tile == TILE_STAIRS_UP_2 || tile == TILE_STAIRS_END
+                || tile == TILE_STAIRS_END_2) {
+                return true;
+            }
+        }
+    }
+    // Upstairs: look for a matching door leading downstairs, or a hole to fall out of.
+    if (tile == TILE_STAIRS_UP || tile == TILE_STAIRS_UP_2) {
+        while (true) {
+            --y;
+            if (y < level_top() / TILE_SIZE) {
+                return false;
+            }
+            tile = (*this)[x, y];
+            if (tile == TILE_STAIRS_DOWN || tile == TILE_STAIRS_DOWN_2 || tile == TILE_STAIRS_END
+                || tile == TILE_STAIRS_END_2) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void Map::draw(int camera_y)
 {
     if (!m_map_image) {
