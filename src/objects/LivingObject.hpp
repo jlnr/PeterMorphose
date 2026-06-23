@@ -22,4 +22,7 @@ public:
     bool busy() const;
 
     void jump();
+
+    /// Uses the tile the object stands on, such as stairs.
+    void use_tile();
 };

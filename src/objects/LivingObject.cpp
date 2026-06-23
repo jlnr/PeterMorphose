@@ -63,7 +63,48 @@ void LivingObject::update()
         return;
     }
 
-    // TODO: Stairs...
+    // Climbing a staircase. Downstairs is faster and noisier than upstairs.
+    // Adapted from TPMLiving.Update in the Pascal version.
+    const auto is_open_door
+        = [](Tile tile) { return tile > TILE_STAIRS_UP_LOCKED && tile != TILE_STAIRS_DOWN_LOCKED; };
+    const auto tile_below = [this] { return game.map[x / TILE_SIZE, (y + 12) / TILE_SIZE]; };
+    const auto tile_above = [this] { return game.map[x / TILE_SIZE, (y - 9) / TILE_SIZE]; };
+    if (action == ACT_INV_UP) {
+        if (rand(8) == 0) {
+            game.emit_sound(y, "stairs_steps");
+        }
+        for (int i = 0; i <= 2; ++i) {
+            if (!is_open_door(tile_below()) || !is_open_door(tile_above())) {
+                y -= 2;
+                if (i == 2) {
+                    // Skip the rest of the function, we are still stuck in the staircase.
+                    return;
+                }
+            }
+            else {
+                x = x / TILE_SIZE * TILE_SIZE + TILE_SIZE / 2 - 1;
+                break;
+            }
+        }
+    }
+    else if (action == ACT_INV_DOWN) {
+        if (rand(7) == 0) {
+            game.emit_sound(y, "stairs_steps");
+        }
+        for (int i = 0; i <= 3; ++i) {
+            if (!is_open_door(tile_below()) || !is_open_door(tile_above())) {
+                y += 2;
+                if (i == 3) {
+                    // Skip the rest of the function, we are still stuck in the staircase.
+                    return;
+                }
+            }
+            else {
+                x = x / TILE_SIZE * TILE_SIZE + TILE_SIZE / 2 - 1;
+                break;
+            }
+        }
+    }
 
     if (action == ACT_DEAD) {
         return;
@@ -180,5 +221,110 @@ void LivingObject::jump()
     action = ACT_JUMP;
     if (pmid <= ID_PLAYER_MAX) {
         sound("jump").play();
+    }
+}
+
+void LivingObject::use_tile()
+{
+    if (busy()) {
+        return;
+    }
+
+    switch (game.map[x / TILE_SIZE, (y + ObjectDef::get(pmid).rect.bottom() + 1) / TILE_SIZE]) {
+    case TILE_ROCKET_UP:
+    case TILE_ROCKET_UP_2:
+    case TILE_ROCKET_UP_3:
+        if (pmid <= ID_PLAYER_MAX) {
+            sound("jump").play();
+        }
+        game.emit_sound(y, "turbo");
+        vx = 0;
+        vy = -20;
+        if (!blocked(DIR_UP)) {
+            y -= 1;
+        }
+        action = ACT_JUMP;
+        game.cast_fx(0, 0, 10, x, y, 24, 24, 0, -10, 1);
+        return;
+
+        case TILE_ROCKET_UP_LEFT:
+    case TILE_ROCKET_UP_LEFT_2:
+    case TILE_ROCKET_UP_LEFT_3:
+        if (pmid <= ID_PLAYER_MAX) {
+            sound("jump").play();
+        }
+        game.emit_sound(y, "turbo");
+        vx = -15;
+        vy = -15;
+        if (!blocked(DIR_UP)) {
+            y -= 1;
+        }
+        action = ACT_JUMP;
+        direction = DIR_LEFT;
+        game.cast_fx(0, 0, 10, x, y, 24, 24, -8, -8, 1);
+        return;
+
+    case TILE_ROCKET_UP_RIGHT:
+    case TILE_ROCKET_UP_RIGHT_2:
+    case TILE_ROCKET_UP_RIGHT_3:
+        if (pmid <= ID_PLAYER_MAX) {
+            sound("jump").play();
+        }
+        game.emit_sound(y, "turbo");
+        vx = +15;
+        vy = -15;
+        if (!blocked(DIR_UP)) {
+            y -= 1;
+        }
+        action = ACT_JUMP;
+        direction = DIR_RIGHT;
+        game.cast_fx(0, 0, 10, x, y, 24, 24, +8, -8, 1);
+        return;
+    }
+
+    // Interact with background tiles:
+    switch (game.map[x / TILE_SIZE, y / TILE_SIZE]) {
+    case TILE_STAIRS_UP_LOCKED:
+        if (pmid > ID_PLAYER_MAX || game.keys == 0) {
+            return;
+        }
+        game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_UP;
+        game.keys -= 1;
+        sound("door" + std::to_string(rand(2) + 1)).play();
+        [[fallthrough]];
+
+    case TILE_STAIRS_UP:
+    case TILE_STAIRS_UP_2:
+        if (!game.map.do_stairs_end(x / TILE_SIZE, y / TILE_SIZE) && pmid > ID_PLAYER_MAX) {
+            return;
+        }
+        y = y / TILE_SIZE * TILE_SIZE;
+        action = ACT_INV_UP;
+        vx = vy = 0;
+        game.emit_sound(y, "stairs");
+        break;
+
+    case TILE_STAIRS_DOWN_LOCKED:
+        if (pmid > ID_PLAYER_MAX || game.keys == 0) {
+            return;
+        }
+        game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_DOWN;
+        game.keys -= 1;
+        sound("door" + std::to_string(rand(2) + 1)).play();
+        [[fallthrough]];
+
+    case TILE_STAIRS_DOWN:
+    case TILE_STAIRS_DOWN_2:
+        if (!game.map.do_stairs_end(x / TILE_SIZE, y / TILE_SIZE)) {
+            return;
+        }
+        y = y / TILE_SIZE * TILE_SIZE + 13;
+        action = ACT_INV_DOWN;
+        vx = vy = 0;
+        game.emit_sound(y, "stairs");
+        break;
+
+    default:
+        break;
     }
 }
