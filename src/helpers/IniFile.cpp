@@ -29,13 +29,24 @@ IniFile::IniFile(std::istream&& input)
     }
 }
 
-std::optional<std::string> IniFile::operator[](const std::string& section,
-                                               const std::string& name) const
+std::optional<std::string> IniFile::string(const std::string& section,
+                                           const std::string& name) const
 {
     if (!m_sections.contains(section) || !m_sections.at(section).contains(name)) {
         return std::nullopt;
     }
     return m_sections.at(section).at(name);
+}
+
+std::optional<int> IniFile::integer(const std::string& section, const std::string& name) const
+{
+    return string(section, name).transform([&section, &name](const std::string& s) {
+        try {
+            return string_to_int(s);
+        } catch (const std::invalid_argument& e) {
+            throw std::invalid_argument("Invalid integer in [" + section + "]: " + name + "=" + s);
+        }
+    });
 }
 
 #include <doctest.h>
@@ -47,7 +58,8 @@ TEST_CASE("IniFile")
     {
         std::stringstream ss;
         const IniFile ini(std::move(ss));
-        CHECK(!ini["Section", "key"].has_value());
+        CHECK(!ini.string("Section", "key").has_value());
+        CHECK(!ini.integer("Section", "key").has_value());
     }
 
     SUBCASE("IniFile basic parsing and case-insensitivity")
@@ -58,23 +70,29 @@ TEST_CASE("IniFile")
         ss << "key2=value2\n";
         ss << "\n";
         ss << "[Section2]\n";
-        ss << "key3=value3\n";
+        ss << "key3=3\n";
 
         const IniFile ini(std::move(ss));
 
-        CHECK(ini["Section1", "key1"] == "value1");
-        CHECK(ini["Section1", "key2"] == "value2");
-        CHECK(ini["Section2", "key3"] == "value3");
-        CHECK(!ini["Section1", "nonexistent"].has_value());
-        CHECK(!ini["Nonexistent", "key1"].has_value());
+        CHECK(ini.string("Section1", "key1") == "value1");
+        CHECK(ini.string("Section1", "key2") == "value2");
+        CHECK(ini.string("Section2", "key3") == "3");
+        CHECK(ini.integer("Section2", "key3") == 3);
+
+        CHECK_THROWS_WITH_AS(ini.integer("Section1", "key1"),
+                             "Invalid integer in [Section1]: key1=value1", std::invalid_argument);
+
+        CHECK(!ini.string("Section1", "nonexistent").has_value());
+        CHECK(!ini.string("Nonexistent", "key1").has_value());
     }
 
     SUBCASE("IniFile can parse jr_Gemuetlicher_Aufstieg.pml (PML=Peter Morphose Level)")
     {
         const IniFile ini(std::ifstream("levels/jr_Gemuetlicher_Aufstieg.pml"));
 
-        CHECK(ini["Info", "Version"] == "Final");
-        CHECK(ini["Info", "Skill"] == "Sehr einfach");
-        CHECK(ini["Info", "Title"] == "Gemütlicher Aufstieg");
+        CHECK(ini.string("Info", "Version") == "Final");
+        CHECK(ini.string("Info", "Skill") == "Sehr einfach");
+        CHECK(ini.string("Info", "Title") == "Gemütlicher Aufstieg");
+        CHECK(ini.integer("Map", "StarsGoal") == 50);
     }
 }

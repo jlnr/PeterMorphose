@@ -1,7 +1,7 @@
 #include "objects/ObjectDef.hpp"
+#include "Constants.hpp"
 #include "helpers/IniFile.hpp"
 #include "helpers/String.hpp"
-#include "Constants.hpp"
 #include <algorithm>
 #include <fstream>
 #include <string_view>
@@ -26,17 +26,18 @@ const ObjectDef& ObjectDef::get(PMID pmid)
         for (int id = 0; id <= ID_MAX; ++id) {
             const std::string id_string = id_to_hex(static_cast<PMID>(id));
             ObjectDef def;
-            def.name = ini["ObjName", id_string].value_or("<no name>");
-            def.life = string_to_int(ini["ObjLife", id_string].value_or("3"));
+            def.name = ini.string("ObjName", id_string).value_or("<no name>");
+            def.life = ini.integer("ObjLife", id_string).value_or(3);
             // Rect string is packed as "LLTTWWHH", where left and top are negative.
-            const std::string rect_string = ini["ObjRect", id_string].value_or("10102020");
+            const std::string rect_string
+                = ini.string("ObjRect", id_string).value_or("10102020");
             def.rect.left = -hex_byte(rect_string, 0);
             def.rect.top = -hex_byte(rect_string, 2);
             def.rect.width = hex_byte(rect_string, 4);
             def.rect.height = hex_byte(rect_string, 6);
-            def.speed = string_to_int(ini["ObjSpeed", id_string].value_or("3"));
-            def.jump_x = string_to_int(ini["ObjJump", id_string + "X"].value_or("0"));
-            def.jump_y = string_to_int(ini["ObjJump", id_string + "Y"].value_or("0"));
+            def.speed = ini.integer("ObjSpeed", id_string).value_or(3);
+            def.jump_x = ini.integer("ObjJump", id_string + "X").value_or(0);
+            def.jump_y = ini.integer("ObjJump", id_string + "Y").value_or(0);
             defs.push_back(def);
         }
         return defs;
