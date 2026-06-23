@@ -33,7 +33,7 @@ public:
     int bombs = 0;
     int score = 0;
 
-    explicit GameState(const IniFile& ini_file);
+    explicit GameState(const IniFile& ini);
 
     void update() override;
     void draw() override;

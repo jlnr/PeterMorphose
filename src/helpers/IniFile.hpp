@@ -17,8 +17,8 @@ public:
     explicit IniFile(std::istream&& input);
 
     /// Returns the value for the given key in the given section, or std::nullopt otherwise.
-    std::optional<std::string> operator[](const std::string& section,
-                                          const std::string& name) const;
+    std::optional<std::string> string(const std::string& section, const std::string& name) const;
+    std::optional<int> integer(const std::string& section, const std::string& name) const;
 
 private:
     std::map<std::string, std::map<std::string, std::string>> m_sections;

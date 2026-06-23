@@ -6,11 +6,11 @@
 #include <iomanip>
 #include <sstream>
 
-Map::Map(const IniFile& ini_file)
+Map::Map(const IniFile& ini)
 {
     for (int y = 0; y < TILES_Y; ++y) {
         std::string row
-            = ini_file["Map", std::to_string(y)].value_or(std::string(TILES_X * 2, '0'));
+            = ini.string("Map", std::to_string(y)).value_or(std::string(TILES_X * 2, '0'));
 
         for (int x = 0; x < TILES_X; ++x) {
             if (x * 2 + 1 < row.length()) {
@@ -20,16 +20,15 @@ Map::Map(const IniFile& ini_file)
         }
     }
 
-    m_sky = string_to_int(ini_file["Map", "Sky"].value_or("0"));
+    m_sky = ini.integer("Map", "Sky").value_or(0);
 
     lava_frame = 0;
     lava_time_left = 0;
-    lava_speed = string_to_int(ini_file["Map", "LavaSpeed"].value_or("1"));
-    lava_mode = string_to_int(ini_file["Map", "LavaMode"].value_or("0"));
-    lava_pos
-        = string_to_int(ini_file["Map", "LavaPos"].value_or(std::to_string(TILES_Y))) * TILE_SIZE;
+    lava_speed = ini.integer("Map", "LavaSpeed").value_or(1);
+    lava_mode = ini.integer("Map", "LavaMode").value_or(0);
+    lava_pos = ini.integer("Map", "LavaPos").value_or(TILES_Y) * TILE_SIZE;
 
-    m_level_top = string_to_int(ini_file["Map", "LevelTop"].value_or("0")) * TILE_SIZE;
+    m_level_top = ini.integer("Map", "LevelTop").value_or(0) * TILE_SIZE;
     m_level_bottom = std::min(1024, lava_pos / TILE_SIZE);
 
     auto original_tiles = Gosu::load_tiles("media/tiles.bmp", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);

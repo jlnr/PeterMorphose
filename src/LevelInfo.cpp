@@ -9,12 +9,12 @@ LevelInfo::LevelInfo(const std::string& filename)
     : filename(filename),
       ini_file(std::ifstream(filename))
 {
-    title = ini_file["Info", "Title"].value_or("Unbenanntes Level");
-    difficulty = ini_file["Info", "Skill"].value_or("");
-    description = ini_file["Info", "Desc"].value_or("");
-    author = ini_file["Info", "Author"].value_or("");
+    title = ini_file.string("Info", "Title").value_or("Unbenanntes Level");
+    difficulty = ini_file.string("Info", "Skill").value_or("");
+    description = ini_file.string("Info", "Desc").value_or("");
+    author = ini_file.string("Info", "Author").value_or("");
 
-    goal = ini_file["Map", "StarsGoal"].value_or("100") + " Sterne einsammeln";
+    goal = ini_file.string("Map", "StarsGoal").value_or("100") + " Sterne einsammeln";
     if (goal == "0 Sterne einsammeln") {
         goal = "Durchkommen";
     }
@@ -22,17 +22,17 @@ LevelInfo::LevelInfo(const std::string& filename)
     // Simplification for hostages for now
     int hostages_count = 0;
     for (int i = 0;; ++i) {
-        auto obj_desc = ini_file["Objects", std::to_string(i)];
-        if (!obj_desc) {
+        const std::optional obj = ini_file.string("Objects", std::to_string(i));
+        if (!obj) {
             break;
         }
-        if (obj_desc->starts_with("2C")) { // ID_CAROLIN is 0x2C
+        if (obj->starts_with("2C")) { // ID_HOSTAGE is 0x2C
             hostages_count++;
         }
     }
 
     if (hostages_count == 1) {
-        goal += " und Carolin retten";
+        goal += " und Carolin retten"; // TODO: Extract name
     }
     else if (hostages_count > 1) {
         goal += " und " + std::to_string(hostages_count) + " Gefangene retten";
