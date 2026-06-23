@@ -1,13 +1,16 @@
 #include "GameState.hpp"
 #include "Constants.hpp"
 #include "helpers/Audio.hpp"
-#include "helpers/String.hpp"
 #include "helpers/Graphics.hpp"
+#include "helpers/IniFile.hpp"
 #include "helpers/InputAction.hpp"
 #include "helpers/String.hpp"
+#include "objects/LivingObject.hpp"
 #include "objects/ObjectDef.hpp"
 #include <algorithm>
 #include <cmath>
+#include <memory>
+#include <optional>
 
 GameState::GameState(const IniFile& ini_file)
     : map(ini_file)
@@ -16,7 +19,26 @@ GameState::GameState(const IniFile& ini_file)
 
     m_stars_goal = string_to_int(ini_file["Map", "StarsGoal"].value_or("100"));
 
-    // TODO: Create the player and everything else from [Objects].
+    int player_id = string_to_int(ini_file["Objects", "PlayerID"].value_or("0"));
+    int player_x = string_to_int(ini_file["Objects", "PlayerX"].value_or("288"));
+    int player_y = string_to_int(ini_file["Objects", "PlayerY"].value_or("24515"));
+    int player_vx = string_to_int(ini_file["Objects", "PlayerVX"].value_or("0"));
+    int player_vy = string_to_int(ini_file["Objects", "PlayerVY"].value_or("0"));
+    int player_life = string_to_int(
+        ini_file["Objects", "PlayerLife"].value_or(std::to_string(ObjectDef::get(ID_PLAYER).life)));
+    Direction player_direction = Direction(
+        string_to_int(ini_file["Objects", "PlayerDirection"].value_or(std::to_string(rand(2)))));
+    Action player_action = ACT_STAND;
+    m_player = std::make_shared<LivingObject>(*this, "", PMID(player_id), //
+                                              player_x, player_y, player_vx, player_vy, //
+                                              player_life, player_action, player_direction);
+
+    // If the player starts as a Special Peter, give him some morph time.
+    time_left = (m_player->pmid == ID_PLAYER ? 0 : ObjectDef::get(m_player->pmid).life);
+
+    m_objects.push_back(m_player);
+
+    // TODO: Load and create all other objects.
 }
 
 void GameState::lose(const std::string& reason)
@@ -27,9 +49,23 @@ void GameState::lose(const std::string& reason)
 
 void GameState::update()
 {
-    // TODO: Detect win/loss once the player object exists (death, reaching the top, hostages, ...).
-
     song("game").play(true);
+
+    // Win/loss detection.
+    if (m_result == Result::PLAYING && (m_player->action == ACT_DEAD || m_player->marked)) {
+        lose("Du bist gestorben.");
+    }
+    else if (m_result == Result::PLAYING && m_player->y < map.level_top()) {
+        if (stars < m_stars_goal) {
+            lose("Du hast verloren, weil du nicht genug Sterne gesammelt hast.");
+        }
+        else if (find_object(ID_HOSTAGE, ID_HOSTAGE, Rect(0, 0, 576, 24576))) {
+            lose("Du hast verloren, weil du nicht alle Gefangenen befreit hast.");
+        }
+        else {
+            m_result = Result::WON;
+        }
+    }
 
     if (m_result != Result::PLAYING || m_paused) {
         return;
@@ -54,26 +90,119 @@ void GameState::update()
             }
             map.lava_frame += 1;
             map.lava_frame %= 120;
-            // TODO: Emit the positional lava sound.
+            if (frame % 10 == 0 && rand(10) == 0) {
+                emit_sound(map.lava_pos, "lava");
+            }
         }
     }
     else {
         map.lava_time_left -= 1;
     }
 
-    // The view follows the lava (TODO: and the player).
-    view_pos = std::max(std::min(map.lava_pos - 432, 24096), map.level_top());
+    // The camera follows the lava and the player.
+    view_pos = std::clamp(std::min(map.lava_pos - 432, m_player->y - 240), map.level_top(), 24096);
 
-    // TODO: Player movement/input handling.
+    // Player movement.
+    LivingObject& player = *m_player;
+    const ObjectDef& def = ObjectDef::get(player.pmid);
+    if (fly_time_left == 0 && !player.in_water()) {
+        if (is_down(InputAction::Left)) {
+            if (!player.busy() && player.vx > -def.speed * 1.75) {
+                player.vx -= def.speed + (speed_time_left > 0 ? 6 : 0);
+            }
+            if (player.action == ACT_JUMP || player.action == ACT_LAND
+                || player.action == ACT_PAIN_1 || player.action == ACT_PAIN_2) {
+                for (int i = 0; i < def.jump_x * 2; ++i) {
+                    if (!player.blocked(DIR_LEFT)) {
+                        player.x -= 1;
+                    }
+                }
+            }
+        }
+        if (is_down(InputAction::Right)) {
+            if (!player.busy() && player.vx < def.speed * 1.75) {
+                player.vx += def.speed + (speed_time_left > 0 ? 6 : 0);
+            }
+            if (player.action == ACT_JUMP || player.action == ACT_LAND
+                || player.action == ACT_PAIN_1 || player.action == ACT_PAIN_2) {
+                for (int i = 0; i < def.jump_x * 2; ++i) {
+                    if (!player.blocked(DIR_RIGHT)) {
+                        player.x += 1;
+                    }
+                }
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < 4; ++i) {
+            if (is_down(InputAction::Up) && player.vy > -4) {
+                player.vy -= 1;
+            }
+        }
+        for (int i = 0; i < 2; ++i) {
+            if (is_down(InputAction::Down) && player.vy < +4) {
+                player.vy += 1;
+            }
+        }
+        for (int i = 0; i < 4; ++i) {
+            if (is_down(InputAction::Left) && player.vx > -6) {
+                player.vx -= 1;
+            }
+        }
+        for (int i = 0; i < 4; ++i) {
+            if (is_down(InputAction::Right) && player.vx < +6) {
+                player.vx += 1;
+            }
+        }
+        if (!player.in_water()) {
+            if (player.vx > 0) {
+                player.vx -= 1;
+            }
+            if (player.vx < 0) {
+                player.vx += 1;
+            }
+            if (player.vy > 0) {
+                player.vy -= 1;
+            }
+            if (player.vy < 0) {
+                player.vy += 1;
+            }
+        }
+        else if (player.vx + player.vy > 1 && frame % 3 == 0 && rand(5) == 0) {
+            sound("water" + std::to_string(rand(2) + 1)).play();
+        }
+        if (player.vx < 0) {
+            player.direction = DIR_LEFT;
+        }
+        if (player.vx > 0) {
+            player.direction = DIR_RIGHT;
+        }
+    }
 
-    // TODO: Update objects, remove dead ones, create bubbles/flames...
+    // No actions in the first frames to avoid an accidental jump when coming from the main menu.
+    if (frame > 2) {
+        // Holding the jump button keeps Peter hopping.
+        if (is_down(InputAction::Jump)) {
+            m_player->jump();
+        }
+    }
+
+    // Update every object, then delete those objects that were marked.
+    for (const std::shared_ptr<GameObject>& obj : m_objects) {
+        obj->update();
+    }
+    std::erase_if(m_objects, [](const std::shared_ptr<GameObject>& obj) { return obj->marked; });
 }
 
 void GameState::draw()
 {
     map.draw(view_pos);
 
-    // TODO: Draw objects.
+    for (const std::shared_ptr<GameObject>& obj : m_objects) {
+        if (!obj->marked) {
+            obj->draw();
+        }
+    }
 
     enum LavaTile
     {
@@ -155,10 +284,9 @@ void GameState::draw_status_bar()
             gui[x + 4].draw(tile_w * x, tile_h * 1, Z_UI);
         }
         // Health.
-        // TODO: Draw player.life or blank_line when the player is dead.
         gui[8].draw(tile_w * 0, tile_h * 2, Z_UI);
         gui[9].draw(tile_w * 1, tile_h * 2, Z_UI);
-        draw_digits(0, 2);
+        draw_digits(m_player->life, 2);
         // Keys
         gui[10].draw(tile_w * 0, tile_h * 3, Z_UI);
         gui[11].draw(tile_w * 1, tile_h * 3, Z_UI);
@@ -176,8 +304,15 @@ void GameState::draw_status_bar()
             // Or blank the line out if no stars are needed
             blank_line(4);
         }
-        // TODO: Remaining special Peter morph time.
-        blank_line(5);
+        // Remaining special Peter morph time.
+        if (m_player->pmid == ID_PLAYER) {
+            blank_line(5);
+        }
+        else {
+            gui[14].draw(tile_w * 0, tile_h * 5, Z_UI);
+            gui[15].draw(tile_w * 1, tile_h * 5, Z_UI);
+            draw_digits(time_left / TARGET_FPS, 5);
+        }
         // Ammo
         gui[16].draw(tile_w * 0, tile_h * 6, Z_UI);
         gui[17].draw(tile_w * 1, tile_h * 6, Z_UI);
@@ -217,7 +352,9 @@ void GameState::button_down(Gosu::Button id)
             if (id == Gosu::KB_P) {
                 m_paused = true;
             }
-            // TODO: player.jump / use_everything / act on the Jump/Use/Action buttons...
+            if (is_mapped_to(InputAction::Jump, id) && fly_time_left == 0) {
+                m_player->jump();
+            }
         }
         break;
     case Result::LOST:
@@ -234,4 +371,64 @@ void GameState::button_down(Gosu::Button id)
         }
         break;
     }
+}
+
+void GameState::emit_sound(int y, const std::string& name)
+{
+    constexpr int MAX_SOUND_DISTANCE = 500;
+    const int distance = std::abs(y - m_player->y);
+    if (distance < MAX_SOUND_DISTANCE) {
+        sound(name).play(1 - 1.0 * distance / MAX_SOUND_DISTANCE);
+    }
+}
+
+void GameState::cast_fx(int, int, int, int, int, int, int, int, int, int)
+{
+    // TODO: Create FX objects (particles).
+}
+
+void GameState::cast_objects(PMID, int, int, int, int, const Rect&)
+{
+    // TODO: Create a randomized burst of objects.
+}
+
+GameObject* GameState::create_object(int, int, int, std::optional<std::string>)
+{
+    // TODO: Instantiate an object and add it to m_objects.
+    return nullptr;
+}
+
+void GameState::explosion(int, int, int, bool)
+{
+    // TODO: Create effects and damage nearby living objects.
+}
+
+GameObject* GameState::find_object(PMID min_id, PMID max_id, const Rect& rect)
+{
+    for (auto& obj : m_objects) {
+        if (between(obj->pmid, min_id, max_id) && rect.contains(obj->x, obj->y)) {
+            return obj.get();
+        }
+    }
+    return nullptr;
+}
+
+GameObject* GameState::find_living(PMID min_id, PMID max_id, Action min_act, Action max_act,
+                                   const Rect& rect)
+{
+    for (auto& obj : m_objects) {
+        if (between(obj->pmid, min_id, max_id) && obj->rect_collides(rect)) {
+            auto* living = dynamic_cast<LivingObject*>(obj.get());
+            if (living && between(living->action, min_act, max_act)) {
+                return obj.get();
+            }
+        }
+    }
+    return nullptr;
+}
+
+GameObject* GameState::launch_projectile(int, int, Direction, PMID, PMID)
+{
+    // TODO: Later...
+    return nullptr;
 }
