@@ -5,7 +5,7 @@
 #include "states/TitleState.hpp"
 
 Window::Window()
-    : Gosu::Window(WINDOW_WIDTH, WINDOW_HEIGHT, Gosu::WF_WINDOWED, 1000.0 / TARGET_FPS)
+    : Gosu::Window(WINDOW_WIDTH, WINDOW_HEIGHT, Gosu::WF_FULLSCREEN, 1000.0 / TARGET_FPS)
 {
     set_caption("Peter Morphose");
     State::push_state(std::make_unique<TitleState>());
@@ -30,6 +30,8 @@ void Window::draw()
 
 void Window::button_down(Gosu::Button id)
 {
+    Gosu::Window::button_down(id);
+
     if (State* state = State::current()) {
         state->button_down(id);
     }
@@ -37,6 +39,8 @@ void Window::button_down(Gosu::Button id)
 
 void Window::button_up(Gosu::Button id)
 {
+    Gosu::Window::button_up(id);
+
     if (State* state = State::current()) {
         state->button_up(id);
     }
@@ -44,8 +48,5 @@ void Window::button_up(Gosu::Button id)
 
 bool Window::needs_cursor() const
 {
-    if (State* state = State::current()) {
-        return state->needs_cursor();
-    }
     return false;
 }
