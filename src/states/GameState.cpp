@@ -59,7 +59,7 @@ GameState::GameState(const IniFile& ini)
 
 void GameState::update()
 {
-    song("game").play(true);
+    play_song("game");
 
     // Win/loss detection.
     if (m_result == Result::PLAYING && (m_player->action == ACT_DEAD || m_player->marked)) {
@@ -179,7 +179,7 @@ void GameState::update()
             }
         }
         else if (player.vx + player.vy > 1 && frame % 3 == 0 && rand(5) == 0) {
-            sound("water" + std::to_string(rand(2) + 1)).play();
+            play_sound("water" + std::to_string(rand(2) + 1));
         }
         if (player.vx < 0) {
             player.direction = DIR_LEFT;
@@ -354,7 +354,7 @@ void GameState::button_down(Gosu::Button id)
     switch (m_result) {
     case Result::PLAYING:
         if (is_mapped_to(InputAction::MenuCancel, id)) {
-            sound("whoosh").play();
+            play_sound("whoosh");
             pop_state(); // back to level selection
         }
         else if (m_paused) {
@@ -373,14 +373,14 @@ void GameState::button_down(Gosu::Button id)
         break;
     case Result::LOST:
         if (is_mapped_to(InputAction::MenuCancel, id)) {
-            sound("whoosh").play();
+            play_sound("whoosh");
             pop_state();
         }
         break;
     case Result::WON:
         if (is_mapped_to(InputAction::MenuConfirm, id)
             || is_mapped_to(InputAction::MenuCancel, id)) {
-            sound("whoosh").play();
+            play_sound("whoosh");
             pop_state();
         }
         break;
@@ -398,7 +398,7 @@ void GameState::emit_sound(int y, const std::string& name)
     constexpr int MAX_SOUND_DISTANCE = 500;
     const int distance = std::abs(y - m_player->y);
     if (distance < MAX_SOUND_DISTANCE) {
-        sound(name).play(1 - 1.0 * distance / MAX_SOUND_DISTANCE);
+        play_sound(name, 1 - 1.0 * distance / MAX_SOUND_DISTANCE);
     }
 }
 

@@ -14,7 +14,7 @@ LevelSelectionState::LevelSelectionState()
 
 void LevelSelectionState::update()
 {
-    song("menu").play(true);
+    play_song("menu");
 }
 
 void LevelSelectionState::draw_level_info(const LevelInfo& info, int y, bool active)

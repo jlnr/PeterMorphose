@@ -1,22 +1,24 @@
 #include "Audio.hpp"
+#include "Gosu/Audio.hpp"
 #include <map>
+#include <utility>
 
 // No need for thread synchronization here, everything happens on the main thread.
 
-Gosu::Song& song(const std::string& name)
+void play_song(const std::string& name)
 {
     static std::map<std::string, Gosu::Song> songs;
     if (!songs.contains(name)) {
         songs.emplace(name, "media/" + name + ".ogg");
     }
-    return songs.at(name);
+    songs.at(name).play(true);
 }
 
-const Gosu::Sample& sound(const std::string& name)
+void play_sound(const std::string& name, double volume, double speed)
 {
     static std::map<std::string, Gosu::Sample> sounds;
     if (!sounds.contains(name)) {
         sounds.emplace(name, "media/" + name + ".wav");
     }
-    return sounds.at(name);
+    std::ignore = sounds.at(name).play(volume, speed);
 }

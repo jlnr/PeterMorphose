@@ -208,7 +208,7 @@ void LivingObject::jump()
     if (pmid <= ID_PLAYER_MAX && game.jump_time_left > 0) {
         vy = static_cast<int>(std::round(def.jump_y * 1.7)) - 1;
         game.cast_objects(ID_FX_SMOKE, 2, 0, 3, 2, rect(1, 0));
-        sound("turbo").play();
+        play_sound("turbo");
         dir = DIR_UP;
     }
     else {
@@ -240,7 +240,7 @@ void LivingObject::jump()
 
     action = ACT_JUMP;
     if (pmid <= ID_PLAYER_MAX) {
-        sound("jump").play();
+        play_sound("jump");
     }
 }
 
@@ -255,7 +255,7 @@ void LivingObject::use_tile()
     case TILE_ROCKET_UP_2:
     case TILE_ROCKET_UP_3:
         if (pmid <= ID_PLAYER_MAX) {
-            sound("jump").play();
+            play_sound("jump");
         }
         game.emit_sound(y, "turbo");
         vx = 0;
@@ -271,7 +271,7 @@ void LivingObject::use_tile()
     case TILE_ROCKET_UP_LEFT_2:
     case TILE_ROCKET_UP_LEFT_3:
         if (pmid <= ID_PLAYER_MAX) {
-            sound("jump").play();
+            play_sound("jump");
         }
         game.emit_sound(y, "turbo");
         vx = -15;
@@ -288,7 +288,7 @@ void LivingObject::use_tile()
     case TILE_ROCKET_UP_RIGHT_2:
     case TILE_ROCKET_UP_RIGHT_3:
         if (pmid <= ID_PLAYER_MAX) {
-            sound("jump").play();
+            play_sound("jump");
         }
         game.emit_sound(y, "turbo");
         vx = +15;
@@ -300,6 +300,9 @@ void LivingObject::use_tile()
         direction = DIR_RIGHT;
         game.cast_fx(0, 0, 10, x, y, 24, 24, +8, -8, 1);
         return;
+
+    default:
+        break;
     }
 
     // Interact with background tiles:
@@ -310,7 +313,7 @@ void LivingObject::use_tile()
         }
         game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_UP;
         game.keys -= 1;
-        sound("door" + std::to_string(rand(2) + 1)).play();
+        play_sound("door" + std::to_string(rand(2) + 1));
         [[fallthrough]];
 
     case TILE_STAIRS_UP:
@@ -330,7 +333,7 @@ void LivingObject::use_tile()
         }
         game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_DOWN;
         game.keys -= 1;
-        sound("door" + std::to_string(rand(2) + 1)).play();
+        play_sound("door" + std::to_string(rand(2) + 1));
         [[fallthrough]];
 
     case TILE_STAIRS_DOWN:
