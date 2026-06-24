@@ -11,7 +11,6 @@ public:
     virtual void draw() { }
     virtual void button_down(Gosu::Button id) { }
     virtual void button_up(Gosu::Button id) { }
-    virtual bool needs_cursor() const { return false; }
 
     static State* current();
     static void push_state(std::unique_ptr<State> state);
