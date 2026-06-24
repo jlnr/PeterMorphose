@@ -136,7 +136,24 @@ void LivingObject::update()
         return;
     }
 
-    // TODO: Slime animation...
+    // Walking on slime: a stickier, slower animation.
+    // Unfortunately, this is also where the slime sounds have been implemented.
+    if (between(game.map[x / TILE_SIZE, (y + ObjectDef::get(pmid).rect.bottom() + 1) / TILE_SIZE],
+                TILE_SLIME, TILE_SLIME_3)) {
+        if (pmid <= ID_PLAYER_MAX && (is_down(InputAction::Left) || is_down(InputAction::Right))) {
+            action = Action(ACT_WALK_1 + game.frame % 12 / 3);
+            if (is_down(InputAction::Left)) {
+                direction = DIR_LEFT;
+            }
+            if (is_down(InputAction::Right)) {
+                direction = DIR_RIGHT;
+            }
+            // TODO: Create ID_FX_FLYING_BLOB
+            game.emit_sound(y, "slime" + std::to_string(rand(3) + 1));
+            return;
+        }
+        // TODO: The same for enemies
+    }
 
     // Walking animation.
     if (blocked(DIR_DOWN) && vx != 0) {
@@ -203,13 +220,16 @@ void LivingObject::jump()
     }
     else {
         vx = dir_to_vx(dir) * std::max(def.jump_x, std::abs(vx) / 2);
+    }
 
-        // Checking a single point as in Ruby, not two as in Delphi.
-        Tile tile_below_left = game.map[x / TILE_SIZE, (y + def.rect.bottom() + 1) / TILE_SIZE];
-        if (between(tile_below_left, TILE_SLIME, TILE_SLIME_3)) {
-            vx /= 3;
-            vy -= -2;
-        }
+    // Slime tiles reduce the jumping height.
+    int row_below = (y + def.rect.bottom() + 1) / TILE_SIZE;
+    Tile tile_below_left = game.map[(x + def.rect.left) / TILE_SIZE, row_below];
+    Tile tile_below_right = game.map[(x + def.rect.right()) / TILE_SIZE, row_below];
+    if (between(tile_below_left, TILE_SLIME, TILE_SLIME_3)
+        || between(tile_below_right, TILE_SLIME, TILE_SLIME_3)) {
+        vx /= 3;
+        vy /= 1.5;
     }
 
     if (in_water()) {
@@ -247,7 +267,7 @@ void LivingObject::use_tile()
         game.cast_fx(0, 0, 10, x, y, 24, 24, 0, -10, 1);
         return;
 
-        case TILE_ROCKET_UP_LEFT:
+    case TILE_ROCKET_UP_LEFT:
     case TILE_ROCKET_UP_LEFT_2:
     case TILE_ROCKET_UP_LEFT_3:
         if (pmid <= ID_PLAYER_MAX) {
