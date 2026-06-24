@@ -5,6 +5,8 @@
 #include "helpers/IniFile.hpp"
 #include "helpers/InputAction.hpp"
 #include "helpers/String.hpp"
+#include "objects/CollectibleObject.hpp"
+#include "objects/GameObject.hpp"
 #include "objects/LivingObject.hpp"
 #include "objects/ObjectDef.hpp"
 #include <algorithm>
@@ -17,7 +19,7 @@ GameState::GameState(const IniFile& ini)
 {
     view_pos = TILES_Y * TILE_SIZE - WINDOW_HEIGHT;
 
-    m_stars_goal = ini.integer("Map", "StarsGoal").value_or(100);
+    stars_goal = ini.integer("Map", "StarsGoal").value_or(100);
 
     PMID player_id = PMID(ini.integer("Objects", "PlayerID").value_or(0));
     int player_x = ini.integer("Objects", "PlayerX").value_or(288);
@@ -37,13 +39,22 @@ GameState::GameState(const IniFile& ini)
 
     m_objects.push_back(m_player);
 
-    // TODO: Load and create all other objects.
-}
-
-void GameState::lose(const std::string& reason)
-{
-    m_result = Result::LOST;
-    m_reason = reason;
+    // Load and create all other objects. Each [Objects] line is "pmid|x|y" (all hex), with the
+    // optional extra data in a second INI entry.
+    for (int i = 0;; ++i) {
+        const std::optional<std::string> line = ini.string("Objects", std::to_string(i));
+        if (!line) {
+            // IF there is no key for the given object, it marks the end of the object list.
+            break;
+        }
+        std::string extraData = ini.string("Objects", std::to_string(i) + "Y").value_or("");
+        const PMID pmid = PMID(hex_chars_to_int(*line, 0, 2));
+        const int x = hex_chars_to_int(*line, 3, 3, 0);
+        const int y = hex_chars_to_int(*line, 7, 4, 288);
+        const int vx = hex_chars_to_int(*line, 12, 5, 0);
+        const int vy = hex_chars_to_int(*line, 18, 5, 0);
+        create_object(pmid, std::move(extraData), x, y, vx, vy);
+    }
 }
 
 void GameState::update()
@@ -55,7 +66,7 @@ void GameState::update()
         lose("Du bist gestorben.");
     }
     else if (m_result == Result::PLAYING && m_player->y < map.level_top()) {
-        if (stars < m_stars_goal) {
+        if (stars < stars_goal) {
             lose("Du hast verloren, weil du nicht genug Sterne gesammelt hast.");
         }
         else if (find_object(ID_HOSTAGE, ID_HOSTAGE, Rect(0, 0, 576, 24576))) {
@@ -298,12 +309,12 @@ void GameState::draw_status_bar()
         gui[12].draw(tile_w * 0, tile_h * 4, Z_UI);
         gui[13].draw(tile_w * 1, tile_h * 4, Z_UI);
         draw_digits(stars, 4);
-        if (stars > m_stars_goal) {
+        if (stars > stars_goal) {
             // Enough stars - draw checkmark
             gui[42].draw(tile_w * 2, tile_h * 4, Z_UI);
             gui[43].draw(tile_w * 3, tile_h * 4, Z_UI);
         }
-        if (m_stars_goal == 0) {
+        if (stars_goal == 0) {
             // Or blank the line out if no stars are needed
             blank_line(4);
         }
@@ -376,6 +387,12 @@ void GameState::button_down(Gosu::Button id)
     }
 }
 
+void GameState::lose(std::string reason)
+{
+    m_result = Result::LOST;
+    m_reason = std::move(reason);
+}
+
 void GameState::emit_sound(int y, const std::string& name)
 {
     constexpr int MAX_SOUND_DISTANCE = 500;
@@ -395,10 +412,29 @@ void GameState::cast_objects(PMID, int, int, int, int, const Rect&)
     // TODO: Create a randomized burst of objects.
 }
 
-GameObject* GameState::create_object(int, int, int, std::optional<std::string>)
+GameObject* GameState::create_object(PMID pmid, std::string extraData, int x, int y, int vx, int vy)
 {
-    // TODO: Instantiate an object and add it to m_objects.
-    return nullptr;
+    std::shared_ptr<GameObject> object;
+    if (pmid <= ID_LIVING_MAX) {
+        // Enemies: created, but the AI and enemy drawing are not ported yet, so they just fall
+        // idle.
+        object = std::make_shared<LivingObject>(*this, std::move(extraData), pmid, x, y, vx, vy,
+                                                ObjectDef::get(pmid).life, ACT_STAND,
+                                                Direction(rand(2)));
+    }
+    else if (pmid <= ID_OTHER_OBJECTS_MAX) {
+        object = std::make_shared<GameObject>(*this, std::move(extraData), pmid, x, y, vx, vy);
+    }
+    else if (pmid <= ID_COLLECTIBLE_MAX) {
+        object
+            = std::make_shared<CollectibleObject>(*this, std::move(extraData), pmid, x, y, vx, vy);
+    }
+    else {
+        // TODO: Port EffectsObjects / TPMEffect.
+        return nullptr;
+    }
+    m_objects.push_back(object);
+    return object.get();
 }
 
 void GameState::explosion(int, int, int, bool)

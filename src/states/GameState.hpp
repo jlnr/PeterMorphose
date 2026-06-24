@@ -29,6 +29,7 @@ public:
 
     int keys = 0;
     int stars = 0;
+    int stars_goal = 0;
     int ammo = 0;
     int bombs = 0;
     int score = 0;
@@ -39,11 +40,16 @@ public:
     void draw() override;
     void button_down(Gosu::Button id) override;
 
+    void lose(std::string reason);
+
+    /// The player object, owned by m_objects. Used by other objects (e.g. collectibles).
+    LivingObject& player() { return *m_player; }
+
     /// x/y/width/height is a centered rectangle in this case, hence no "const Rect&" for now.
     void cast_fx(int smoke, int flames, int sparks, int x, int y, int width, int height, //
                  int vx, int vy, int count);
     void cast_objects(PMID pmid, int count, int vx, int vy, int randomness, const Rect& rect);
-    GameObject* create_object(int pmid, int x, int y, std::optional<std::string> xdata);
+    GameObject* create_object(PMID pmid, std::string extraData, int x, int y, int vx, int vy);
     void explosion(int x, int y, int radius, bool do_score);
     /// Plays a sound the louder the closer it is to the player.
     void emit_sound(int y, const std::string& name);
@@ -60,7 +66,6 @@ private:
         LOST,
     };
 
-    void lose(const std::string& reason);
     void draw_status_bar();
 
     Result m_result = Result::PLAYING;
@@ -70,8 +75,6 @@ private:
     int m_frame_fading_box = 16;
     std::string m_message_text;
     int m_message_opacity = 0;
-
-    int m_stars_goal = 0;
 
     std::shared_ptr<LivingObject> m_player;
     std::vector<std::shared_ptr<GameObject>> m_objects;
