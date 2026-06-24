@@ -177,8 +177,10 @@ enum PMID : std::uint8_t
     ID_FLY = 0x2F,
     ID_MORPH_FIGHTER = 0x38,
     ID_MORPH_MAX = 0x3B,
-    ID_MUNITION_MIN = 0x3C,
-    ID_MUNITION_MAX = 0x3F,
+    ID_MUNITION_GUN = 0x3C,
+    ID_MUNITION_GUN_2 = 0x3D,
+    ID_MUNITION_BOMBER = 0x3E,
+    ID_MUNITION_BOMBER_2 = 0x3F,
     ID_COLLECTIBLE_MAX = 0x3F,
     // 40 - 53 = effects
     ID_FX_MIN = 0x40,
@@ -211,6 +213,13 @@ enum PMID : std::uint8_t
 inline int dir_to_vx(Direction direction)
 {
     return direction == DIR_LEFT ? -1 : +1;
+}
+
+/// The opposite horizontal direction, like OtherDir in Delphi.
+/// (We could be fancy and handle all four directions here - so far we have no need for it.)
+inline Direction other_dir(Direction direction)
+{
+    return direction == DIR_LEFT ? DIR_RIGHT : DIR_LEFT;
 }
 
 /// Random integer. Adding an overload to Gosu::random because would be a subtle breaking change.
