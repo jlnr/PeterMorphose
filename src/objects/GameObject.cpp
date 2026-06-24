@@ -71,9 +71,14 @@ void GameObject::fall()
     vx = std::clamp(vx, -TILE_SIZE, TILE_SIZE);
     vy = std::clamp(vy, -TILE_SIZE, TILE_SIZE);
 
+    // Remember whether the player was on ground at the start of this function.
+    // This ensures we always either apply air or ground friction. In the Delphi and Ruby versions,
+    // Peter goes too fast when he runs off a cliff because we apply neither for one frame.
+    const bool on_ground = blocked(DIR_DOWN);
+
     // Air friction affects the player. This is new in Ruby, and is the major improvement over the
     // unusual jumping physics in the Delphi version.
-    if (between(pmid, ID_PLAYER, ID_PLAYER_MAX) && !blocked(DIR_DOWN)) {
+    if (between(pmid, ID_PLAYER, ID_PLAYER_MAX) && !on_ground) {
         if (std::abs(vx) < 5) {
             vx = static_cast<int>(vx / 2.0);
         }
@@ -126,7 +131,7 @@ void GameObject::fall()
     }
 
     // Ground friction and slime tiles.
-    if ((pmid > ID_PLAYER_MAX || game.fly_time_left == 0) && blocked(DIR_DOWN)) {
+    if ((pmid > ID_PLAYER_MAX || game.fly_time_left == 0) && on_ground) {
         const ObjectDef& def = ObjectDef::get(pmid);
         if (vx > 0) {
             vx -= 1;
