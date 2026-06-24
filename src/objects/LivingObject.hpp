@@ -23,6 +23,13 @@ public:
 
     void jump();
 
+    /// Takes one point of damage.
+    void hit();
+    /// Takes damage, depends on what kind of damage and applied to whom.
+    void hurt(bool from_explosion);
+
     /// Uses the tile the object stands on, such as stairs.
     void use_tile();
+    /// Uses levers or lets Peter attack.
+    void special_action();
 };

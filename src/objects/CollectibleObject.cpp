@@ -52,6 +52,18 @@ void CollectibleObject::update()
             kill();
             break;
 
+        case ID_HEALTH:
+        case ID_HEALTH_2: {
+            int amount = (pmid == ID_HEALTH_2 ? 4 : 1);
+            play_sound("collect_health");
+            game.player().emit_text("+" + std::to_string(amount));
+            game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
+            game.score += amount;
+            game.player().life += amount;
+            kill();
+            break;
+        }
+
         case ID_STAR:
         case ID_STAR_2:
         case ID_STAR_3:
@@ -68,7 +80,31 @@ void CollectibleObject::update()
             kill();
             break;
 
-            // TODO: Port more collectibles (health, power-ups, ...).
+        case ID_MUNITION_GUN:
+        case ID_MUNITION_GUN_2: {
+            int amount = 1 + (pmid - ID_MUNITION_GUN) * 2;
+            play_sound("collect_ammo");
+            game.player().emit_text("+" + std::to_string(amount));
+            game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
+            game.score += amount;
+            game.ammo += amount;
+            kill();
+            break;
+        }
+
+        case ID_MUNITION_BOMBER:
+        case ID_MUNITION_BOMBER_2: {
+            int amount = 1 + (pmid - ID_MUNITION_BOMBER) * 2;
+            play_sound("collect_ammo");
+            game.player().emit_text("+" + std::to_string(amount));
+            game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
+            game.score += amount;
+            game.bombs += amount;
+            kill();
+            break;
+        }
+
+        // TODO: Port more collectibles.
 
         default:
             // The value of ID_POINTS_* is defined as their ObjectDef::life.
@@ -78,8 +114,22 @@ void CollectibleObject::update()
                 game.cast_objects(ID_FX_SPARKLE, 3, 0, 0, 0, rect());
                 game.score += ObjectDef::get(pmid).life;
                 kill();
-                break;
             }
+            // Morph medals turn Peter into the corresponding special form.
+            if (between(pmid, ID_MORPH_FIGHTER, ID_MORPH_MAX)) {
+                PMID target = PMID(ID_PLAYER_FIGHTER + pmid - ID_MORPH_FIGHTER);
+                if (game.player().pmid != target) {
+                    play_sound("morph");
+                    game.player().pmid = target;
+                    game.player().emit_text(ObjectDef::get(target).name + "!", ID_FX_SLOW_TEXT);
+                    game.player().action = ACT_JUMP;
+                    game.cast_fx(8, 0, 0, x, y, 24, 24, 0, -1, 4);
+                    game.time_left = ObjectDef::get(target).life;
+                    game.cast_objects(ID_FX_SPARKLE, 5, 0, 0, 0, rect());
+                    kill();
+                }
+            }
+            break;
         }
     }
 }

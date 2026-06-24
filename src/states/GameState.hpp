@@ -51,12 +51,13 @@ public:
     void cast_objects(PMID pmid, int count, int vx, int vy, int randomness, const Rect& rect);
     GameObject* create_object(PMID pmid, std::string extraData, int x, int y, int vx, int vy);
     void explosion(int x, int y, int radius, bool do_score);
+    void burn_enemies(const Rect& rect);
     /// Plays a sound the louder the closer it is to the player.
     void emit_sound(int y, const std::string& name);
     GameObject* find_object(PMID min_id, PMID max_id, const Rect& rect);
-    GameObject* find_living(PMID min_id, PMID max_id, Action min_act, Action max_act,
-                            const Rect& rect);
-    GameObject* launch_projectile(int x, int y, Direction direction, PMID min_id, PMID max_id);
+    LivingObject* find_living(PMID min_id, PMID max_id, Action min_act, Action max_act,
+                              const Rect& rect);
+    LivingObject* launch_projectile(int x, int y, Direction direction, PMID min_id, PMID max_id);
 
 private:
     enum class Result
