@@ -44,9 +44,9 @@ void GameObject::kill()
     marked = true;
 }
 
-void GameObject::emit_text(const std::string&, PMID)
+void GameObject::emit_text(const std::string& text, PMID pmid)
 {
-    // TODO: Create ID_FX_TEXT / ID_FX_SLOW_TEXT object.
+    game.create_object(pmid, text, x, y - 10, 0, -1);
 }
 
 void GameObject::fall()
