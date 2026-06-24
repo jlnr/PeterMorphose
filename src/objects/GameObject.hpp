@@ -28,6 +28,9 @@ public:
     /// Marks the object as "to be deleted" and unsets it from all PMScript variables.
     void kill();
 
+    /// Creates a floating text effect above the object (e.g. "Schlüssel!", "+1").
+    void emit_text(const std::string& text, PMID pmid = ID_FX_TEXT);
+
     /// Per-frame physics: gravity, water, friction...
     void fall();
 
