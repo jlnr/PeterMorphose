@@ -6,6 +6,7 @@
 #include "helpers/InputAction.hpp"
 #include "helpers/String.hpp"
 #include "objects/CollectibleObject.hpp"
+#include "objects/EffectObject.hpp"
 #include "objects/GameObject.hpp"
 #include "objects/LivingObject.hpp"
 #include "objects/ObjectDef.hpp"
@@ -402,14 +403,34 @@ void GameState::emit_sound(int y, const std::string& name)
     }
 }
 
-void GameState::cast_fx(int, int, int, int, int, int, int, int, int, int)
+void GameState::cast_fx(int smoke, int flames, int sparks, int x, int y, int width, int height,
+                        int vx, int vy, int randomness)
 {
-    // TODO: Create FX objects (particles).
+    // Don't waste time on particles that are out of sight.
+    if (std::abs(view_pos + WINDOW_HEIGHT / 2 - y) > WINDOW_HEIGHT) {
+        return;
+    }
+
+    const auto cast_single_fx = [&](PMID pmid, int count) {
+        for (int i = 0; i < count; ++i) {
+            int sx = std::clamp(x - width / 2 + rand(width + 1), 0, 575);
+            int sy = y - height / 2 + rand(height + 1);
+            create_object(pmid, "", sx, sy, vx - randomness + rand(randomness * 2 + 1),
+                          vy - randomness + rand(randomness * 2 + 1));
+        }
+    };
+    cast_single_fx(ID_FX_SMOKE, smoke);
+    cast_single_fx(ID_FX_FLAME, flames);
+    cast_single_fx(ID_FX_SPARK, sparks);
 }
 
-void GameState::cast_objects(PMID, int, int, int, int, const Rect&)
+void GameState::cast_objects(PMID pmid, int count, int vx, int vy, int randomness, const Rect& rect)
 {
-    // TODO: Create a randomized burst of objects.
+    for (int i = 0; i < count; ++i) {
+        create_object(pmid, "", rect.left + rand(rect.width), rect.top + rand(rect.height),
+                      vx - randomness + rand(randomness * 2 + 1),
+                      vy - randomness + rand(randomness * 2 + 1));
+    }
 }
 
 GameObject* GameState::create_object(PMID pmid, std::string extraData, int x, int y, int vx, int vy)
@@ -429,8 +450,10 @@ GameObject* GameState::create_object(PMID pmid, std::string extraData, int x, in
         object
             = std::make_shared<CollectibleObject>(*this, std::move(extraData), pmid, x, y, vx, vy);
     }
+    else if (pmid <= ID_FX_MAX) {
+        object = std::make_shared<EffectObject>(*this, std::move(extraData), pmid, x, y, vx, vy);
+    }
     else {
-        // TODO: Port EffectsObjects / TPMEffect.
         return nullptr;
     }
     m_objects.push_back(object);

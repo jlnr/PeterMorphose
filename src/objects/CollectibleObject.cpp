@@ -37,7 +37,7 @@ void CollectibleObject::update()
         switch (pmid) {
         case ID_HOSTAGE:
             game.cast_objects(ID_FX_FLYING_CHAIN, 8, 0, -1, 3, rect(1, -1));
-            // TODO: Create "flying hostage" effect object.
+            game.create_object(ID_FX_FLYING_HOSTAGE, "", x, y, -7 + rand(15), -15);
             play_sound("yippie");
             game.score += 100;
             kill();

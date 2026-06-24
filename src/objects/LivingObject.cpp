@@ -110,7 +110,22 @@ void LivingObject::update()
         return;
     }
 
-    // TODO: Water logic
+    if (in_water()) {
+        // Create bubble particles.
+        if (rand(30) == 0) {
+            game.create_object(ID_FX_WATER_BUBBLE, "", x, y - 7, 0, 0);
+        }
+        // In water: Extinguish Feuerpeter...
+        if (pmid == ID_PLAYER_BERSERKER) {
+            pmid = ID_PLAYER;
+            game.cast_fx(8, 0, 0, x, y, 24, 24, 0, -1, 4);
+        }
+        // ...and his evil counterpart:
+        else if (pmid == ID_ENEMY_BERSERKER) {
+            pmid = ID_ENEMY;
+            game.cast_fx(8, 0, 0, x, y, 24, 24, 0, -1, 4);
+        }
+    }
 
     if (pmid <= ID_PLAYER_MAX && !busy()) {
         if (vx < 0) {
@@ -148,8 +163,11 @@ void LivingObject::update()
             if (is_down(InputAction::Right)) {
                 direction = DIR_RIGHT;
             }
-            // TODO: Create ID_FX_FLYING_BLOB
-            game.emit_sound(y, "slime" + std::to_string(rand(3) + 1));
+            if (std::abs(y - game.player().y) < WINDOW_HEIGHT && rand(5) == 0) {
+                game.create_object(ID_FX_FLYING_BLOB, "", x, y + ObjectDef::get(pmid).rect.bottom(),
+                                   rand(3) - 1, rand(3));
+                game.emit_sound(y, "slime" + std::to_string(rand(3) + 1));
+            }
             return;
         }
         // TODO: The same for enemies
