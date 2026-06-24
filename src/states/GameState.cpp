@@ -110,6 +110,19 @@ void GameState::update()
         map.lava_time_left -= 1;
     }
 
+    // Peter reverts to his normal form when the morph time runs out.
+    if (m_player->pmid != ID_PLAYER) {
+        time_left -= 1;
+        if (time_left == 0) {
+            m_player->pmid = ID_PLAYER;
+            cast_fx(8, 0, 0, m_player->x, m_player->y, 24, 24, 0, -1, 4);
+        }
+    }
+    // Invincibility from a recent hit.
+    if (inv_time_left > 0) {
+        inv_time_left -= 1;
+    }
+
     // The camera follows the lava and the player.
     view_pos = std::clamp(std::min(map.lava_pos - 432, m_player->y - 240), map.level_top(), 24096);
 
@@ -199,6 +212,10 @@ void GameState::update()
         // Holding down makes the player use stairs and other map tiles.
         if (is_down(InputAction::Use)) {
             m_player->use_tile();
+        }
+        // Use the special action of Peter's current form.
+        if (is_down(InputAction::Action)) {
+            m_player->special_action();
         }
     }
 
@@ -465,6 +482,26 @@ void GameState::explosion(int, int, int, bool)
     // TODO: Create effects and damage nearby living objects.
 }
 
+void GameState::burn_enemies(const Rect& rect)
+{
+    for (const std::shared_ptr<GameObject>& obj : m_objects) {
+        if (obj->marked) {
+            continue;
+        }
+
+        auto* enemy = dynamic_cast<LivingObject*>(obj.get());
+        if (enemy && between(enemy->pmid, ID_ENEMY, ID_ENEMY_MAX) && enemy->action < ACT_DEAD
+            && enemy->rect_collides(rect)) {
+            enemy->hurt(false);
+            if (enemy->action == ACT_DEAD) {
+                int bonus = ObjectDef::get(enemy->pmid).life * 3;
+                score += bonus;
+                enemy->emit_text("*" + std::to_string(bonus) + "*");
+            }
+        }
+    }
+}
+
 GameObject* GameState::find_object(PMID min_id, PMID max_id, const Rect& rect)
 {
     for (auto& obj : m_objects) {
@@ -475,22 +512,40 @@ GameObject* GameState::find_object(PMID min_id, PMID max_id, const Rect& rect)
     return nullptr;
 }
 
-GameObject* GameState::find_living(PMID min_id, PMID max_id, Action min_act, Action max_act,
-                                   const Rect& rect)
+LivingObject* GameState::find_living(PMID min_id, PMID max_id, Action min_act, Action max_act,
+                                     const Rect& rect)
 {
     for (auto& obj : m_objects) {
         if (between(obj->pmid, min_id, max_id) && obj->rect_collides(rect)) {
             auto* living = dynamic_cast<LivingObject*>(obj.get());
             if (living && between(living->action, min_act, max_act)) {
-                return obj.get();
+                return living;
             }
         }
     }
     return nullptr;
 }
 
-GameObject* GameState::launch_projectile(int, int, Direction, PMID, PMID)
+LivingObject* GameState::launch_projectile(int x, int y, Direction direction, //
+                                           PMID min_id, PMID max_id)
 {
-    // TODO: Later...
-    return nullptr;
+    emit_sound(y, "bow");
+    const int orig_x = x;
+    LivingObject* target = nullptr;
+    // Scan in 4-pixel steps until we hit a living target or a wall.
+    while (x > 2 && x < 573) {
+        target = find_living(min_id, max_id, ACT_STAND, Action(ACT_DEAD - 1),
+                             Rect(x - 4, y - 2, 8, 4));
+        if (target || map.is_solid(x, y)) {
+            // The extraData for ID_FX_RICOCHET stores its direction.
+            create_object(ID_FX_RICOCHET, std::to_string(int(direction)), x, y - 1 + rand(3), 0, 0);
+            emit_sound(y, "arrow_hit");
+            break;
+        }
+        x += dir_to_vx(direction) * 4;
+    }
+    // No matter if we hit something or not, we want to draw a line on the screen that fades out.
+    // The extraData for ID_FX_LINE stores its length.
+    create_object(ID_FX_LINE, std::to_string(std::abs(x - orig_x)), std::min(x, orig_x), y, 0, 0);
+    return target;
 }
