@@ -14,8 +14,7 @@ Map::Map(const IniFile& ini)
 
         for (int x = 0; x < TILES_X; ++x) {
             if (x * 2 + 1 < row.length()) {
-                std::string hex = row.substr(x * 2, 2);
-                m_tiles[y * TILES_X + x] = string_to_int(hex, 16);
+                m_tiles[y * TILES_X + x] = hex_chars_to_int(row, x * 2, 2);
             }
         }
     }

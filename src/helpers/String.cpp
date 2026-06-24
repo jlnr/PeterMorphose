@@ -15,6 +15,27 @@ int string_to_int(std::string_view str, int base)
     return value;
 }
 
+int hex_chars_to_int(std::string_view str, std::size_t offset, std::size_t length,
+                     std::optional<int> fallback)
+{
+    if (offset >= str.size()) {
+        if (fallback) {
+            return *fallback;
+        }
+        throw std::invalid_argument("hex_chars_to_int: Cannot read from index "
+                                    + std::to_string(offset) + " in " + std::string(str));
+    }
+
+    try {
+        return string_to_int(str.substr(offset, length), 16);
+    } catch (const std::invalid_argument&) {
+        if (fallback) {
+            return *fallback;
+        }
+        throw;
+    }
+}
+
 void latin1_to_utf8(std::string& str)
 {
     for (std::size_t i = 0; i < str.length(); ++i) {
