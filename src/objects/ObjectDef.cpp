@@ -13,11 +13,6 @@ static std::string id_to_hex(PMID id)
     return { hex[id / 16 % 16], hex[id % 16] };
 }
 
-static int hex_byte(std::string_view str, std::size_t offset)
-{
-    return string_to_int(str.substr(offset, 2), 16);
-}
-
 const ObjectDef& ObjectDef::get(PMID pmid)
 {
     static const std::vector<ObjectDef> all = [] {
@@ -29,12 +24,11 @@ const ObjectDef& ObjectDef::get(PMID pmid)
             def.name = ini.string("ObjName", id_string).value_or("<no name>");
             def.life = ini.integer("ObjLife", id_string).value_or(3);
             // Rect string is packed as "LLTTWWHH", where left and top are negative.
-            const std::string rect_string
-                = ini.string("ObjRect", id_string).value_or("10102020");
-            def.rect.left = -hex_byte(rect_string, 0);
-            def.rect.top = -hex_byte(rect_string, 2);
-            def.rect.width = hex_byte(rect_string, 4);
-            def.rect.height = hex_byte(rect_string, 6);
+            const std::string rect_string = ini.string("ObjRect", id_string).value_or("10102020");
+            def.rect.left = -hex_chars_to_int(rect_string, 0, 2, 16);
+            def.rect.top = -hex_chars_to_int(rect_string, 2, 2, 16);
+            def.rect.width = +hex_chars_to_int(rect_string, 4, 2, 16);
+            def.rect.height = +hex_chars_to_int(rect_string, 6, 2, 16);
             def.speed = ini.integer("ObjSpeed", id_string).value_or(3);
             def.jump_x = ini.integer("ObjJump", id_string + "X").value_or(0);
             def.jump_y = ini.integer("ObjJump", id_string + "Y").value_or(0);
