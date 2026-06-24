@@ -1,4 +1,5 @@
 #include "objects/GameObject.hpp"
+#include <Gosu/Gosu.hpp>
 #include "LivingObject.hpp"
 #include "Map.hpp"
 #include "ObjectDef.hpp"
@@ -28,13 +29,24 @@ void GameObject::update()
 
 void GameObject::draw()
 {
-    // TODO: Not yet ported from Ruby, we only want the player for now
+    static const std::vector<Gosu::Image> images
+        = Gosu::load_tiles("media/stuff.bmp", -16, -3, Gosu::IF_RETRO);
+    const int index = (pmid - ID_OTHER_OBJECTS_MIN);
+    if (between(index, 0, images.size() - 1)) {
+        // TODO: Handle more special cases...
+        images[index].draw(x - 11, y - 11 - game.view_pos);
+    }
 }
 
 void GameObject::kill()
 {
     // TODO: clear references to this object held once PMScript is ported.
     marked = true;
+}
+
+void GameObject::emit_text(const std::string&, PMID)
+{
+    // TODO: Create ID_FX_TEXT / ID_FX_SLOW_TEXT object.
 }
 
 void GameObject::fall()
