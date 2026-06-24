@@ -10,7 +10,7 @@ TitleState::TitleState()
 
 void TitleState::update()
 {
-    song("menu").play(true);
+    play_song("menu");
 }
 
 void TitleState::draw()
@@ -21,7 +21,7 @@ void TitleState::draw()
 void TitleState::button_down(Gosu::Button id)
 {
     if (is_mapped_to(InputAction::MenuConfirm, id) || is_mapped_to(InputAction::MenuCancel, id)) {
-        sound("whoosh").play();
+        play_sound("whoosh");
         pop_state();
         push_state(std::make_unique<LevelSelectionState>());
     }

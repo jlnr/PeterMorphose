@@ -38,13 +38,13 @@ void CollectibleObject::update()
         case ID_HOSTAGE:
             game.cast_objects(ID_FX_FLYING_CHAIN, 8, 0, -1, 3, rect(1, -1));
             // TODO: Create "flying hostage" effect object.
-            sound("yippie").play();
+            play_sound("yippie");
             game.score += 100;
             kill();
             break;
 
         case ID_KEY:
-            sound("collect_key").play();
+            play_sound("collect_key");
             game.player().emit_text(ObjectDef::get(pmid).name + "!");
             game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
             game.score += 2;
@@ -55,7 +55,7 @@ void CollectibleObject::update()
         case ID_STAR:
         case ID_STAR_2:
         case ID_STAR_3:
-            sound("collect_star").play(Gosu::random(0.5, 0.7), Gosu::random(0.9, 1.1));
+            play_sound("collect_star", Gosu::random(0.5, 0.7), Gosu::random(0.9, 1.1));
             game.score += 2;
             game.stars += 1;
             if (game.stars < game.stars_goal) {
@@ -73,7 +73,7 @@ void CollectibleObject::update()
         default:
             // The value of ID_POINTS_* is defined as their ObjectDef::life.
             if (between(pmid, ID_POINTS, ID_POINTS_MAX)) {
-                sound("collect_points").play();
+                play_sound("collect_points");
                 game.player().emit_text("*" + std::to_string(ObjectDef::get(pmid).life) + "*");
                 game.cast_objects(ID_FX_SPARKLE, 3, 0, 0, 0, rect());
                 game.score += ObjectDef::get(pmid).life;
