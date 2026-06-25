@@ -8,7 +8,7 @@
 #include <cmath>
 #include <string>
 
-GameObject::GameObject(GameState& game, std::string extraData, PMID pmid, //
+GameObject::GameObject(GameState& game, std::string extra_data, PMID pmid, //
                        int x, int y, int vx, int vy)
     : game(game),
       pmid(pmid),
@@ -16,7 +16,7 @@ GameObject::GameObject(GameState& game, std::string extraData, PMID pmid, //
       y(y),
       vx(vx),
       vy(vy),
-      extraData(extraData),
+      extra_data(extra_data),
       marked(false),
       last_frame_in_water(in_water())
 {
@@ -44,9 +44,9 @@ void GameObject::kill()
     marked = true;
 }
 
-void GameObject::emit_text(const std::string& text, PMID pmid)
+void GameObject::emit_text(const std::string& text, PMID text_pmid)
 {
-    game.create_object(pmid, text, x, y - 10, 0, -1);
+    game.create_object(text_pmid, text, x, y - 10, 0, -1);
 }
 
 void GameObject::fall()

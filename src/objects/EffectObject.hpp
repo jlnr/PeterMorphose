@@ -10,10 +10,7 @@
 class EffectObject : public GameObject
 {
 public:
-    EffectObject(GameState& game, std::string extraData, PMID pmid, int x, int y, int vx, int vy)
-        : GameObject(game, std::move(extraData), pmid, x, y, vx, vy)
-    {
-    }
+    EffectObject(GameState& game, std::string extra_data, PMID pmid, int x, int y, int vx, int vy);
 
     void update() override;
     void draw() override;

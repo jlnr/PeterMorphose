@@ -12,7 +12,7 @@ public:
     Action action;
     Direction direction;
 
-    LivingObject(GameState& game, std::string extraData, PMID pmid, int x, int y, int vx, int vy,
+    LivingObject(GameState& game, std::string extra_data, PMID pmid, int x, int y, int vx, int vy,
                  int life, Action action, Direction direction);
 
     void update() override;

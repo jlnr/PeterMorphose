@@ -67,7 +67,7 @@ bool Map::is_solid(int x, int y) const
     int tile_x = x / TILE_SIZE;
     int tile_y = y / TILE_SIZE;
     int tile = (*this)[tile_x, tile_y];
-    return tile >= 0x70 && tile <= 0xe0;
+    return tile >= 0x70 && tile < 0xE0;
 }
 
 bool Map::do_stairs_end(int x, int y) const
@@ -199,9 +199,14 @@ TEST_CASE("Map")
 
     SUBCASE("is_solid")
     {
-        // Tiles 0x70 to 0xE0 are solid
+        // Tiles 0x70..0xDF are solid; 0xE0 (TILE_AIR_ROCKET_UP) and above are not.
         CHECK(map.is_solid(0 * TILE_SIZE, 0 * TILE_SIZE) == false); // 0x00
         CHECK(map.is_solid(0 * TILE_SIZE, 1 * TILE_SIZE) == true); // 0x70
+
+        map[5, 5] = 0xDF;
+        map[6, 5] = 0xE0;
+        CHECK(map.is_solid(5 * TILE_SIZE, 5 * TILE_SIZE) == true); // 0xDF (bridge) is solid
+        CHECK(map.is_solid(6 * TILE_SIZE, 5 * TILE_SIZE) == false); // 0xE0 (air rocket up) is not
 
         // Check that everything to the left and right of, or above the level, is considered solid.
         CHECK(map.is_solid(0, -1) == true);

@@ -5,16 +5,16 @@
 #include "objects/LivingObject.hpp"
 #include "states/GameState.hpp"
 
-CollectibleObject::CollectibleObject(GameState& game, std::string extraData, PMID pmid, //
+CollectibleObject::CollectibleObject(GameState& game, std::string extra_data, PMID pmid, //
                                      int x, int y, int vx, int vy)
-    : GameObject(game, std::move(extraData), pmid, x, y, vx, vy)
+    : GameObject(game, std::move(extra_data), pmid, x, y, vx, vy)
 {
 }
 
 void CollectibleObject::update()
 {
-    // The extraData of a collectible object decides whether it is affected by gravity.
-    if (extraData.size() > 1 && extraData[1] == '1') {
+    // The extra_data of a collectible object decides whether it is affected by gravity.
+    if (extra_data.size() > 1 && extra_data[1] == '1') {
         fall();
         // TODO: Port check_tile()
     }
