@@ -34,6 +34,9 @@ public:
     /// Per-frame physics: gravity, water, friction...
     void fall();
 
+    /// Reacts to the tile behind the object.
+    void check_tile();
+
     /// Adds a velocity impulse.
     /// @param fixed  Overwrites existing vx/vy.
     /// @param malign If true, this only affects the player.

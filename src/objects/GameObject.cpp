@@ -3,6 +3,7 @@
 #include "LivingObject.hpp"
 #include "Map.hpp"
 #include "ObjectDef.hpp"
+#include "helpers/String.hpp"
 #include "states/GameState.hpp"
 #include <algorithm>
 #include <cmath>
@@ -24,7 +25,199 @@ GameObject::GameObject(GameState& game, std::string extra_data, PMID pmid, //
 
 void GameObject::update()
 {
-    // TODO: Not yet ported from Ruby, we only want the player for now
+    // Firewalls and fire: dissolve in lava, otherwise hurt overlapping living objects every frame.
+    if (pmid == ID_FIREWALL_1 || pmid == ID_FIREWALL_2 || pmid == ID_FIRE) {
+        if (y + ObjectDef::get(pmid).rect.bottom() - 11 > game.map.lava_pos) {
+            game.cast_fx(4, 4, 0, x, y, 16, 16, 0, -3, 1);
+            kill();
+            game.emit_sound(y, "shshsh");
+        }
+        else {
+            game.burn_everything(rect());
+            return;
+        }
+    }
+
+    // Hint arrows disappear once the player reaches them.
+    if (pmid == ID_HELP_ARROW && rect(10, 20).contains(game.player().x, game.player().y)) {
+        kill();
+    }
+
+    // Fish swim back and forth in water and fall (and react to tiles) out of it.
+    if (pmid == ID_FISH || pmid == ID_FISH_2) {
+        if (!in_water()) {
+            fall();
+            check_tile();
+        }
+        else if (pmid == ID_FISH) {
+            x -= 2;
+            if (blocked(DIR_LEFT)) {
+                pmid = ID_FISH_2;
+            }
+            if (rand(30) == 0) {
+                game.create_object(ID_FX_WATER_BUBBLE, "", x, y - 3, 0, 0);
+            }
+        }
+        else {
+            x += 2;
+            if (blocked(DIR_RIGHT)) {
+                pmid = ID_FISH;
+            }
+            if (rand(30) == 0) {
+                game.create_object(ID_FX_WATER_BUBBLE, "", x, y - 3, 0, 0);
+            }
+        }
+    }
+
+    // Fusing bombs count up and explode - on a timer, or on contact with an enemy.
+    if (pmid == ID_FUSING_BOMB) {
+        bool extra_data_numeric = !extra_data.empty()
+            && std::ranges::all_of(extra_data, [](char c) { return c >= '0' && c <= '9'; });
+        int time = (extra_data_numeric ? string_to_int(extra_data) : 0) + 1;
+        extra_data = std::to_string(time);
+        if (time >= 25) {
+            kill();
+            game.explosion(x, y, 50, true);
+            return;
+        }
+
+        LivingObject* enemy = game.find_living(ID_ENEMY, ID_ENEMY_MAX, //
+                                               ACT_STAND, ACT_PAIN_2, rect(1, 1));
+        if (enemy) {
+            enemy->hurt(true);
+            kill();
+            game.explosion(x, y, 50, true);
+            return;
+        }
+        fall();
+        check_tile();
+    }
+
+    // Rocks and other trash fall down.
+    if (between(pmid, ID_TRASH, ID_TRASH_4)) {
+        fall();
+        check_tile();
+    }
+
+    // Get roasted by lava.
+    if (y + ObjectDef::get(pmid).rect.bottom() > game.map.lava_pos) {
+        game.cast_fx(4, 4, 0, x, y, 16, 16, 0, -3, 1);
+        kill();
+        game.emit_sound(y, "shshsh");
+    }
+}
+
+void GameObject::check_tile()
+{
+    // Only living objects (the player and enemies) have a direction and can be hit.
+    auto* living = dynamic_cast<LivingObject*>(this);
+    const bool enemy = between(pmid, ID_ENEMY, ID_ENEMY_MAX);
+
+    switch (game.map[x / TILE_SIZE, y / TILE_SIZE]) {
+    case TILE_AIR_ROCKET_UP:
+    case TILE_AIR_ROCKET_UP_2:
+    case TILE_AIR_ROCKET_UP_3:
+        game.emit_sound(y, "turbo");
+        fling(0, -21, 0, true, false);
+        if (!blocked(DIR_UP)) {
+            y -= 1;
+        }
+        x = x / TILE_SIZE * TILE_SIZE + 11;
+        if (living && enemy) {
+            vx = dir_to_vx(living->direction);
+        }
+        game.cast_fx(0, 0, 10, x, y, 24, 24, 0, -10, 1);
+        break;
+
+    case TILE_AIR_ROCKET_UP_LEFT:
+        game.emit_sound(y, "turbo");
+        if (!blocked(DIR_UP)) {
+            y -= 1;
+        }
+        fling(-10, -16, 0, true, false);
+        y = y / TILE_SIZE * TILE_SIZE + 11;
+        for (int i = 0; i < TILE_SIZE && stuck(); ++i) {
+            vy -= 1;
+        }
+        game.cast_fx(0, 0, 10, x, y, 24, 24, -8, -8, 1);
+        break;
+
+    case TILE_AIR_ROCKET_UP_RIGHT:
+        game.emit_sound(y, "turbo");
+        if (!blocked(DIR_UP)) {
+            y -= 1;
+        }
+        fling(+10, -16, 0, true, false);
+        y = y / TILE_SIZE * TILE_SIZE + 11;
+        for (int i = 0; i < TILE_SIZE && stuck(); ++i) {
+            vy -= 1;
+        }
+        game.cast_fx(0, 0, 10, x, y, 24, 24, +8, -8, 1);
+        break;
+
+    case TILE_AIR_ROCKET_LEFT:
+        game.emit_sound(y, "turbo");
+        fling(-20, -3, 0, true, false);
+        y = y / TILE_SIZE * TILE_SIZE + 11;
+        for (int i = 0; i < TILE_SIZE && stuck(); ++i) {
+            vy -= 1;
+        }
+        game.cast_fx(0, 0, 10, x, y, 24, 24, -10, 0, 1);
+        break;
+
+    case TILE_AIR_ROCKET_RIGHT:
+        game.emit_sound(y, "turbo");
+        fling(+20, -3, 0, true, false);
+        y = y / TILE_SIZE * TILE_SIZE + 11;
+        for (int i = 0; i < TILE_SIZE && stuck(); ++i) {
+            vy -= 1;
+        }
+        game.cast_fx(0, 0, 10, x, y, 24, 24, +10, 0, 1);
+        break;
+
+    case TILE_AIR_ROCKET_DOWN:
+        game.emit_sound(y, "turbo");
+        fling(0, 15, 0, true, false);
+        y = y / TILE_SIZE * TILE_SIZE + 11;
+        if (living && enemy) {
+            vx = dir_to_vx(living->direction);
+        }
+        game.cast_fx(0, 0, 10, x, y, 24, 24, -10, 0, 1);
+        break;
+
+    case TILE_SLOW_ROCKET_UP:
+        game.cast_fx(0, 0, 1, x, y, 24, 24, 0, -2, 1);
+        vy -= 4;
+        if (living && enemy) {
+            vx = dir_to_vx(living->direction);
+        }
+        else {
+            vx /= 2;
+        }
+        if (living && pmid <= ID_LIVING_MAX) {
+            living->action = ACT_JUMP;
+        }
+        break;
+
+    case TILE_SPIKES:
+        if (living && pmid <= ID_LIVING_MAX && (y + ObjectDef::get(pmid).rect.bottom()) % 24 > 8) {
+            living->hit();
+            vx = 0;
+            vy = -10;
+        }
+        break;
+
+    case TILE_SPIKES_TOP:
+        if (living && pmid <= ID_LIVING_MAX && (y + ObjectDef::get(pmid).rect.bottom()) % 24 < 14) {
+            living->hit();
+            vx = 0;
+            vy = 5;
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 void GameObject::draw()
@@ -32,10 +225,22 @@ void GameObject::draw()
     static const std::vector<Gosu::Image> images
         = Gosu::load_tiles("media/stuff.bmp", -16, -3, Gosu::IF_RETRO);
     const int index = (pmid - ID_OTHER_OBJECTS_MIN);
-    if (between(index, 0, images.size() - 1)) {
-        // TODO: Handle more special cases...
-        images[index].draw(x - 11, y - 11 - game.view_pos);
+    if (!between(index, 0, images.size() - 1)) {
+        return;
     }
+
+    Gosu::Color color = Gosu::Color::WHITE;
+    Gosu::BlendMode mode = Gosu::BM_DEFAULT;
+    if (pmid == ID_FIREWALL_1 || pmid == ID_FIREWALL_2 || pmid == ID_FIRE) {
+        // Pulsate as in TPMObject.Draw.
+        int pulse = std::abs(static_cast<int>(game.frame * 7.5) % 256 - 128);
+        color = Gosu::Color::WHITE.with_alpha(std::clamp(127 + pulse, 0, 255));
+        mode = Gosu::BM_ADD;
+    }
+    else if (pmid == ID_HELP_ARROW) {
+        color = Gosu::Color::WHITE.with_alpha(127 + (game.frame / 8 % 2) * 64);
+    }
+    images[index].draw(x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode);
 }
 
 void GameObject::kill()

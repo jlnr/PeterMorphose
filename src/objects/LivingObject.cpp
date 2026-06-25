@@ -4,6 +4,7 @@
 #include "ObjectDef.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/InputAction.hpp"
+#include "helpers/String.hpp"
 #include "states/GameState.hpp"
 #include <algorithm>
 #include <cmath>
@@ -26,7 +27,24 @@ void LivingObject::draw()
     }
 
     if (between(pmid, ID_PLAYER, ID_PLAYER_BOMBER)) {
-        // TODO: Draw wings.
+        // Draw wings while the fly power-up is active.
+        if (game.fly_time_left > 0) {
+            // Wings live in effects.bmp, which is loaded here again, not shared with EffectObject.
+            static const std::vector<Gosu::Image> effects_images
+                = Gosu::load_tiles("media/effects.bmp", -7, -7);
+            Gosu::Color wings_color
+                = Gosu::Color::WHITE.with_alpha(std::min(game.fly_time_left * 2 + 16, 255));
+            const Gosu::Image& left = effects_images[38 + (game.frame / 2) % 4];
+            const Gosu::Image& right = effects_images[42 + (game.frame / 2) % 4];
+            if (direction == DIR_LEFT) {
+                left.draw(x - 18, y - 12 - game.view_pos, 0, 0.75, 1, wings_color, Gosu::BM_ADD);
+                right.draw(x, y - 12 - game.view_pos, 0, 1.00, 1, wings_color, Gosu::BM_ADD);
+            }
+            else {
+                left.draw(x - 24, y - 12 - game.view_pos, 0, 1.00, 1, wings_color, Gosu::BM_ADD);
+                right.draw(x, y - 12 - game.view_pos, 0, 0.75, 1, wings_color, Gosu::BM_ADD);
+            }
+        }
 
         static const std::vector<Gosu::Image> player_images
             = Gosu::load_tiles("media/player.bmp", -ACT_NUM, -10, Gosu::IF_RETRO);
@@ -120,6 +138,15 @@ void LivingObject::update()
         }
     }
 
+    if (action != ACT_DEAD) {
+        check_tile();
+    }
+
+    // Break fragile tiles under our feet.
+    const Rect break_area = rect(0, 2);
+    break_floor(break_area.left, break_area.bottom());
+    break_floor(break_area.right(), break_area.bottom());
+
     if (action == ACT_DEAD) {
         return;
     }
@@ -141,9 +168,31 @@ void LivingObject::update()
         }
     }
 
-    // TODO: Unlock doors.
+    // Open adjacent doors if we have a key.
+    if (pmid <= ID_PLAYER_MAX) {
+        const Rect& rect = ObjectDef::get(pmid).rect;
+        const auto open_door = [&](int tile_x, int tile_y) {
+            Tile& tile = game.map[tile_x, tile_y];
+            if (between(tile, TILE_CLOSED_DOOR, TILE_CLOSED_DOOR_3) && game.keys > 0) {
+                tile = Tile(game.map[tile_x, tile_y] - (TILE_CLOSED_DOOR - TILE_OPEN_DOOR));
+                game.keys -= 1;
+                play_sound("door" + std::to_string(rand(2) + 1));
+            }
+        };
+        // Left
+        open_door((x + rect.left - 1) / TILE_SIZE, y / TILE_SIZE);
+        // Right
+        open_door((x + rect.right() + 1) / TILE_SIZE, y / TILE_SIZE);
+        // Up
+        open_door(x / TILE_SIZE, (y + rect.top - 1) / TILE_SIZE);
+        // Down
+        open_door(x / TILE_SIZE, (y + rect.bottom() + 1) / TILE_SIZE);
+    }
 
-    // TODO: Flip levers once we have them.
+    // Regular Peter can flip levers in the middle of his animation.
+    if (pmid == ID_PLAYER && action == ACT_ACTION_3 && game.frame % 2 == 0) {
+        flip_lever();
+    }
 
     // Ritterpeter: Apply sword damage.
     if (pmid == ID_PLAYER_FIGHTER && between(action, ACT_ACTION_1, ACT_ACTION_5)) {
@@ -561,6 +610,19 @@ void LivingObject::use_tile()
         return;
     }
 
+    // Lever behind player.
+    if (pmid <= ID_PLAYER_MAX && can_reach_lever()) {
+        if (pmid == ID_PLAYER) {
+            // Only the normal Peter has an animation for that.
+            action = ACT_ACTION_1;
+        }
+        else {
+            flip_lever();
+        }
+        vx = 0;
+        return;
+    }
+
     switch (game.map[x / TILE_SIZE, (y + ObjectDef::get(pmid).rect.bottom() + 1) / TILE_SIZE]) {
     case TILE_ROCKET_UP:
     case TILE_ROCKET_UP_2:
@@ -671,13 +733,7 @@ void LivingObject::special_action()
 
     switch (pmid) {
     case ID_PLAYER:
-        if (busy()) {
-            return;
-        }
-        if (game.find_object(ID_LEVER, ID_LEVER_RIGHT, rect(10, 3))) {
-            action = ACT_ACTION_1;
-            vx = 0;
-        }
+        // The plain Peter has no attack, he can only flip levers.
         break;
 
     case ID_PLAYER_FIGHTER:
@@ -708,8 +764,66 @@ void LivingObject::special_action()
             action = ACT_ACTION_1;
         }
         break;
+    }
+}
 
-    default:
+GameObject* LivingObject::can_reach_lever() const
+{
+    return game.find_object(ID_LEVER, ID_LEVER_RIGHT, rect(10, 3));
+}
+
+void LivingObject::flip_lever()
+{
+    GameObject* target = can_reach_lever();
+    if (!target) {
+        return;
+    }
+    play_sound("lever");
+    switch (target->pmid) {
+    case ID_LEVER:
+        target->pmid = ID_LEVER_DOWN;
         break;
+    case ID_LEVER_LEFT:
+        target->pmid = ID_LEVER_RIGHT;
+        break;
+    case ID_LEVER_RIGHT:
+        target->pmid = ID_LEVER_LEFT;
+        break;
+    }
+
+    // The extra_data lists tile changes (hex) or a PMScript snippet (TODO: port from Ruby).
+    // If the string does not start with an upper-case hex byte, then we cannot handle it yet.
+    if (target->extra_data.find_first_of("0123456789ABCDEF") != 0) {
+        return;
+    }
+
+    // The first byte is the number of target tiles to change.
+    int count = hex_chars_to_int(target->extra_data, 0, 1, 0);
+    for (int i = 0; i < count; ++i) {
+        // Next come the target tile coordinates in hex.
+        int tile_x = hex_chars_to_int(target->extra_data, 2 + i * 10, 2, 0);
+        int tile_y = hex_chars_to_int(target->extra_data, 5 + i * 10, 3, 0);
+        // Then the target tile.
+        Tile new_tile = Tile(hex_chars_to_int(target->extra_data, 9 + i * 10, 2, 0));
+        Tile old_tile = game.map[tile_x, tile_y];
+        game.map[tile_x, tile_y] = new_tile;
+        // Store the previous tile, so flipping the lever again restores it.
+        target->extra_data.replace(9 + i * 10, 2, byte_to_hex(old_tile));
+        // Indicate that the tile has changed to the player.
+        game.cast_fx(8, 0, 0, tile_x * TILE_SIZE + 10, tile_y * TILE_SIZE + 12, 24, 24, 0, 0, 2);
+    }
+}
+
+void LivingObject::break_floor(int px, int py)
+{
+    int tile_x = px / TILE_SIZE, tile_y = py / TILE_SIZE;
+    if (between(game.map[tile_x, tile_y], TILE_BRIDGE, TILE_BRIDGE_4)) {
+        if (game.find_object(ID_FX_BREAK, ID_FX_BREAK_2,
+                             Rect(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE))) {
+            return;
+        }
+        game.create_object(PMID(ID_FX_BREAK + rand(2)), "", //
+                           tile_x * TILE_SIZE + 11, tile_y * TILE_SIZE + 11, 0, 0);
+        game.emit_sound(y, "break" + std::to_string(rand(2) + 1));
     }
 }
