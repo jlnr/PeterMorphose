@@ -411,7 +411,15 @@ void LivingObject::jump()
     }
     else {
         // Cannot jump when busy.
-        if (busy()) {
+        // Exception: This updated version of the game introduces "stateless coyote time": when
+        // Peter is falling, see if he just walked off a cliff, and let him jump for a bit longer.
+        const Rect& rect = ObjectDef::get(pmid).rect;
+        int behind_x = x + (direction == DIR_RIGHT ? rect.left - 10 : rect.right() + 10);
+        bool key_pressed = is_down(direction == DIR_LEFT ? InputAction::Left : InputAction::Right);
+        bool coyote = action == ACT_LAND && key_pressed
+            && game.map.is_solid(behind_x, y + rect.bottom() + 1)
+            && !game.map.is_solid(behind_x, y + rect.top);
+        if (busy() && !coyote) {
             return;
         }
     }
