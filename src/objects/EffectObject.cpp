@@ -13,6 +13,12 @@ static Gosu::Color alpha(int a)
     return Gosu::Color::WHITE.with_alpha(std::clamp(a, 0, 255));
 }
 
+EffectObject::EffectObject(GameState& game, std::string extra_data, PMID pmid, //
+                           int x, int y, int vx, int vy)
+    : GameObject(game, std::move(extra_data), pmid, x, y, vx, vy)
+{
+}
+
 void EffectObject::update()
 {
     switch (pmid) {
@@ -165,12 +171,12 @@ void EffectObject::draw()
             .draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(192), Gosu::BM_ADD);
         break;
     case ID_FX_RICOCHET:
-        images.at(19 + (extraData.empty() ? 0 : string_to_int(extraData)))
+        images.at(19 + (extra_data.empty() ? 0 : string_to_int(extra_data)))
             .draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(255 - m_phase * 3));
         break;
     case ID_FX_LINE: {
         images[28].draw(x, dy - 11, Z_EFFECTS,
-                        extraData.empty() ? 0 : string_to_int(extraData) / images[28].width(), 1,
+                        extra_data.empty() ? 0 : string_to_int(extra_data) / images[28].width(), 1,
                         alpha(255 - m_phase), Gosu::BM_ADD);
         break;
     }
@@ -213,7 +219,7 @@ void EffectObject::draw()
     case ID_FX_TEXT:
     case ID_FX_SLOW_TEXT:
         // TODO: clamp text position inside the game area (x = 0..576).
-        draw_centered_string(extraData, x, dy - 7, std::clamp(255 - m_phase, 0, 255));
+        draw_centered_string(extra_data, x, dy - 7, std::clamp(255 - m_phase, 0, 255));
         break;
     default:
         break;

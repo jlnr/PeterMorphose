@@ -48,13 +48,13 @@ GameState::GameState(const IniFile& ini)
             // IF there is no key for the given object, it marks the end of the object list.
             break;
         }
-        std::string extraData = ini.string("Objects", std::to_string(i) + "Y").value_or("");
+        std::string extra_data = ini.string("Objects", std::to_string(i) + "Y").value_or("");
         const PMID pmid = PMID(hex_chars_to_int(*line, 0, 2));
         const int x = hex_chars_to_int(*line, 3, 3, 0);
         const int y = hex_chars_to_int(*line, 7, 4, 288);
         const int vx = hex_chars_to_int(*line, 12, 5, 0);
         const int vy = hex_chars_to_int(*line, 18, 5, 0);
-        create_object(pmid, std::move(extraData), x, y, vx, vy);
+        create_object(pmid, std::move(extra_data), x, y, vx, vy);
     }
 }
 
@@ -450,25 +450,26 @@ void GameState::cast_objects(PMID pmid, int count, int vx, int vy, int randomnes
     }
 }
 
-GameObject* GameState::create_object(PMID pmid, std::string extraData, int x, int y, int vx, int vy)
+GameObject* GameState::create_object(PMID pmid, std::string extra_data, //
+                                     int x, int y, int vx, int vy)
 {
     std::shared_ptr<GameObject> object;
     if (pmid <= ID_LIVING_MAX) {
         // Enemies: created, but the AI and enemy drawing are not ported yet, so they just fall
         // idle.
-        object = std::make_shared<LivingObject>(*this, std::move(extraData), pmid, x, y, vx, vy,
+        object = std::make_shared<LivingObject>(*this, std::move(extra_data), pmid, x, y, vx, vy,
                                                 ObjectDef::get(pmid).life, ACT_STAND,
                                                 Direction(rand(2)));
     }
     else if (pmid <= ID_OTHER_OBJECTS_MAX) {
-        object = std::make_shared<GameObject>(*this, std::move(extraData), pmid, x, y, vx, vy);
+        object = std::make_shared<GameObject>(*this, std::move(extra_data), pmid, x, y, vx, vy);
     }
     else if (pmid <= ID_COLLECTIBLE_MAX) {
         object
-            = std::make_shared<CollectibleObject>(*this, std::move(extraData), pmid, x, y, vx, vy);
+            = std::make_shared<CollectibleObject>(*this, std::move(extra_data), pmid, x, y, vx, vy);
     }
     else if (pmid <= ID_FX_MAX) {
-        object = std::make_shared<EffectObject>(*this, std::move(extraData), pmid, x, y, vx, vy);
+        object = std::make_shared<EffectObject>(*this, std::move(extra_data), pmid, x, y, vx, vy);
     }
     else {
         return nullptr;
@@ -484,22 +485,17 @@ void GameState::explosion(int, int, int, bool)
 
 void GameState::burn_enemies(const Rect& rect)
 {
-    for (const std::shared_ptr<GameObject>& obj : m_objects) {
-        if (obj->marked) {
-            continue;
-        }
-
-        auto* enemy = dynamic_cast<LivingObject*>(obj.get());
-        if (enemy && between(enemy->pmid, ID_ENEMY, ID_ENEMY_MAX) && enemy->action < ACT_DEAD
-            && enemy->rect_collides(rect)) {
-            enemy->hurt(false);
-            if (enemy->action == ACT_DEAD) {
-                int bonus = ObjectDef::get(enemy->pmid).life * 3;
+    for_each_living([this, &rect](LivingObject& living) {
+        if (between(living.pmid, ID_ENEMY, ID_ENEMY_MAX) && living.action < ACT_DEAD
+            && living.rect_collides(rect)) {
+            living.hurt(false);
+            if (living.action == ACT_DEAD) {
+                int bonus = ObjectDef::get(living.pmid).life * 3;
                 score += bonus;
-                enemy->emit_text("*" + std::to_string(bonus) + "*");
+                living.emit_text("*" + std::to_string(bonus) + "*");
             }
         }
-    }
+    });
 }
 
 GameObject* GameState::find_object(PMID min_id, PMID max_id, const Rect& rect)
@@ -537,7 +533,7 @@ LivingObject* GameState::launch_projectile(int x, int y, Direction direction, //
         target = find_living(min_id, max_id, ACT_STAND, Action(ACT_DEAD - 1),
                              Rect(x - 4, y - 2, 8, 4));
         if (target || map.is_solid(x, y)) {
-            // The extraData for ID_FX_RICOCHET stores its direction.
+            // The extra_data for ID_FX_RICOCHET stores its direction.
             create_object(ID_FX_RICOCHET, std::to_string(int(direction)), x, y - 1 + rand(3), 0, 0);
             emit_sound(y, "arrow_hit");
             break;
@@ -545,7 +541,17 @@ LivingObject* GameState::launch_projectile(int x, int y, Direction direction, //
         x += dir_to_vx(direction) * 4;
     }
     // No matter if we hit something or not, we want to draw a line on the screen that fades out.
-    // The extraData for ID_FX_LINE stores its length.
+    // The extra_data for ID_FX_LINE stores its length.
     create_object(ID_FX_LINE, std::to_string(std::abs(x - orig_x)), std::min(x, orig_x), y, 0, 0);
     return target;
+}
+
+void GameState::for_each_living(std::function<void(LivingObject&)> f)
+{
+    for (int i = 0; i < m_objects.size(); ++i) {
+        LivingObject* living = dynamic_cast<LivingObject*>(m_objects[i].get());
+        if (living && !m_objects[i]->marked) {
+            f(*living);
+        }
+    }
 }

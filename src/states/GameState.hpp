@@ -4,6 +4,7 @@
 #include "Map.hpp"
 #include "State.hpp"
 #include "helpers/Rect.hpp"
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -49,7 +50,7 @@ public:
     void cast_fx(int smoke, int flames, int sparks, int x, int y, int width, int height, //
                  int vx, int vy, int count);
     void cast_objects(PMID pmid, int count, int vx, int vy, int randomness, const Rect& rect);
-    GameObject* create_object(PMID pmid, std::string extraData, int x, int y, int vx, int vy);
+    GameObject* create_object(PMID pmid, std::string extra_data, int x, int y, int vx, int vy);
     void explosion(int x, int y, int radius, bool do_score);
     void burn_enemies(const Rect& rect);
     /// Plays a sound the louder the closer it is to the player.
@@ -79,4 +80,8 @@ private:
 
     std::shared_ptr<LivingObject> m_player;
     std::vector<std::shared_ptr<GameObject>> m_objects;
+
+    /// Calls the given functor for each LivingObject. This is safer than a for-loop over m_objects
+    /// because sometimes we want to create new objects while iterating.
+    void for_each_living(std::function<void(LivingObject&)> f);
 };
