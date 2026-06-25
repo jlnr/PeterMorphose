@@ -161,7 +161,7 @@ enum PMID : std::uint8_t
     ID_LEVER_LEFT = 0x1E,
     ID_LEVER_RIGHT = 0x1F,
     ID_OTHER_OBJECTS_MAX = 0x1F,
-    // 20 - 3F = collectibles
+    // 20 - 2F = collectibles
     ID_COLLECTIBLE_MIN = 0x20,
     ID_KEY = 0x20,
     ID_HEALTH = 0x21,
@@ -175,6 +175,15 @@ enum PMID : std::uint8_t
     ID_SPEED = 0x2D,
     ID_JUMP = 0x2E,
     ID_FLY = 0x2F,
+    // 30 - 3F = more collectibles
+    ID_MORE_TIME_2 = 0x30,
+    ID_EDIBLE_FISH_LEFT = 0x31,
+    ID_EDIBLE_FISH_RIGHT = 0x32,
+    ID_MORE_TIME = 0x33,
+    ID_SEAMINE = 0x34,
+    ID_COOKIE = 0x35,
+    ID_SLOW_DOWN = 0x36,
+    ID_CRYSTAL = 0x37,
     ID_MORPH_FIGHTER = 0x38,
     ID_MORPH_MAX = 0x3B,
     ID_MUNITION_GUN = 0x3C,

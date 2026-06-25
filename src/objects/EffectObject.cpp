@@ -149,8 +149,7 @@ void EffectObject::update()
 
 void EffectObject::draw()
 {
-    static const std::vector<Gosu::Image> images
-        = Gosu::load_tiles("media/effects.bmp", -7, -7, Gosu::IF_RETRO);
+    static const std::vector<Gosu::Image> images = Gosu::load_tiles("media/effects.bmp", -7, -7);
 
     const double dy = y - game.view_pos;
     switch (pmid) {

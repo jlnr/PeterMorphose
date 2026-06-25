@@ -478,9 +478,79 @@ GameObject* GameState::create_object(PMID pmid, std::string extra_data, //
     return object.get();
 }
 
-void GameState::explosion(int, int, int, bool)
+void GameState::explosion(int x, int y, int radius, bool do_score)
 {
-    // TODO: Create effects and damage nearby living objects.
+    emit_sound(y, "explosion");
+
+    // A ring of smoke... dat is Wacken.
+    for (int i = 0; i < 10 + radius / 2; ++i) {
+        const double angle = Gosu::random(0, 360);
+        const double slowdown = Gosu::random(5, 11);
+        create_object(PMID(ID_FX_SMOKE + rand(2)), "", x, y,
+                      static_cast<int>(Gosu::offset_x(angle, radius / slowdown)),
+                      static_cast<int>(Gosu::offset_y(angle, radius / slowdown)));
+    }
+
+    // Damage nearby living objects.
+    for_each_living([this, x, y, radius, do_score](LivingObject& living) {
+        if (living.action == ACT_DEAD) {
+            return;
+        }
+        const double dist = Gosu::distance(x, y, living.x, living.y);
+        if (dist >= radius) {
+            return;
+        }
+        if (dist < radius / 3.0) {
+            living.hurt(true);
+        }
+        else {
+            living.hit();
+        }
+        if (living.action == ACT_DEAD && do_score && between(living.pmid, ID_ENEMY, ID_ENEMY_MAX)) {
+            int bonus = ObjectDef::get(living.pmid).life * 3;
+            score += bonus;
+            living.emit_text("*" + std::to_string(bonus) + "*");
+        }
+    });
+
+    // Damage or ignite blocker tiles.
+    for (int tile_x = (x - radius) / TILE_SIZE; tile_x <= (x + radius) / TILE_SIZE; ++tile_x) {
+        for (int tile_y = (y - radius) / TILE_SIZE; tile_y <= (y + radius) / TILE_SIZE; ++tile_y) {
+            if (Gosu::distance(x, y, tile_x * TILE_SIZE + 12, tile_y * TILE_SIZE + 12) > radius) {
+                continue;
+            }
+            Tile& tile = map[tile_x, tile_y];
+            if (tile == TILE_BIG_BLOCKER || tile == TILE_BIG_BLOCKER_2) {
+                // Crates catch fire.
+                if (!find_object(ID_FX_FIRE, ID_FX_FIRE,
+                                 Rect(tile_x * TILE_SIZE - 1, tile_y * TILE_SIZE - 1, 2, 2))) {
+                    create_object(ID_FX_FIRE, "", tile_x * TILE_SIZE, tile_y * TILE_SIZE, 0, 0);
+                }
+            }
+            else if (tile == TILE_BIG_BLOCKER_3) {
+                tile = 0;
+                emit_sound(y, "break" + std::to_string(rand(2) + 1));
+                cast_objects(ID_FX_BREAKING_PARTS, 20, 0, 3, 3,
+                             Rect(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE));
+            }
+            else if (between(tile, TILE_BLOCKER, TILE_BLOCKER_3)) {
+                tile = (tile == TILE_BLOCKER_3 ? TILE_BLOCKER_3_BROKEN : TILE_BLOCKER_BROKEN);
+                emit_sound(y, "blocker_break");
+                cast_objects(ID_FX_BLOCKER_PARTS, 10, 0, -2, 5,
+                             Rect(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE));
+            }
+        }
+    }
+}
+void GameState::burn_everything(const Rect& rect)
+{
+    for_each_living([this, &rect](LivingObject& living) {
+        if (living.pmid <= ID_LIVING_MAX && living.pmid != ID_ENEMY_BERSERKER
+            && rect.contains(living.x, living.y)) {
+            living.hit();
+            cast_fx(rand(3), rand(2), 0, living.x, living.y, 12, 12, 0, 0, 2);
+        }
+    });
 }
 
 void GameState::burn_enemies(const Rect& rect)

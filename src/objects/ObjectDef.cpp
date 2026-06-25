@@ -7,19 +7,13 @@
 #include <string_view>
 #include <vector>
 
-static std::string id_to_hex(PMID id)
-{
-    constexpr std::string_view hex = "0123456789ABCDEF";
-    return { hex[id / 16 % 16], hex[id % 16] };
-}
-
 const ObjectDef& ObjectDef::get(PMID pmid)
 {
     static const std::vector<ObjectDef> all = [] {
         const IniFile ini(std::ifstream("objects.ini"));
         std::vector<ObjectDef> defs;
         for (int id = 0; id <= ID_MAX; ++id) {
-            const std::string id_string = id_to_hex(static_cast<PMID>(id));
+            const std::string id_string = byte_to_hex(id);
             ObjectDef def;
             def.name = ini.string("ObjName", id_string).value_or("<no name>");
             def.life = ini.integer("ObjLife", id_string).value_or(3);

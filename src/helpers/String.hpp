@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -15,6 +16,9 @@ int string_to_int(std::string_view str, int base = 10);
 /// @throw std::invalid_argument If the
 int hex_chars_to_int(std::string_view str, std::size_t offset, std::size_t length,
                      std::optional<int> fallback = std::nullopt);
+
+// Converts a value between 0 and 255 (inclusive) to a two-digit upper-case hex string.
+std::string byte_to_hex(std::uint8_t byte);
 
 /// Converts a string from ISO Latin-1 to UTF-8 in place. This is a quick & dirty conversion based
 /// on the fact that the first 256 Unicode code points are roughly equivalent to the Windows
