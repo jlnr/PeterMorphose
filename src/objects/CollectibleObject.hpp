@@ -9,7 +9,7 @@
 class CollectibleObject : public GameObject
 {
 public:
-    CollectibleObject(GameState& game, std::string extraData, PMID pmid, //
+    CollectibleObject(GameState& game, std::string extra_data, PMID pmid, //
                       int x, int y, int vx, int vy);
 
     void update() override;

@@ -9,10 +9,10 @@
 #include <cmath>
 #include <string>
 
-LivingObject::LivingObject(GameState& game, std::string extraData, PMID pmid, //
+LivingObject::LivingObject(GameState& game, std::string extra_data, PMID pmid, //
                            int x, int y, int vx, int vy, //
                            int life, Action action, Direction direction)
-    : GameObject(game, std::move(extraData), pmid, x, y, vx, vy),
+    : GameObject(game, std::move(extra_data), pmid, x, y, vx, vy),
       life(life),
       action(action),
       direction(direction)
@@ -235,7 +235,7 @@ void LivingObject::update()
                                   y + ObjectDef::get(pmid).rect.bottom() + 1)) {
                 vx += ObjectDef::get(pmid).speed * dir_to_vx(direction);
             }
-            else if (!extraData.empty() && extraData[0] == '1') {
+            else if (!extra_data.empty() && extra_data[0] == '1') {
                 jump();
             }
             else {
@@ -244,7 +244,7 @@ void LivingObject::update()
         }
 
         // Occasionally make enemies use floor tiles.
-        if (rand(100) == 0 && extraData.size() > 2 && extraData[2] == '1') {
+        if (rand(100) == 0 && extra_data.size() > 2 && extra_data[2] == '1') {
             use_tile();
             return;
         }

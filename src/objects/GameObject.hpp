@@ -15,11 +15,11 @@ public:
     GameState& game;
     PMID pmid;
     int x, y, vx, vy;
-    std::string extraData;
+    std::string extra_data;
     bool last_frame_in_water;
     bool marked;
 
-    GameObject(GameState& game, std::string extraData, PMID pmid, int x, int y, int vx, int vy);
+    GameObject(GameState& game, std::string extra_data, PMID pmid, int x, int y, int vx, int vy);
     virtual ~GameObject() = default;
 
     virtual void update();
@@ -29,7 +29,7 @@ public:
     void kill();
 
     /// Creates a floating text effect above the object (e.g. "Schlüssel!", "+1").
-    void emit_text(const std::string& text, PMID pmid = ID_FX_TEXT);
+    void emit_text(const std::string& text, PMID text_pmid = ID_FX_TEXT);
 
     /// Per-frame physics: gravity, water, friction...
     void fall();
