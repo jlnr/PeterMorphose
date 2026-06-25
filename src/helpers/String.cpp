@@ -36,6 +36,12 @@ int hex_chars_to_int(std::string_view str, std::size_t offset, std::size_t lengt
     }
 }
 
+std::string byte_to_hex(std::uint8_t byte)
+{
+    constexpr std::string_view hex = "0123456789ABCDEF";
+    return { hex[byte / 16 % 16], hex[byte % 16] };
+}
+
 void latin1_to_utf8(std::string& str)
 {
     for (std::size_t i = 0; i < str.length(); ++i) {
@@ -72,6 +78,13 @@ TEST_CASE("String")
         CHECK_THROWS_AS(string_to_int("3.5"), std::invalid_argument);
         CHECK_THROWS_AS(string_to_int(" 5"), std::invalid_argument);
         CHECK_THROWS_AS(string_to_int("7 "), std::invalid_argument);
+    }
+
+    SUBCASE("byte_to_hex")
+    {
+        CHECK(byte_to_hex(0) == "00");
+        CHECK(byte_to_hex(15) == "0F");
+        CHECK(byte_to_hex(251) == "FB");
     }
 
     SUBCASE("latin1_to_utf8")

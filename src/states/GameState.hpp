@@ -52,6 +52,7 @@ public:
     void cast_objects(PMID pmid, int count, int vx, int vy, int randomness, const Rect& rect);
     GameObject* create_object(PMID pmid, std::string extra_data, int x, int y, int vx, int vy);
     void explosion(int x, int y, int radius, bool do_score);
+    void burn_everything(const Rect& rect);
     void burn_enemies(const Rect& rect);
     /// Plays a sound the louder the closer it is to the player.
     void emit_sound(int y, const std::string& name);
