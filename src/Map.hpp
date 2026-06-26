@@ -50,4 +50,9 @@ private:
     std::unique_ptr<Gosu::Image> m_map_image;
     /// Cached Gosu macro that contains the repeating sky pattern.
     std::unique_ptr<Gosu::Image> m_sky_image;
+
+    /// Peter Morphose levels can override tiles by providing an RGB string in the INI file.
+    /// This method decodes such a tile and converts it into a Gosu::Image.
+    /// @throw std::invalid_argument if the data does not have the expected length.
+    static Gosu::Image decode_tile(const std::string& data);
 };

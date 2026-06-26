@@ -322,7 +322,24 @@ void GameObject::fall()
             living->action = Action(ACT_IMPACT_1 + std::min(vy - 11, 4));
         }
         vy = 0;
-        // Not ported: I don't think any level uses conveyor belts (TILE_PULL_LEFT/RIGHT)?
+
+        // Conveyor belts pull objects into the respective direction.
+        const Rect& rect = ObjectDef::get(pmid).rect;
+        const int row_below = (y + rect.bottom() + 1) / TILE_SIZE;
+        const Tile tile_below_left = game.map[(x + rect.left) / TILE_SIZE, row_below];
+        if (tile_below_left == TILE_PULL_LEFT && !blocked(DIR_LEFT)) {
+            x -= 1;
+        }
+        else if (tile_below_left == TILE_PULL_RIGHT && !blocked(DIR_RIGHT)) {
+            x += 1;
+        }
+        const Tile tile_below_right = game.map[(x + rect.right()) / TILE_SIZE, row_below];
+        if (tile_below_right == TILE_PULL_LEFT && !blocked(DIR_LEFT)) {
+            x -= 1;
+        }
+        else if (tile_below_right == TILE_PULL_RIGHT && !blocked(DIR_RIGHT)) {
+            x += 1;
+        }
     }
 
     if (blocked(DIR_UP) && game.fly_time_left == 0) {
