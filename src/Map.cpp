@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <stdexcept>
 
 Map::Map(const IniFile& ini)
 {
@@ -30,10 +31,12 @@ Map::Map(const IniFile& ini)
     m_level_top = ini.integer("Map", "LevelTop").value_or(0) * TILE_SIZE;
     m_level_bottom = std::min(1024, lava_pos / TILE_SIZE);
 
-    auto original_tiles = Gosu::load_tiles("media/tiles.bmp", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);
-    for (auto& tile : original_tiles) {
-        // TODO: Handle level-specific tile overrides.
-        m_tile_images.push_back(std::move(tile));
+    m_tile_images = Gosu::load_tiles("media/tiles.bmp", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);
+    for (int index = 0; index < m_tile_images.size(); ++index) {
+        // A level may replace the image of any tile through its [Tiles] section.
+        if (std::optional<std::string> tile = ini.string("Tiles", byte_to_hex(index))) {
+            m_tile_images[index] = decode_tile(*tile);
+        }
     }
 }
 
@@ -148,6 +151,30 @@ void Map::render_map()
     }
 }
 
+Gosu::Image Map::decode_tile(const std::string& data)
+{
+    // The override encodes a TILE_SIZE x TILE_SIZE image as "RRGGBB" hex pixels.
+    if (data.length() != TILE_SIZE * TILE_SIZE * 6) {
+        throw std::invalid_argument("Invalid custom tile length: "
+                                    + std::to_string(data.length()));
+    }
+
+    Gosu::Bitmap bitmap(TILE_SIZE, TILE_SIZE); // still fully transparent
+    for (int row = 0; row < TILE_SIZE; ++row) {
+        for (int col = 0; col < TILE_SIZE; ++col) {
+            const std::size_t src = (col * TILE_SIZE + row) * 6;
+            const int r = hex_chars_to_int(data, src + 0, 2, 0);
+            const int g = hex_chars_to_int(data, src + 2, 2, 0);
+            const int b = hex_chars_to_int(data, src + 4, 2, 0);
+            // Fuchsia is used as a color key -> leave these pixels transparent.
+            if (r != 0xFF || g != 0x00 || b != 0xFF) {
+                bitmap.pixel(col, row) = Gosu::Color(r, g, b);
+            }
+        }
+    }
+    return Gosu::Image(bitmap, Gosu::IF_RETRO);
+}
+
 #include <doctest.h>
 
 TEST_CASE("Map")
@@ -242,5 +269,16 @@ TEST_CASE("Map")
         // Row 964 starts with "020B".
         CHECK(level1_map[0, 964] == 0x02);
         CHECK(level1_map[1, 964] == 0x0B);
+    }
+
+    SUBCASE("overridden tiles don't crash")
+    {
+        std::ifstream file("levels/jr_Die_zwei_Baeume.pml");
+        REQUIRE_MESSAGE(file.good(), "Could not open the level we use for testing overridden tiles");
+
+        // Constructing the Map builds the overridden tile images for the indices listed in the
+        // [Tiles] section (0E, 0F, 32, 33, ...); this exercises Map::decode_tile end to end.
+        const IniFile level2_ini(std::move(file));
+        Map level2_map(level2_ini);
     }
 }
