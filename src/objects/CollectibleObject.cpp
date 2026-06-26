@@ -155,7 +155,7 @@ void CollectibleObject::update()
                 if (pmid == ID_MORE_TIME) {
                     game.player().emit_text("+1 Sekunde");
                     game.score += 5;
-                    game.time_left += 30;
+                    game.time_left += 33;
                 }
                 else {
                     game.player().emit_text("+3,5 Sekunden");

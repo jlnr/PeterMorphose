@@ -182,7 +182,7 @@ void GameObject::check_tile()
         if (living && enemy) {
             vx = dir_to_vx(living->direction);
         }
-        game.cast_fx(0, 0, 10, x, y, 24, 24, -10, 0, 1);
+        game.cast_fx(0, 0, 10, x, y, 24, 24, 0, 8, 1);
         break;
 
     case TILE_SLOW_ROCKET_UP:
@@ -408,7 +408,7 @@ void GameObject::fall()
     }
 
     // Add extra particle effects when objects are moving super fast.
-    if (std::abs(vx) > 12 || vx < -15) {
+    if (std::abs(vx) > 12 || vy < -15) {
         game.cast_fx(rand(5), rand(3), 0, x, y, 5, 5, 0, -2, 2);
     }
 }

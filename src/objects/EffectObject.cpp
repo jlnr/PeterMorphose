@@ -173,20 +173,21 @@ void EffectObject::draw()
         images.at(19 + (extra_data.empty() ? 0 : string_to_int(extra_data)))
             .draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(255 - m_phase * 3));
         break;
-    case ID_FX_LINE: {
+    case ID_FX_LINE:
         images[28].draw(x, dy - 11, Z_EFFECTS,
-                        extra_data.empty() ? 0 : string_to_int(extra_data) / images[28].width(), 1,
-                        alpha(255 - m_phase), Gosu::BM_ADD);
+                        extra_data.empty() ? 0.0 : string_to_int(extra_data) / images[28].width(),
+                        1, alpha(255 - m_phase), Gosu::BM_ADD);
         break;
-    }
     case ID_FX_BLOCKER_PARTS:
         images[29].draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, //
                             1, 1, alpha(255 - m_phase), Gosu::BM_ADD);
         break;
     case ID_FX_BREAK:
-    case ID_FX_BREAK_2:
         // Unlike DelphiX, Gosu does not have BM_SUBTRACT...but regular blending should be fine.
-        images[30 + (ID_FX_BREAK_2 - pmid)].draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(m_phase));
+        images[30].draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(m_phase));
+        break;
+    case ID_FX_BREAK_2:
+        images[31].draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(m_phase));
         break;
     case ID_FX_BREAKING_PARTS:
         images[32].draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - m_phase));
@@ -217,10 +218,11 @@ void EffectObject::draw()
         break;
     case ID_FX_TEXT:
     case ID_FX_SLOW_TEXT:
-        // TODO: clamp text position inside the game area (x = 0..576).
-        draw_centered_string(extra_data, x, dy - 7, std::clamp(255 - m_phase, 0, 255));
-        break;
-    default:
+        // Keep the centered text on screen.
+        int half_width = static_cast<int>(font().text_width(extra_data)) / 2;
+        int max_x = TILES_X * TILE_SIZE - half_width;
+        draw_centered_string(extra_data, std::clamp(x, half_width, max_x), dy - 7,
+                             std::clamp(255 - m_phase, 0, 255));
         break;
     }
 }
