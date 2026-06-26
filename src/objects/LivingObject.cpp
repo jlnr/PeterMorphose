@@ -215,7 +215,7 @@ void LivingObject::update()
         if (LivingObject* target = game.launch_projectile(x, y + 2, direction, //
                                                           ID_ENEMY, ID_ENEMY_MAX)) {
             target->hurt(true);
-            target->fling(3 * dir_to_vx(direction) * 3, -3, 1, true, true);
+            target->fling(3 * dir_to_vx(direction), -3, 1, true, true);
             if (target->action == ACT_DEAD) {
                 int bonus = ObjectDef::get(target->pmid).life * 3;
                 game.score += bonus;
@@ -235,8 +235,8 @@ void LivingObject::update()
         game.cast_fx(0, rand(3), 0, x, y, 18, 24, 0, -2, 3);
         if (game.player().action < ACT_DEAD && game.player().rect_collides(rect(5, 2))) {
             game.player().hit();
-            game.player().fling(8 * dir_to_vx(direction) * 8, -3, 0, true, true);
-            fling(-8 * dir_to_vx(direction) * 8, -4, 0, true, false);
+            game.player().fling(8 * dir_to_vx(direction), -3, 0, true, true);
+            fling(-8 * dir_to_vx(direction), -4, 0, true, false);
             return;
         }
     }
@@ -327,7 +327,7 @@ void LivingObject::update()
         if (game.player().action < ACT_PAIN_1 && rect_collides(game.player().rect(1, -1))) {
             if (pmid == ID_ENEMY_BOMBER) {
                 game.player().hurt(true);
-                game.cast_fx(10, 30, 10, x, y, 10, 20, 0, -10, 5);
+                game.cast_fx(10, 30, 10, x, y, 10, 10, 0, -10, 5);
                 kill();
             }
             else {
@@ -339,19 +339,19 @@ void LivingObject::update()
         }
     }
 
-    // Collide with the player while airborne.
+    // Collide with the player while airborne (Delphi uses different knockback than on the ground).
     if (pmid >= ID_ENEMY && (action == ACT_JUMP || action == ACT_LAND)
         && rect_collides(game.player().rect(0, -1))) {
         if (pmid == ID_ENEMY_BOMBER) {
             game.player().hurt(true);
-            game.cast_fx(10, 30, 10, x, y, 10, 20, 0, -10, 5);
+            game.cast_fx(10, 30, 10, x, y, 10, 10, 0, -10, 5);
             kill();
         }
         else {
             game.player().hit();
-            fling(-6 * dir_to_vx(direction), -2, 0, true, false);
+            fling(-7 * dir_to_vx(direction), 4, 1, true, false);
         }
-        game.player().fling(8 * dir_to_vx(direction), -3, 0, true, true);
+        game.player().fling(8 * dir_to_vx(direction), -4, 0, true, true);
         return;
     }
 
@@ -411,13 +411,21 @@ void LivingObject::update()
     // Unfortunately, this is also where the slime sounds have been implemented.
     if (between(game.map[x / TILE_SIZE, (y + ObjectDef::get(pmid).rect.bottom() + 1) / TILE_SIZE],
                 TILE_SLIME, TILE_SLIME_3)) {
-        if (pmid <= ID_PLAYER_MAX && (is_down(InputAction::Left) || is_down(InputAction::Right))) {
+        const bool player_walking
+            = pmid <= ID_PLAYER_MAX && (is_down(InputAction::Left) || is_down(InputAction::Right));
+        // Enemies use the same "am I currently walking?" timing as their AI below.
+        const bool enemy_walking = (pmid == ID_ENEMY_FIGHTER && game.frame % 100 < 70)
+            || (pmid == ID_ENEMY_GUN && game.frame % 100 > 15) || pmid == ID_ENEMY
+            || pmid == ID_ENEMY_BERSERKER || pmid == ID_ENEMY_BOMBER;
+        if (player_walking || enemy_walking) {
             action = Action(ACT_WALK_1 + game.frame % 12 / 3);
-            if (is_down(InputAction::Left)) {
-                direction = DIR_LEFT;
-            }
-            if (is_down(InputAction::Right)) {
-                direction = DIR_RIGHT;
+            if (pmid <= ID_PLAYER_MAX) {
+                if (is_down(InputAction::Left)) {
+                    direction = DIR_LEFT;
+                }
+                if (is_down(InputAction::Right)) {
+                    direction = DIR_RIGHT;
+                }
             }
             if (std::abs(y - game.player().y) < WINDOW_HEIGHT && rand(5) == 0) {
                 game.create_object(ID_FX_FLYING_BLOB, "", x, y + ObjectDef::get(pmid).rect.bottom(),
@@ -426,7 +434,6 @@ void LivingObject::update()
             }
             return;
         }
-        // TODO: The same for enemies
     }
 
     // Walking animation.
@@ -570,7 +577,8 @@ void LivingObject::hurt(bool from_explosion)
         return;
     }
     int damage = 3;
-    if (pmid == ID_PLAYER_FIGHTER) {
+    // Knights rarely (1 in 6) shrug off a point of damage.
+    if (pmid == ID_PLAYER_FIGHTER && rand(6) == 0) {
         damage -= 1;
     }
     if (pmid <= ID_PLAYER_MAX) {
@@ -623,7 +631,9 @@ void LivingObject::use_tile()
         return;
     }
 
-    switch (game.map[x / TILE_SIZE, (y + ObjectDef::get(pmid).rect.bottom() + 1) / TILE_SIZE]) {
+    const int foot_row = (y + ObjectDef::get(pmid).rect.bottom() + 1) / TILE_SIZE;
+    const Tile foot_tile = game.map[x / TILE_SIZE, foot_row];
+    switch (foot_tile) {
     case TILE_ROCKET_UP:
     case TILE_ROCKET_UP_2:
     case TILE_ROCKET_UP_3:
@@ -673,6 +683,26 @@ void LivingObject::use_tile()
         direction = DIR_RIGHT;
         game.cast_fx(0, 0, 10, x, y, 24, 24, +8, -8, 1);
         return;
+
+    case TILE_MORPH_FIGHTER:
+    case TILE_MORPH_GUN:
+    case TILE_MORPH_BERSERKER:
+    case TILE_MORPH_BOMB:
+        // Stepping onto a morph tile turns the player into the matching special form; the tile is
+        // then spent (becomes TILE_MORPH_EMPTY). foot_row/foot_tile are captured before pmid
+        // changes, so the cleared cell uses the old hitbox.
+        if (pmid <= ID_PLAYER_MAX) {
+            game.map[x / TILE_SIZE, foot_row] = TILE_MORPH_EMPTY;
+            play_sound("morph");
+            pmid = PMID(ID_PLAYER_FIGHTER + foot_tile - TILE_MORPH_FIGHTER);
+            if (pmid != ID_PLAYER) {
+                game.time_left = ObjectDef::get(pmid).life;
+            }
+            game.cast_fx(8, 0, 0, x, y, 24, 24, 0, -1, 4);
+            emit_text(ObjectDef::get(pmid).name + "!");
+            return;
+        }
+        break;
 
     default:
         break;
