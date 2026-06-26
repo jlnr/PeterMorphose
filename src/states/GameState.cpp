@@ -203,6 +203,18 @@ void GameState::update()
         }
     }
 
+    // Countdown for temporary buffs.
+    if (speed_time_left > 0) {
+        speed_time_left -= 1;
+        cast_objects(ID_FX_SPARK, rand(2), 0, 0, 1, player.rect(1, 1));
+    }
+    if (jump_time_left > 0) {
+        jump_time_left -= 1;
+    }
+    if (fly_time_left > 0) {
+        fly_time_left -= 1;
+    }
+
     // No actions in the first frames to avoid an accidental jump when coming from the main menu.
     if (frame > 2) {
         // Holding the jump button keeps Peter hopping.
@@ -220,19 +232,29 @@ void GameState::update()
     }
 
     // Update every object, then delete those objects that were marked.
-    for (const std::shared_ptr<GameObject>& obj : m_objects) {
-        obj->update();
+    for (int i = 0; i < m_objects.size(); ++i) {
+        if (!m_objects[i]->marked) {
+            m_objects[i]->update();
+        }
     }
     std::erase_if(m_objects, [](const std::shared_ptr<GameObject>& obj) { return obj->marked; });
+
+    // Make the lava more impressive by creating lots of particles.
+    if (map.lava_time_left == 0) {
+        cast_fx(rand(2) + 1, rand(2) + 1, 0, 288, map.lava_pos, 576, 8, 1, -3, 1);
+        if (rand(15) == 0) {
+            create_object(ID_FX_BUBBLE, "", rand(576), map.lava_pos - 12, 1 - rand(3), 0);
+        }
+    }
 }
 
 void GameState::draw()
 {
     map.draw(view_pos);
 
-    for (const std::shared_ptr<GameObject>& obj : m_objects) {
-        if (!obj->marked) {
-            obj->draw();
+    for (int i = 0; i < m_objects.size(); ++i) {
+        if (!m_objects[i]->marked) {
+            m_objects[i]->draw();
         }
     }
 
@@ -327,7 +349,7 @@ void GameState::draw_status_bar()
         gui[12].draw(tile_w * 0, tile_h * 4, Z_UI);
         gui[13].draw(tile_w * 1, tile_h * 4, Z_UI);
         draw_digits(stars, 4);
-        if (stars > stars_goal) {
+        if (stars >= stars_goal) {
             // Enough stars - draw checkmark
             gui[42].draw(tile_w * 2, tile_h * 4, Z_UI);
             gui[43].draw(tile_w * 3, tile_h * 4, Z_UI);
@@ -455,8 +477,6 @@ GameObject* GameState::create_object(PMID pmid, std::string extra_data, //
 {
     std::shared_ptr<GameObject> object;
     if (pmid <= ID_LIVING_MAX) {
-        // Enemies: created, but the AI and enemy drawing are not ported yet, so they just fall
-        // idle.
         object = std::make_shared<LivingObject>(*this, std::move(extra_data), pmid, x, y, vx, vy,
                                                 ObjectDef::get(pmid).life, ACT_STAND,
                                                 Direction(rand(2)));
@@ -570,7 +590,7 @@ void GameState::burn_enemies(const Rect& rect)
 
 GameObject* GameState::find_object(PMID min_id, PMID max_id, const Rect& rect)
 {
-    for (auto& obj : m_objects) {
+    for (const auto& obj : m_objects) {
         if (between(obj->pmid, min_id, max_id) && rect.contains(obj->x, obj->y)) {
             return obj.get();
         }
@@ -581,7 +601,7 @@ GameObject* GameState::find_object(PMID min_id, PMID max_id, const Rect& rect)
 LivingObject* GameState::find_living(PMID min_id, PMID max_id, Action min_act, Action max_act,
                                      const Rect& rect)
 {
-    for (auto& obj : m_objects) {
+    for (const auto& obj : m_objects) {
         if (between(obj->pmid, min_id, max_id) && obj->rect_collides(rect)) {
             auto* living = dynamic_cast<LivingObject*>(obj.get());
             if (living && between(living->action, min_act, max_act)) {
