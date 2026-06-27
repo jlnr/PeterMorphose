@@ -24,7 +24,7 @@ void CollectibleObject::update()
     if (y + ObjectDef::get(pmid).rect.bottom() > game.map.lava_pos) {
         game.cast_fx(2, 2, 0, x, y, 16, 16, 0, -3, 1);
         kill();
-        game.emit_sound(y, "shshsh");
+        game.emit_sound(y, "Shshsh");
         if (pmid == ID_HOSTAGE) {
             game.lose("Du hast verloren, weil eine Gefangene verbrannt ist.");
         }
@@ -33,7 +33,7 @@ void CollectibleObject::update()
 
     // Occasionally let the player hear this game's trademark HILFE scream.
     if (pmid == ID_HOSTAGE && game.frame % 20 == 0 && rand(4) == 0) {
-        game.emit_sound(y, "help" + std::to_string(rand(2) + 1));
+        game.emit_sound(y, "Help");
     }
 
     // Edible fish swim in water, and fall out of it if their extra_data is set to allow gravity.
@@ -70,13 +70,13 @@ void CollectibleObject::update()
         case ID_HOSTAGE:
             game.cast_objects(ID_FX_FLYING_CHAIN, 8, 0, -1, 3, rect(1, -1));
             game.create_object(ID_FX_FLYING_HOSTAGE, "", x, y, -7 + rand(15), -15);
-            play_sound("yippie");
+            play_sound("Jeepee");
             game.score += 100;
             kill();
             break;
 
         case ID_KEY:
-            play_sound("collect_key");
+            play_sound("KeyCollect");
             game.player().emit_text(ObjectDef::get(pmid).name + "!");
             game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
             game.score += 2;
@@ -87,7 +87,7 @@ void CollectibleObject::update()
         case ID_HEALTH:
         case ID_HEALTH_2: {
             int amount = (pmid == ID_HEALTH_2 ? 4 : 1);
-            play_sound("collect_health");
+            play_sound("HealthCollect");
             game.player().emit_text("+" + std::to_string(amount));
             game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
             game.score += amount;
@@ -99,7 +99,7 @@ void CollectibleObject::update()
         case ID_STAR:
         case ID_STAR_2:
         case ID_STAR_3:
-            play_sound("collect_star", Gosu::random(0.5, 0.7), Gosu::random(0.9, 1.1));
+            play_sound("StarCollect", Gosu::random(0.5, 0.7), Gosu::random(0.9, 1.1));
             game.score += 2;
             game.stars += 1;
             if (game.stars < game.stars_goal) {
@@ -115,7 +115,7 @@ void CollectibleObject::update()
         case ID_MUNITION_GUN:
         case ID_MUNITION_GUN_2: {
             int amount = 1 + (pmid - ID_MUNITION_GUN) * 2;
-            play_sound("collect_ammo");
+            play_sound("AmmoCollect");
             game.player().emit_text("+" + std::to_string(amount));
             game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
             game.score += amount;
@@ -127,7 +127,7 @@ void CollectibleObject::update()
         case ID_MUNITION_BOMBER:
         case ID_MUNITION_BOMBER_2: {
             int amount = 1 + (pmid - ID_MUNITION_BOMBER) * 2;
-            play_sound("collect_ammo");
+            play_sound("AmmoCollect");
             game.player().emit_text("+" + std::to_string(amount));
             game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
             game.score += amount;
@@ -138,8 +138,8 @@ void CollectibleObject::update()
 
         case ID_EDIBLE_FISH_LEFT:
         case ID_EDIBLE_FISH_RIGHT:
-            play_sound("collect_health");
-            play_sound("eat");
+            play_sound("HealthCollect");
+            play_sound("Eat");
             game.player().emit_text("+1");
             game.score += 2;
             game.player().life += 1;
@@ -150,7 +150,7 @@ void CollectibleObject::update()
         case ID_MORE_TIME_2:
             // Only useful while morphing.
             if (game.player().pmid != ID_PLAYER) {
-                play_sound("morph");
+                play_sound("Morph");
                 game.cast_objects(ID_FX_SPARKLE, 2, 0, 0, 0, rect());
                 if (pmid == ID_MORE_TIME) {
                     game.player().emit_text("+1 Sekunde");
@@ -168,7 +168,7 @@ void CollectibleObject::update()
 
         case ID_COOKIE: {
             // The cookie's message is the second '|'-separated field of its extra_data.
-            play_sound("eat");
+            play_sound("Eat");
             game.cast_objects(ID_FX_SPARKLE, 1, 0, 0, 0, rect());
             if (extra_data.length() >= 2) {
                 emit_text(extra_data.substr(2), ID_FX_SLOW_TEXT);
@@ -195,14 +195,14 @@ void CollectibleObject::update()
             else {
                 game.map.lava_speed -= 1;
             }
-            play_sound("collect_freeze");
+            play_sound("FreezeCollect");
             game.player().emit_text("Lava verlangsamt!");
             game.cast_objects(ID_FX_SPARKLE, 3, 0, 0, 0, rect());
             kill();
             break;
 
         case ID_CRYSTAL:
-            play_sound("collect_freeze");
+            play_sound("FreezeCollect");
             game.player().emit_text("Lava angehalten!", ID_FX_SLOW_TEXT);
             game.map.lava_time_left += 80;
             game.cast_objects(ID_FX_SPARKLE, 4, 0, 0, 0, rect());
@@ -217,7 +217,7 @@ void CollectibleObject::update()
         case ID_SPEED:
         case ID_JUMP:
         case ID_FLY:
-            play_sound("morph");
+            play_sound("Morph");
             game.player().emit_text(ObjectDef::get(pmid).name + "!", ID_FX_SLOW_TEXT);
             if (pmid == ID_SPEED) {
                 game.speed_time_left = 330;
@@ -236,7 +236,7 @@ void CollectibleObject::update()
         default:
             // The value of ID_POINTS_* is defined as their ObjectDef::life.
             if (between(pmid, ID_POINTS, ID_POINTS_MAX)) {
-                play_sound("collect_points");
+                play_sound("PointCollect");
                 game.player().emit_text("*" + std::to_string(ObjectDef::get(pmid).life) + "*");
                 game.cast_objects(ID_FX_SPARKLE, 3, 0, 0, 0, rect());
                 game.score += ObjectDef::get(pmid).life;
@@ -246,7 +246,7 @@ void CollectibleObject::update()
             if (between(pmid, ID_MORPH_FIGHTER, ID_MORPH_MAX)) {
                 PMID target = PMID(ID_PLAYER_FIGHTER + pmid - ID_MORPH_FIGHTER);
                 if (game.player().pmid != target) {
-                    play_sound("morph");
+                    play_sound("Morph");
                     game.player().pmid = target;
                     game.player().emit_text(ObjectDef::get(target).name + "!", ID_FX_SLOW_TEXT);
                     game.player().action = ACT_JUMP;

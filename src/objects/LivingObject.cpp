@@ -83,13 +83,13 @@ void LivingObject::update()
         game.cast_fx(8, 8, 0, x, y, 16, 16, 0, -4, 1);
         kill();
 
-        game.emit_sound(y, "shshsh");
+        game.emit_sound(y, "Shshsh");
         if (action != ACT_DEAD) {
             if (pmid <= ID_PLAYER_MAX) {
-                game.emit_sound(y, "player_arg");
+                game.emit_sound(y, "PlayerArg");
             }
             if (between(pmid, ID_ENEMY, ID_ENEMY_MAX)) {
-                game.emit_sound(y, "arg" + std::to_string(rand(2) + 1));
+                game.emit_sound(y, "Arg");
             }
         }
         return;
@@ -103,7 +103,7 @@ void LivingObject::update()
     const auto tile_above = [this] { return game.map[x / TILE_SIZE, (y - 9) / TILE_SIZE]; };
     if (action == ACT_INV_UP) {
         if (rand(8) == 0) {
-            game.emit_sound(y, "stairs_steps");
+            game.emit_sound(y, "StairsRnd");
         }
         for (int i = 0; i <= 2; ++i) {
             if (!is_open_door(tile_below()) || !is_open_door(tile_above())) {
@@ -121,7 +121,7 @@ void LivingObject::update()
     }
     else if (action == ACT_INV_DOWN) {
         if (rand(7) == 0) {
-            game.emit_sound(y, "stairs_steps");
+            game.emit_sound(y, "StairsRnd");
         }
         for (int i = 0; i <= 3; ++i) {
             if (!is_open_door(tile_below()) || !is_open_door(tile_above())) {
@@ -176,7 +176,7 @@ void LivingObject::update()
             if (between(tile, TILE_CLOSED_DOOR, TILE_CLOSED_DOOR_3) && game.keys > 0) {
                 tile = Tile(game.map[tile_x, tile_y] - (TILE_CLOSED_DOOR - TILE_OPEN_DOOR));
                 game.keys -= 1;
-                play_sound("door" + std::to_string(rand(2) + 1));
+                play_sound("Door");
             }
         };
         // Left
@@ -430,7 +430,7 @@ void LivingObject::update()
             if (std::abs(y - game.player().y) < WINDOW_HEIGHT && rand(5) == 0) {
                 game.create_object(ID_FX_FLYING_BLOB, "", x, y + ObjectDef::get(pmid).rect.bottom(),
                                    rand(3) - 1, rand(3));
-                game.emit_sound(y, "slime" + std::to_string(rand(3) + 1));
+                game.emit_sound(y, "Slime");
             }
             return;
         }
@@ -497,7 +497,7 @@ void LivingObject::jump()
     if (pmid <= ID_PLAYER_MAX && game.jump_time_left > 0) {
         vy = static_cast<int>(std::round(def.jump_y * 1.7)) - 1;
         game.cast_objects(ID_FX_SMOKE, 2, 0, 3, 2, rect(1, 0));
-        play_sound("turbo");
+        play_sound("Turbo");
         dir = DIR_UP;
     }
     else {
@@ -524,12 +524,12 @@ void LivingObject::jump()
     if (in_water()) {
         vx /= 3;
         vy += 1;
-        game.emit_sound(y, "water" + std::to_string(rand(2) + 1));
+        game.emit_sound(y, "Water");
     }
 
     action = ACT_JUMP;
     if (pmid <= ID_PLAYER_MAX) {
-        play_sound("jump");
+        play_sound("Jump");
     }
 }
 
@@ -559,10 +559,10 @@ void LivingObject::hit()
     }
 
     if (between(pmid, ID_PLAYER, ID_PLAYER_MAX)) {
-        play_sound("player_arg");
+        play_sound("PlayerArg");
     }
     else if (between(pmid, ID_ENEMY, ID_ENEMY_MAX)) {
-        game.emit_sound(y, "arg" + std::to_string(rand(2) + 1));
+        game.emit_sound(y, "Arg");
     }
 
     if (pmid == ID_ENEMY_BOMBER && action == ACT_DEAD) {
@@ -600,10 +600,10 @@ void LivingObject::hurt(bool from_explosion)
     }
 
     if (between(pmid, ID_PLAYER, ID_PLAYER_MAX)) {
-        play_sound("player_arg");
+        play_sound("PlayerArg");
     }
     else if (between(pmid, ID_ENEMY, ID_ENEMY_MAX)) {
-        game.emit_sound(y, "arg" + std::to_string(rand(2) + 1));
+        game.emit_sound(y, "Arg");
     }
 
     if (pmid == ID_ENEMY_BOMBER && action == ACT_DEAD) {
@@ -638,9 +638,9 @@ void LivingObject::use_tile()
     case TILE_ROCKET_UP_2:
     case TILE_ROCKET_UP_3:
         if (pmid <= ID_PLAYER_MAX) {
-            play_sound("jump");
+            play_sound("Jump");
         }
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         vx = 0;
         vy = -20;
         if (!blocked(DIR_UP)) {
@@ -654,9 +654,9 @@ void LivingObject::use_tile()
     case TILE_ROCKET_UP_LEFT_2:
     case TILE_ROCKET_UP_LEFT_3:
         if (pmid <= ID_PLAYER_MAX) {
-            play_sound("jump");
+            play_sound("Jump");
         }
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         vx = -15;
         vy = -15;
         if (!blocked(DIR_UP)) {
@@ -671,9 +671,9 @@ void LivingObject::use_tile()
     case TILE_ROCKET_UP_RIGHT_2:
     case TILE_ROCKET_UP_RIGHT_3:
         if (pmid <= ID_PLAYER_MAX) {
-            play_sound("jump");
+            play_sound("Jump");
         }
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         vx = +15;
         vy = -15;
         if (!blocked(DIR_UP)) {
@@ -693,7 +693,7 @@ void LivingObject::use_tile()
         // changes, so the cleared cell uses the old hitbox.
         if (pmid <= ID_PLAYER_MAX) {
             game.map[x / TILE_SIZE, foot_row] = TILE_MORPH_EMPTY;
-            play_sound("morph");
+            play_sound("Morph");
             pmid = PMID(ID_PLAYER_FIGHTER + foot_tile - TILE_MORPH_FIGHTER);
             if (pmid != ID_PLAYER) {
                 game.time_left = ObjectDef::get(pmid).life;
@@ -716,7 +716,7 @@ void LivingObject::use_tile()
         }
         game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_UP;
         game.keys -= 1;
-        play_sound("door" + std::to_string(rand(2) + 1));
+        play_sound("Door");
         [[fallthrough]];
 
     case TILE_STAIRS_UP:
@@ -727,7 +727,7 @@ void LivingObject::use_tile()
         y = y / TILE_SIZE * TILE_SIZE;
         action = ACT_INV_UP;
         vx = vy = 0;
-        game.emit_sound(y, "stairs");
+        game.emit_sound(y, "Stairs");
         break;
 
     case TILE_STAIRS_DOWN_LOCKED:
@@ -736,7 +736,7 @@ void LivingObject::use_tile()
         }
         game.map[x / TILE_SIZE, y / TILE_SIZE] = TILE_STAIRS_DOWN;
         game.keys -= 1;
-        play_sound("door" + std::to_string(rand(2) + 1));
+        play_sound("Door");
         [[fallthrough]];
 
     case TILE_STAIRS_DOWN:
@@ -747,7 +747,7 @@ void LivingObject::use_tile()
         y = y / TILE_SIZE * TILE_SIZE + 13;
         action = ACT_INV_DOWN;
         vx = vy = 0;
-        game.emit_sound(y, "stairs");
+        game.emit_sound(y, "Stairs");
         break;
 
     default:
@@ -770,7 +770,7 @@ void LivingObject::special_action()
         if (action > ACT_LAND) {
             return;
         }
-        play_sound("sword_whoosh");
+        play_sound("SwordWoosh");
         action = ACT_ACTION_1;
         if (int tile_x = (x + 10 * dir_to_vx(direction)) / TILE_SIZE, tile_y = y / TILE_SIZE;
             between(game.map[tile_x, tile_y], TILE_BLOCKER, TILE_BLOCKER_3)) {
@@ -779,7 +779,7 @@ void LivingObject::special_action()
                 : TILE_BLOCKER_3_BROKEN;
             game.cast_objects(ID_FX_BLOCKER_PARTS, 10, 0, -2, 5,
                               Rect(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE));
-            play_sound("blocker_break");
+            play_sound("BlockerBreak");
         }
         break;
 
@@ -808,7 +808,7 @@ void LivingObject::flip_lever()
     if (!target) {
         return;
     }
-    play_sound("lever");
+    play_sound("Lever");
     switch (target->pmid) {
     case ID_LEVER:
         target->pmid = ID_LEVER_DOWN;
@@ -854,6 +854,6 @@ void LivingObject::break_floor(int px, int py)
         }
         game.create_object(PMID(ID_FX_BREAK + rand(2)), "", //
                            tile_x * TILE_SIZE + 11, tile_y * TILE_SIZE + 11, 0, 0);
-        game.emit_sound(y, "break" + std::to_string(rand(2) + 1));
+        game.emit_sound(y, "Break");
     }
 }
