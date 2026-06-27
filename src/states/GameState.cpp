@@ -102,7 +102,7 @@ void GameState::update()
             map.lava_frame += 1;
             map.lava_frame %= 120;
             if (frame % 10 == 0 && rand(10) == 0) {
-                emit_sound(map.lava_pos, "lava");
+                emit_sound(map.lava_pos, "Lava");
             }
         }
     }
@@ -193,7 +193,7 @@ void GameState::update()
             }
         }
         else if (player.vx + player.vy > 1 && frame % 3 == 0 && rand(5) == 0) {
-            play_sound("water" + std::to_string(rand(2) + 1));
+            play_sound("Water");
         }
         if (player.vx < 0) {
             player.direction = DIR_LEFT;
@@ -394,7 +394,7 @@ void GameState::button_down(Gosu::Button id)
     switch (m_result) {
     case Result::PLAYING:
         if (is_mapped_to(InputAction::MenuCancel, id)) {
-            play_sound("whoosh");
+            play_sound("Woosh");
             pop_state(); // back to level selection
         }
         else if (m_paused) {
@@ -413,14 +413,14 @@ void GameState::button_down(Gosu::Button id)
         break;
     case Result::LOST:
         if (is_mapped_to(InputAction::MenuCancel, id)) {
-            play_sound("whoosh");
+            play_sound("Woosh");
             pop_state();
         }
         break;
     case Result::WON:
         if (is_mapped_to(InputAction::MenuConfirm, id)
             || is_mapped_to(InputAction::MenuCancel, id)) {
-            play_sound("whoosh");
+            play_sound("Woosh");
             pop_state();
         }
         break;
@@ -500,7 +500,7 @@ GameObject* GameState::create_object(PMID pmid, std::string extra_data, //
 
 void GameState::explosion(int x, int y, int radius, bool do_score)
 {
-    emit_sound(y, "explosion");
+    emit_sound(y, "Explosion");
 
     // A ring of smoke... dat is Wacken.
     for (int i = 0; i < 10 + radius / 2; ++i) {
@@ -549,13 +549,13 @@ void GameState::explosion(int x, int y, int radius, bool do_score)
             }
             else if (tile == TILE_BIG_BLOCKER_3) {
                 tile = 0;
-                emit_sound(y, "break" + std::to_string(rand(2) + 1));
+                emit_sound(y, "Break");
                 cast_objects(ID_FX_BREAKING_PARTS, 20, 0, 3, 3,
                              Rect(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE));
             }
             else if (between(tile, TILE_BLOCKER, TILE_BLOCKER_3)) {
                 tile = (tile == TILE_BLOCKER_3 ? TILE_BLOCKER_3_BROKEN : TILE_BLOCKER_BROKEN);
-                emit_sound(y, "blocker_break");
+                emit_sound(y, "BlockerBreak");
                 cast_objects(ID_FX_BLOCKER_PARTS, 10, 0, -2, 5,
                              Rect(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE));
             }
@@ -615,7 +615,7 @@ LivingObject* GameState::find_living(PMID min_id, PMID max_id, Action min_act, A
 LivingObject* GameState::launch_projectile(int x, int y, Direction direction, //
                                            PMID min_id, PMID max_id)
 {
-    emit_sound(y, "bow");
+    emit_sound(y, "Bow");
     const int orig_x = x;
     LivingObject* target = nullptr;
     // Scan in 4-pixel steps until we hit a living target or a wall.
@@ -625,7 +625,7 @@ LivingObject* GameState::launch_projectile(int x, int y, Direction direction, //
         if (target || map.is_solid(x, y)) {
             // The extra_data for ID_FX_RICOCHET stores its direction.
             create_object(ID_FX_RICOCHET, std::to_string(int(direction)), x, y - 1 + rand(3), 0, 0);
-            emit_sound(y, "arrow_hit");
+            emit_sound(y, "ArrowHit");
             break;
         }
         x += dir_to_vx(direction) * 4;

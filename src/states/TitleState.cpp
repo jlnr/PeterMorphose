@@ -21,7 +21,7 @@ void TitleState::draw()
 void TitleState::button_down(Gosu::Button id)
 {
     if (is_mapped_to(InputAction::MenuConfirm, id) || is_mapped_to(InputAction::MenuCancel, id)) {
-        play_sound("whoosh");
+        play_sound("Woosh");
         pop_state();
         push_state(std::make_unique<LevelSelectionState>());
     }

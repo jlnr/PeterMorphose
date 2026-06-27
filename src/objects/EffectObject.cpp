@@ -82,7 +82,7 @@ void EffectObject::update()
             game.map[x / TILE_SIZE, y / TILE_SIZE] = even_odd == 0 ? TILE_HOLE : TILE_HOLE_2;
             game.cast_objects(ID_FX_BREAKING_PARTS, 20, 0, 5, 2,
                               Rect(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, 24, 24));
-            game.emit_sound(y, "break" + std::to_string(rand(2) + 1));
+            game.emit_sound(y, "Break");
             kill();
         }
         break;

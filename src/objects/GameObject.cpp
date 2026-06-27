@@ -30,7 +30,7 @@ void GameObject::update()
         if (y + ObjectDef::get(pmid).rect.bottom() - 11 > game.map.lava_pos) {
             game.cast_fx(4, 4, 0, x, y, 16, 16, 0, -3, 1);
             kill();
-            game.emit_sound(y, "shshsh");
+            game.emit_sound(y, "Shshsh");
         }
         else {
             game.burn_everything(rect());
@@ -103,7 +103,7 @@ void GameObject::update()
     if (y + ObjectDef::get(pmid).rect.bottom() > game.map.lava_pos) {
         game.cast_fx(4, 4, 0, x, y, 16, 16, 0, -3, 1);
         kill();
-        game.emit_sound(y, "shshsh");
+        game.emit_sound(y, "Shshsh");
     }
 }
 
@@ -117,7 +117,7 @@ void GameObject::check_tile()
     case TILE_AIR_ROCKET_UP:
     case TILE_AIR_ROCKET_UP_2:
     case TILE_AIR_ROCKET_UP_3:
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         fling(0, -21, 0, true, false);
         if (!blocked(DIR_UP)) {
             y -= 1;
@@ -130,7 +130,7 @@ void GameObject::check_tile()
         break;
 
     case TILE_AIR_ROCKET_UP_LEFT:
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         if (!blocked(DIR_UP)) {
             y -= 1;
         }
@@ -143,7 +143,7 @@ void GameObject::check_tile()
         break;
 
     case TILE_AIR_ROCKET_UP_RIGHT:
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         if (!blocked(DIR_UP)) {
             y -= 1;
         }
@@ -156,7 +156,7 @@ void GameObject::check_tile()
         break;
 
     case TILE_AIR_ROCKET_LEFT:
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         fling(-20, -3, 0, true, false);
         y = y / TILE_SIZE * TILE_SIZE + 11;
         for (int i = 0; i < TILE_SIZE && stuck(); ++i) {
@@ -166,7 +166,7 @@ void GameObject::check_tile()
         break;
 
     case TILE_AIR_ROCKET_RIGHT:
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         fling(+20, -3, 0, true, false);
         y = y / TILE_SIZE * TILE_SIZE + 11;
         for (int i = 0; i < TILE_SIZE && stuck(); ++i) {
@@ -176,7 +176,7 @@ void GameObject::check_tile()
         break;
 
     case TILE_AIR_ROCKET_DOWN:
-        game.emit_sound(y, "turbo");
+        game.emit_sound(y, "Turbo");
         fling(0, 15, 0, true, false);
         y = y / TILE_SIZE * TILE_SIZE + 11;
         if (living && enemy) {
@@ -259,7 +259,7 @@ void GameObject::fall()
     // Make a splash
     if (in_water() && !last_frame_in_water) {
         game.cast_objects(ID_FX_WATER, 5, -vx / 2, -5, 3, rect(1, 1));
-        game.emit_sound(y, "water" + std::to_string(rand(2) + 1));
+        game.emit_sound(y, "Water");
     }
     last_frame_in_water = in_water();
 
