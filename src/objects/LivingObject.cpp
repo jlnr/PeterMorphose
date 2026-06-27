@@ -821,9 +821,12 @@ void LivingObject::flip_lever()
         break;
     }
 
-    // The extra_data lists tile changes (hex) or a PMScript snippet (TODO: port from Ruby).
-    // If the string does not start with an upper-case hex byte, then we cannot handle it yet.
+    // The extra_data lists tile changes (hex) or a PMScript snippet.
+    // If the string does not start with an upper-case hex byte, then it must be PMScript.
     if (target->extra_data.find_first_of("0123456789ABCDEF") != 0) {
+        if (target->extra_data.size() >= 2) {
+            game.execute_script(target->extra_data.substr(2), "do");
+        }
         return;
     }
 
