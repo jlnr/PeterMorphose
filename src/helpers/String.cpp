@@ -60,6 +60,20 @@ void latin1_to_utf8(std::string& str)
     }
 }
 
+std::vector<std::string> split(std::string_view str, char delimiter)
+{
+    std::vector<std::string> parts;
+    std::size_t start = 0;
+    for (;;) {
+        const std::size_t pos = str.find(delimiter, start);
+        parts.emplace_back(str.substr(start, pos == std::string_view::npos ? pos : pos - start));
+        if (pos == std::string_view::npos) {
+            return parts;
+        }
+        start = pos + 1;
+    }
+}
+
 #include <doctest.h>
 
 TEST_CASE("String")
@@ -96,5 +110,14 @@ TEST_CASE("String")
         std::string ascii = "Peter Morphose 2001"; // plain ASCII survives unchanged
         latin1_to_utf8(ascii);
         CHECK(ascii == "Peter Morphose 2001");
+    }
+
+    SUBCASE("split")
+    {
+        CHECK(split("a\\b\\c", '\\') == std::vector<std::string> { "a", "b", "c" });
+        CHECK(split("a  b", ' ') == std::vector<std::string> { "a", "", "b" });
+        CHECK(split("x|", '|') == std::vector<std::string> { "x", "" });
+        CHECK(split("hello", ',') == std::vector<std::string> { "hello" });
+        CHECK(split("", ',') == std::vector<std::string> { "" });
     }
 }

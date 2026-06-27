@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 /// Parses an integer in the given base. Stricter than std::stoi, and not dependent on locale.
 /// @throw std::invalid_argument when out of range, or when there are extra characters in the input.
@@ -24,3 +25,7 @@ std::string byte_to_hex(std::uint8_t byte);
 /// on the fact that the first 256 Unicode code points are roughly equivalent to the Windows
 /// codepage that this game used back in 2001.
 void latin1_to_utf8(std::string& str);
+
+/// Splits a string into the parts separated by the given delimiter.
+/// The result always has one more element than the number of delimiters.
+std::vector<std::string> split(std::string_view str, char delimiter);

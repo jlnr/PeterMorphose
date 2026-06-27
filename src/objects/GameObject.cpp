@@ -245,7 +245,8 @@ void GameObject::draw()
 
 void GameObject::kill()
 {
-    // TODO: clear references to this object held once PMScript is ported.
+    // Drop any PMScript object variables pointing at us, so they never dangle.
+    game.forget_object(this);
     marked = true;
 }
 

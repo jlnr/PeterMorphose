@@ -2,6 +2,7 @@
 
 #include "Constants.hpp"
 #include "Map.hpp"
+#include "PMScript.hpp"
 #include "State.hpp"
 #include "helpers/Rect.hpp"
 #include <functional>
@@ -48,7 +49,7 @@ public:
 
     /// x/y/width/height is a centered rectangle in this case, hence no "const Rect&" for now.
     void cast_fx(int smoke, int flames, int sparks, int x, int y, int width, int height, //
-                 int vx, int vy, int count);
+                 int vx, int vy, int randomness);
     void cast_objects(PMID pmid, int count, int vx, int vy, int randomness, const Rect& rect);
     GameObject* create_object(PMID pmid, std::string extra_data, int x, int y, int vx, int vy);
     void explosion(int x, int y, int radius, bool do_score);
@@ -60,6 +61,13 @@ public:
     LivingObject* find_living(PMID min_id, PMID max_id, Action min_act, Action max_act,
                               const Rect& rect);
     LivingObject* launch_projectile(int x, int y, Direction direction, PMID min_id, PMID max_id);
+
+    /// Runs a PMScript, see PMScript.hpp/PMScript.cpp for details.
+    void execute_script(const std::string& script, const std::string& caller);
+    /// Sets or replaces the current message being shown on-screen.
+    void set_message(const std::string& message);
+    /// Clears a deleted object from the PMScript object variables so they never dangle.
+    void forget_object(GameObject* object);
 
 private:
     enum class Result
@@ -78,6 +86,11 @@ private:
     int m_frame_fading_box = 16;
     std::string m_message_text;
     int m_message_opacity = 0;
+
+    PMScript m_script;
+    /// The highest tile rows the lava and the player have reached (for PMScripts triggers).
+    int m_lava_top_pos = TILES_Y;
+    int m_player_top_pos = TILES_Y;
 
     std::shared_ptr<LivingObject> m_player;
     std::vector<std::shared_ptr<GameObject>> m_objects;
