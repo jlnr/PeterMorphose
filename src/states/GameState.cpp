@@ -16,7 +16,8 @@
 #include <optional>
 
 GameState::GameState(const IniFile& ini)
-    : map(ini)
+    : map(ini),
+      m_script(*this)
 {
     view_pos = TILES_Y * TILE_SIZE - WINDOW_HEIGHT;
 
@@ -56,6 +57,14 @@ GameState::GameState(const IniFile& ini)
         const int vy = hex_chars_to_int(*line, 18, 5, 0);
         create_object(pmid, std::move(extra_data), x, y, vx, vy);
     }
+
+    // Load this level's PMScript snippets: one optional script per row, plus the timer scripts.
+    for (int y = 0; y < TILES_Y; ++y) {
+        m_script.scripts[y] = ini.string("Scripts", std::to_string(y)).value_or("");
+    }
+    for (std::size_t i = 0; i < m_script.timers.size(); ++i) {
+        m_script.timers[i] = ini.string("Scripts", "Timer" + std::to_string(i)).value_or("");
+    }
 }
 
 void GameState::update()
@@ -88,7 +97,17 @@ void GameState::update()
         m_message_opacity -= 3;
     }
 
-    // TODO: Run the per-tile and timer scripts (execute_script) once we have PMScript.
+    // Run the per-tile and timer scripts.
+    if (map.lava_pos / TILE_SIZE < m_lava_top_pos) {
+        m_lava_top_pos = map.lava_pos / TILE_SIZE;
+        execute_script(m_script.scripts[m_lava_top_pos], "lava");
+    }
+    if (m_player->y / TILE_SIZE < m_player_top_pos) {
+        m_player_top_pos = m_player->y / TILE_SIZE;
+        execute_script(m_script.scripts[m_player_top_pos], "player");
+    }
+    execute_script(m_script.timers[frame % 10], "do");
+    execute_script(m_script.timers[10], "do");
 
     // Rising lava.
     if (map.lava_time_left == 0) {
