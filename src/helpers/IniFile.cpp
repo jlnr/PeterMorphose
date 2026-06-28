@@ -23,13 +23,36 @@ IniFile::IniFile(std::istream&& input)
         else if (std::regex_match(line, match, entry_regex)) {
             std::string key = match[1];
             std::string value = match[2];
-            latin1_to_utf8(value);
+            // Values are kept in their original Latin-1 encoding; string() converts on access.
             m_sections[current_section].insert_or_assign(std::move(key), std::move(value));
         }
     }
 }
 
+void IniFile::write(std::ostream& output) const
+{
+    for (const auto& [section, entries] : m_sections) {
+        output << '[' << section << ']';
+        output.write("\r\n", 2); // always write CRLF
+        for (const auto& [key, value] : entries) {
+            output << key << '=' << value;
+            output.write("\r\n", 2); // always write CRLF
+        }
+        output.write("\r\n", 2); // always write CRLF
+    }
+}
+
 std::optional<std::string> IniFile::string(const std::string& section,
+                                           const std::string& name) const
+{
+    std::optional<std::string> value = binary(section, name);
+    if (value) {
+        latin1_to_utf8(*value);
+    }
+    return value;
+}
+
+std::optional<std::string> IniFile::binary(const std::string& section,
                                            const std::string& name) const
 {
     if (!m_sections.contains(section) || !m_sections.at(section).contains(name)) {
@@ -47,6 +70,12 @@ std::optional<int> IniFile::integer(const std::string& section, const std::strin
             throw std::invalid_argument("Invalid integer in [" + section + "]: " + name + "=" + s);
         }
     });
+}
+
+void IniFile::set_binary(const std::string& section, const std::string& name,
+                         const std::string& value)
+{
+    m_sections[section].insert_or_assign(name, value);
 }
 
 #include <doctest.h>
@@ -94,5 +123,20 @@ TEST_CASE("IniFile")
         CHECK(ini.string("Info", "Skill") == "Sehr einfach");
         CHECK(ini.string("Info", "Title") == "Gemütlicher Aufstieg");
         CHECK(ini.integer("Map", "StarsGoal") == 50);
+    }
+
+    SUBCASE("binary() keeps raw Latin-1, and set()/write() round-trip high bytes")
+    {
+        std::istringstream empty;
+
+        IniFile ini(std::move(empty));
+        ini.set_binary("Hiscore", "level.pml", "\x8f\x98");
+        CHECK(ini.binary("Hiscore", "level.pml") == "\x8f\x98");
+
+        std::stringstream out;
+        ini.write(out);
+        CHECK(out.view() == "[Hiscore]\r\nlevel.pml=\x8f\x98\r\n\r\n");
+        const IniFile reloaded(std::move(out));
+        CHECK(reloaded.binary("Hiscore", "level.pml") == "\x8f\x98");
     }
 }
