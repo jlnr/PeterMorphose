@@ -1,4 +1,5 @@
 #include "LevelInfo.hpp"
+#include "Hiscore.hpp"
 #include "helpers/Graphics.hpp"
 #include <algorithm>
 #include <filesystem>
@@ -38,7 +39,7 @@ LevelInfo::LevelInfo(const std::string& filename)
         goal += " und " + std::to_string(hostages_count) + " Gefangene retten";
     }
 
-    // TODO highscore = ...
+    hiscore = load_hiscore(filename);
 }
 
 std::vector<LevelInfo> LevelInfo::list_levels()

@@ -20,9 +20,8 @@ public:
     // The public state is inspired by TPMData in the original Delphi source code.
     Map map;
     int view_pos = 0;
-    // Initial values taken from TFormPeterM.StartGame.
+    // Initial values taken from TFormPeterM.StartGame. All "time" measured in frames.
     int frame = 1;
-    // All "time" measured in frames.
     int time_left = 0;
     int inv_time_left = 0;
     int speed_time_left = 0;
@@ -36,7 +35,9 @@ public:
     int bombs = 0;
     int score = 0;
 
-    explicit GameState(const IniFile& ini);
+    /// @param ini The PML (INI) file to play.
+    /// @param level_filename The name of the level. Used to persist the highscore once finished.
+    explicit GameState(const IniFile& ini, std::string level_filename = "");
 
     void update() override;
     void draw() override;
@@ -79,6 +80,8 @@ private:
     };
 
     void draw_status_bar();
+
+    std::string m_level_filename;
 
     Result m_result = Result::PLAYING;
     bool m_paused = false;
