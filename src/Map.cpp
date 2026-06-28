@@ -27,6 +27,7 @@ Map::Map(const IniFile& ini)
     lava_speed = ini.integer("Map", "LavaSpeed").value_or(1);
     lava_mode = ini.integer("Map", "LavaMode").value_or(0);
     lava_pos = ini.integer("Map", "LavaPos").value_or(TILES_Y) * TILE_SIZE;
+    lava_score = ini.integer("Map", "LavaScore").value_or(1) != 0;
 
     m_level_top = ini.integer("Map", "LevelTop").value_or(0) * TILE_SIZE;
     m_level_bottom = std::min(1024, lava_pos / TILE_SIZE);

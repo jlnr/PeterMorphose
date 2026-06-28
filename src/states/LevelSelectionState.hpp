@@ -17,7 +17,9 @@ private:
     static void draw_level_info(const LevelInfo& info, int y, bool active);
 
     const Gosu::Image m_title_image;
-    const std::vector<LevelInfo> m_levels;
+    std::vector<LevelInfo> m_levels;
     int m_top_index = 0;
     int m_selected_index = 0;
+    /// Set when we launch a level, so its highscore is refreshed once we return to this screen.
+    bool m_reload_hiscore = false;
 };

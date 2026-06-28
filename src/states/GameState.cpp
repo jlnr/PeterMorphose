@@ -10,13 +10,15 @@
 #include "objects/GameObject.hpp"
 #include "objects/LivingObject.hpp"
 #include "objects/ObjectDef.hpp"
+#include "states/WonInfoState.hpp"
 #include <algorithm>
 #include <cmath>
 #include <memory>
 #include <optional>
 
-GameState::GameState(const IniFile& ini)
+GameState::GameState(const IniFile& ini, std::string level_filename)
     : map(ini),
+      m_level_filename(std::move(level_filename)),
       m_script(*this)
 {
     view_pos = TILES_Y * TILE_SIZE - WINDOW_HEIGHT;
@@ -440,7 +442,10 @@ void GameState::button_down(Gosu::Button id)
         if (is_mapped_to(InputAction::MenuConfirm, id)
             || is_mapped_to(InputAction::MenuCancel, id)) {
             play_sound("Woosh");
-            pop_state();
+            // Build the "you won" screen from our final state, then replace GameState with it.
+            auto won_info_state = std::make_unique<WonInfoState>(m_level_filename, *this);
+            pop_state(); // this GameState object has now been deleted!
+            push_state(std::move(won_info_state));
         }
         break;
     }

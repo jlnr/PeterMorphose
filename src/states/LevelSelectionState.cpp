@@ -1,5 +1,6 @@
 #include "LevelSelectionState.hpp"
 #include "GameState.hpp"
+#include "Hiscore.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/InputAction.hpp"
@@ -15,6 +16,12 @@ LevelSelectionState::LevelSelectionState()
 void LevelSelectionState::update()
 {
     play_song("menu");
+
+    // We just returned from playing a level: re-read its highscore.
+    if (m_reload_hiscore) {
+        m_levels[m_selected_index].hiscore = load_hiscore(m_levels[m_selected_index].filename);
+        m_reload_hiscore = false;
+    }
 }
 
 void LevelSelectionState::draw_level_info(const LevelInfo& info, int y, bool active)
@@ -24,7 +31,10 @@ void LevelSelectionState::draw_level_info(const LevelInfo& info, int y, bool act
     }
 
     Gosu::draw_rect(0, y, 631, 1, Gosu::Color(0xff003000), Z_UI);
-    draw_string(info.title, 5, y + 7, 255);
+    const std::string title = info.hiscore.has_value()
+        ? info.title + " (" + std::to_string(*info.hiscore) + " Punkte)"
+        : info.title + " (noch nicht geschafft)";
+    draw_string(title, 5, y + 7, 255);
     draw_right_aligned_string(info.difficulty, 626, y + 7, 255);
     draw_string(info.description, 5, y + 30, 192);
     draw_string(info.goal, 5, y + 53, 128);
@@ -75,6 +85,8 @@ void LevelSelectionState::button_down(Gosu::Button id)
         }
     }
     else if (is_mapped_to(InputAction::MenuConfirm, id)) {
-        push_state(std::make_unique<GameState>(m_levels[m_selected_index].ini_file));
+        m_reload_hiscore = true;
+        push_state(std::make_unique<GameState>(m_levels[m_selected_index].ini_file,
+                                               m_levels[m_selected_index].filename));
     }
 }

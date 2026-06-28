@@ -13,6 +13,7 @@ struct LevelInfo
     std::string description;
     std::string author;
     std::string goal;
+    std::optional<int> hiscore;
 
     explicit LevelInfo(const std::string& filename);
 

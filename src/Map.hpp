@@ -16,6 +16,8 @@ public:
     int lava_mode;
     int lava_time_left;
     int lava_frame;
+    /// Whether this level awards bonus points for the final distance to the lava.
+    bool lava_score;
 
     explicit Map(const IniFile& ini);
 
