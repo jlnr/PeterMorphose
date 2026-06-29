@@ -219,10 +219,10 @@ void EffectObject::draw()
     case ID_FX_TEXT:
     case ID_FX_SLOW_TEXT:
         // Keep the centered text on screen.
-        int half_width = static_cast<int>(font().text_width(extra_data)) / 2;
+        int half_width = bmp_text_width(extra_data) / 2;
         int max_x = TILES_X * TILE_SIZE - half_width;
-        draw_centered_string(extra_data, std::clamp(x, half_width, max_x), dy - 7,
-                             std::clamp(255 - m_phase, 0, 255));
+        draw_bmp_text(extra_data, std::clamp(x, half_width, max_x), dy - 7,
+                      std::clamp(255 - m_phase, 0, 255), Gosu::AL_CENTER);
         break;
     }
 }

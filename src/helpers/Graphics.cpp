@@ -1,25 +1,36 @@
 #include "Graphics.hpp"
+#include "String.hpp"
+#include <vector>
 
-const Gosu::Font& font()
+static constexpr int LETTER_WIDTH = 8;
+static constexpr int LETTER_SPACING = 9;
+static constexpr int LINE_HEIGHT = 16;
+
+int bmp_text_width(std::string string)
 {
-    static const Gosu::Font font(16);
-    return font;
+    utf8_to_latin1(string);
+    return string.size() * LETTER_SPACING;
 }
 
-void draw_string(const std::string& string, double x, double y, Gosu::Color::Channel alpha)
+void draw_bmp_text(std::string string, double x, double y, Gosu::Color::Channel alpha,
+                   Gosu::Alignment alignment)
 {
-    font().draw_text(string, x, y, Z_TEXT, 1, 1, Gosu::Color::WHITE.with_alpha(alpha));
-}
+    static const std::vector<Gosu::Image> images
+        = Gosu::load_tiles("media/Font.png", LETTER_WIDTH, LINE_HEIGHT, Gosu::IF_RETRO);
 
-void draw_centered_string(const std::string& string, double x, double y, Gosu::Color::Channel alpha)
-{
-    font().draw_text_rel(string, x, y, Z_TEXT, 0.5, 0.0, 1, 1,
-                         Gosu::Color::WHITE.with_alpha(alpha));
-}
+    const Gosu::Color color = Gosu::Color::WHITE.with_alpha(alpha);
 
-void draw_right_aligned_string(const std::string& string, double x, double y,
-                               Gosu::Color::Channel alpha)
-{
-    font().draw_text_rel(string, x, y, Z_TEXT, 1.0, 0.0, 1, 1,
-                         Gosu::Color::WHITE.with_alpha(alpha));
+    utf8_to_latin1(string);
+    if (alignment == Gosu::Alignment::AL_RIGHT) {
+        x -= string.length() * LETTER_SPACING;
+    } else if (alignment == Gosu::Alignment::AL_CENTER) {
+        x -= string.length() * LETTER_SPACING / 2;
+    }
+
+    for (std::size_t i = 0; i < string.size(); ++i) {
+        const auto code_point = static_cast<std::uint8_t>(string[i]);
+        if (code_point >= 32) { // our font has glyphs for 32...255
+            images.at(code_point - 32).draw(x + i * LETTER_SPACING, y, Z_TEXT, 1, 1, color);
+        }
+    }
 }

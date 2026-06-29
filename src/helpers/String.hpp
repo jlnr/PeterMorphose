@@ -26,6 +26,10 @@ std::string byte_to_hex(std::uint8_t byte);
 /// codepage that this game used back in 2001.
 void latin1_to_utf8(std::string& str);
 
+/// Converts a string from UTF-8 to ISO Latin-1 in place, the inverse of latin1_to_utf8.
+/// Code points beyond 255 become a question mark.
+void utf8_to_latin1(std::string& str);
+
 /// Splits a string into the parts separated by the given delimiter.
 /// The result always has one more element than the number of delimiters.
 std::vector<std::string> split(std::string_view str, char delimiter);

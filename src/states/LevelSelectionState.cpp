@@ -34,11 +34,11 @@ void LevelSelectionState::draw_level_info(const LevelInfo& info, int y, bool act
     const std::string title = info.hiscore.has_value()
         ? info.title + " (" + std::to_string(*info.hiscore) + " Punkte)"
         : info.title + " (noch nicht geschafft)";
-    draw_string(title, 5, y + 7, 255);
-    draw_right_aligned_string(info.difficulty, 626, y + 7, 255);
-    draw_string(info.description, 5, y + 30, 192);
-    draw_string(info.goal, 5, y + 53, 128);
-    draw_string(info.author, 5, y + 76, 80);
+    draw_bmp_text(title, 5, y + 7, 255);
+    draw_bmp_text(info.difficulty, 626, y + 7, 255, Gosu::AL_RIGHT);
+    draw_bmp_text(info.description, 5, y + 30, 192);
+    draw_bmp_text(info.goal, 5, y + 53, 128);
+    draw_bmp_text(info.author, 5, y + 76, 80);
     Gosu::draw_rect(0, y + 99, 631, 1, Gosu::Color(0xff006000), Z_UI);
 }
 
@@ -56,11 +56,11 @@ void LevelSelectionState::draw()
     }
 
     if (m_levels.size() > LEVELS_ON_SCREEN) {
-        draw_string("|", 632, 384.0 * m_top_index / (m_levels.size() - LEVELS_ON_SCREEN));
+        draw_bmp_text("|", 632, 384.0 * m_top_index / (m_levels.size() - LEVELS_ON_SCREEN));
     }
 
-    draw_centered_string("Wähle mit den Pfeiltasten ein Level aus und starte es mit Enter.",
-                         640 / 2, 434);
+    draw_bmp_text("Wähle mit den Pfeiltasten ein Level aus und starte es mit Enter.", //
+                  640 / 2, 434, 255, Gosu::AL_CENTER);
 }
 
 void LevelSelectionState::button_down(Gosu::Button id)
