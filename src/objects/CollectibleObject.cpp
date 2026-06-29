@@ -103,7 +103,8 @@ void CollectibleObject::update()
             game.score += 2;
             game.stars += 1;
             if (game.stars < game.stars_goal) {
-                game.player().emit_text("Noch " + std::to_string(game.stars_goal - game.stars));
+                game.player().emit_text(std::to_string(game.stars) + " von "
+                                        + std::to_string(game.stars_goal));
             }
             else if (game.stars == game.stars_goal) {
                 game.player().emit_text("Genug gesammelt!");
