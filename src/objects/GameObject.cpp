@@ -3,6 +3,7 @@
 #include "LivingObject.hpp"
 #include "Map.hpp"
 #include "ObjectDef.hpp"
+#include "helpers/Graphics.hpp"
 #include "helpers/String.hpp"
 #include "states/GameState.hpp"
 #include <algorithm>
@@ -241,6 +242,11 @@ void GameObject::draw()
         color = Gosu::Color::WHITE.with_alpha(127 + (game.frame / 8 % 2) * 64);
     }
     images[index].draw(x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode);
+
+    if (pmid == ID_HOSTAGE) {
+        const std::string name = extra_data.length() > 2 ? extra_data.substr(2) : "Carolin";
+        draw_bmp_text(name, x, y + 16 - game.view_pos, 128, Gosu::AL_CENTER);
+    }
 }
 
 void GameObject::kill()

@@ -306,7 +306,7 @@ void GameState::draw()
     draw_status_bar();
 
     if (m_result == Result::PLAYING && m_message_opacity > 0) {
-        draw_centered_string(m_message_text, WINDOW_WIDTH / 2, 230, m_message_opacity);
+        draw_bmp_text(m_message_text, WINDOW_WIDTH / 2, 230, m_message_opacity, Gosu::AL_CENTER);
     }
 
     static const std::vector<Gosu::Image> dialogs
@@ -318,8 +318,8 @@ void GameState::draw()
         }
 
         if (m_result == Result::LOST) {
-            draw_centered_string(m_reason, WINDOW_WIDTH / 2, 220,
-                                 std::abs(16 - m_frame_fading_box) * 15);
+            draw_bmp_text(m_reason, WINDOW_WIDTH / 2, 220,
+                                   std::abs(16 - m_frame_fading_box) * 15, Gosu::AL_CENTER);
         }
         else {
             dialogs[1].draw(200, 160, Z_UI, 1, 1,
@@ -331,7 +331,7 @@ void GameState::draw()
         dialogs[2].draw(200, 120, Z_UI, 1, 1, Gosu::Color::WHITE, Gosu::BM_ADD);
     }
 
-    draw_centered_string("Punkte: " + std::to_string(score), WINDOW_WIDTH / 2, 5);
+    draw_bmp_text("Punkte: " + std::to_string(score), WINDOW_WIDTH / 2, 25, 160, Gosu::AL_CENTER);
 }
 
 void GameState::draw_status_bar()

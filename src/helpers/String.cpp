@@ -60,6 +60,29 @@ void latin1_to_utf8(std::string& str)
     }
 }
 
+void utf8_to_latin1(std::string& str)
+{
+    for (std::size_t i = 0; i < str.length(); ++i) {
+        const auto byte = static_cast<std::uint8_t>(str[i]);
+        if (byte >= 0xF0) {
+            // All four-byte UTF-8 sequences are out of range -> turn into ?.
+            str.replace(i, 4, "?");
+        }
+        else if (byte >= 0xE0) {
+            // All three-byte UTF-8 sequences are out of range -> turn into ?.
+            str.replace(i, 3, "?");
+        }
+        else if (byte >= 0xC0) {
+            if (i == str.length() - 1) {
+                throw std::runtime_error("Invalid UTF-8 string: " + str);
+            }
+            const auto byte2 = static_cast<std::uint8_t>(str[i + 1]);
+            unsigned code_point = (byte & 0b0001'1111) << 6 | (byte2 & 0b0011'1111);
+            str.replace(i, 2, 1, code_point <= 255 ? code_point : '?');
+        }
+    }
+}
+
 std::vector<std::string> split(std::string_view str, char delimiter)
 {
     std::vector<std::string> parts;
@@ -110,6 +133,21 @@ TEST_CASE("String")
         std::string ascii = "Peter Morphose 2001"; // plain ASCII survives unchanged
         latin1_to_utf8(ascii);
         CHECK(ascii == "Peter Morphose 2001");
+    }
+
+    SUBCASE("utf8_to_latin1")
+    {
+        std::string s = "äöüß"; // round-trips back to Latin-1
+        utf8_to_latin1(s);
+        CHECK(s == "\xe4\xf6\xfc\xdf");
+
+        std::string ascii = "Peter Morphose 2001"; // plain ASCII survives unchanged
+        utf8_to_latin1(ascii);
+        CHECK(ascii == "Peter Morphose 2001");
+
+        std::string euro = "€"; // not representable in Latin-1
+        utf8_to_latin1(euro);
+        CHECK(euro == "?");
     }
 
     SUBCASE("split")

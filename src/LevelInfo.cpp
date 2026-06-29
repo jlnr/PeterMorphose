@@ -1,6 +1,8 @@
 #include "LevelInfo.hpp"
+#include "Constants.hpp"
 #include "Hiscore.hpp"
 #include "helpers/Graphics.hpp"
+#include "helpers/String.hpp"
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -20,20 +22,24 @@ LevelInfo::LevelInfo(const std::string& filename)
         goal = "Durchkommen";
     }
 
-    // Simplification for hostages for now
     int hostages_count = 0;
+    std::optional<std::string> hostage_name;
     for (int i = 0;; ++i) {
         const std::optional obj = ini_file.string("Objects", std::to_string(i));
         if (!obj) {
             break;
         }
-        if (obj->starts_with("2C")) { // ID_HOSTAGE is 0x2C
-            hostages_count++;
+        if (obj->starts_with(byte_to_hex(ID_HOSTAGE))) {
+            hostages_count += 1;
+            const std::optional extra_data = ini_file.string("Objects", std::to_string(i) + "Y");
+            if (extra_data && extra_data->length() > 2) {
+                hostage_name = extra_data->substr(2);
+            }
         }
     }
 
     if (hostages_count == 1) {
-        goal += " und Carolin retten"; // TODO: Extract name
+        goal += " und " + hostage_name.value_or("Carolin") + " retten";
     }
     else if (hostages_count > 1) {
         goal += " und " + std::to_string(hostages_count) + " Gefangene retten";
@@ -86,6 +92,7 @@ TEST_CASE("LevelInfo")
         CHECK(it != levels.end());
         if (it != levels.end()) {
             CHECK(it->title == "Gravialistan");
+            CHECK(it->goal == "100 Sterne einsammeln und Tanja retten");
         }
     }
 }

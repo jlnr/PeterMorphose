@@ -58,9 +58,9 @@ void WonInfoState::draw()
 {
     m_background.draw(0, 0);
     for (int i = 0; i < m_score_lines.size(); ++i) {
-        draw_string(m_score_lines[i], 40, 150 + i * 30);
+        draw_bmp_text(m_score_lines[i], 40, 150 + i * 30);
     }
-    draw_centered_string("(Taste drücken)", WINDOW_WIDTH / 2, 440, 128);
+    draw_bmp_text("(Taste drücken)", WINDOW_WIDTH / 2, 440, 128, Gosu::AL_CENTER);
 }
 
 void WonInfoState::button_down(Gosu::Button id)
