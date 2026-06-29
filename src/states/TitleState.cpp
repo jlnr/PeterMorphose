@@ -1,5 +1,5 @@
 #include "TitleState.hpp"
-#include "LevelSelectionState.hpp"
+#include "MainMenuState.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/InputAction.hpp"
 
@@ -23,6 +23,6 @@ void TitleState::button_down(Gosu::Button id)
     if (is_mapped_to(InputAction::MenuConfirm, id) || is_mapped_to(InputAction::MenuCancel, id)) {
         play_sound("Woosh");
         pop_state();
-        push_state(std::make_unique<LevelSelectionState>());
+        push_state(std::make_unique<MainMenuState>());
     }
 }
