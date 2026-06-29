@@ -10,7 +10,7 @@
 #include <string>
 
 WonInfoState::WonInfoState(const std::string& level_filename, GameState& game)
-    : m_background("media/won.bmp")
+    : m_background("media/Won.png")
 {
     // Award the end-of-level bonuses, like in the the original TFormPeterM/State_WonInfo screen.
     int total = game.score;

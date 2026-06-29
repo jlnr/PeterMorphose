@@ -4,7 +4,7 @@
 #include "helpers/InputAction.hpp"
 
 TitleState::TitleState()
-    : m_title_image("media/title.png")
+    : m_title_image("media/Title.png")
 {
 }
 
