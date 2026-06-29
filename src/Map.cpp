@@ -32,7 +32,7 @@ Map::Map(const IniFile& ini)
     m_level_top = ini.integer("Map", "LevelTop").value_or(0) * TILE_SIZE;
     m_level_bottom = std::min(1024, lava_pos / TILE_SIZE);
 
-    m_tile_images = Gosu::load_tiles("media/tiles.bmp", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);
+    m_tile_images = Gosu::load_tiles("media/Tiles.png", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);
     for (int index = 0; index < m_tile_images.size(); ++index) {
         // A level may replace the image of any tile through its [Tiles] section.
         if (std::optional<std::string> tile = ini.string("Tiles", byte_to_hex(index))) {
@@ -132,7 +132,7 @@ void Map::draw(int camera_y)
 void Map::render_sky()
 {
     static const std::vector<Gosu::Image> skies
-        = Gosu::load_tiles("media/skies.png", 144, 120, Gosu::IF_RETRO);
+        = Gosu::load_tiles("media/Sky.png", 144, 120, Gosu::IF_RETRO);
     for (int y = 0; y < 5; ++y) {
         for (int x = 0; x < 4; ++x) {
             skies[m_sky].draw(x * 144, y * 120, 120);
