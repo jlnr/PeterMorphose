@@ -1,5 +1,6 @@
 #include "Map.hpp"
 #include "Constants.hpp"
+#include "helpers/Graphics.hpp"
 #include "helpers/IniFile.hpp"
 #include "helpers/String.hpp"
 #include <fstream>
@@ -29,11 +30,13 @@ Map::Map(const IniFile& ini)
     m_level_top = ini.integer("Map", "LevelTop").value_or(0) * TILE_SIZE;
     m_level_bottom = std::min(1024, lava_pos / TILE_SIZE);
 
-    m_tile_images = Gosu::load_tiles("assets/Tiles.png", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);
-    for (int index = 0; index < m_tile_images.size(); ++index) {
+    for (int index = 0; index < 256; ++index) {
         // A level may replace the image of any tile through its [Tiles] section.
         if (std::optional<std::string> tile = ini.string("Tiles", byte_to_hex(index))) {
-            m_tile_images[index] = decode_tile(*tile);
+            m_tile_images.push_back(decode_tile(*tile));
+        }
+        else {
+            m_tile_images.push_back(tile_image(Tile(index)));
         }
     }
 }

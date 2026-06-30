@@ -6,7 +6,6 @@
 #include "states/GameState.hpp"
 #include <algorithm>
 #include <string>
-#include <vector>
 
 static Gosu::Color alpha(int a)
 {
@@ -149,72 +148,74 @@ void EffectObject::update()
 
 void EffectObject::draw()
 {
-    static const std::vector<Gosu::Image> images = Gosu::load_tiles("assets/Effects.png", -7, -7);
-
     const double dy = y - game.view_pos;
     switch (pmid) {
     case ID_FX_SMOKE:
-        images.at(std::max(0, m_phase - 1))
+        effect_image(std::max(0, m_phase - 1))
             .draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(128), Gosu::BM_ADD);
         break;
     case ID_FX_FLAME:
-        images.at(std::max(7, m_phase + 6))
+        effect_image(std::max(7, m_phase + 6))
             .draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(160), Gosu::BM_ADD);
         break;
     case ID_FX_SPARK:
-        images.at(std::max(14, m_phase + 13))
+        effect_image(std::max(14, m_phase + 13))
             .draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(128), Gosu::BM_ADD);
         break;
     case ID_FX_BUBBLE:
-        images.at(std::max(21, m_phase + 20))
+        effect_image(std::max(21, m_phase + 20))
             .draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(192), Gosu::BM_ADD);
         break;
     case ID_FX_RICOCHET:
-        images.at(19 + (extra_data.empty() ? 0 : string_to_int(extra_data)))
+        effect_image(19 + (extra_data.empty() ? 0 : string_to_int(extra_data)))
             .draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(255 - m_phase * 3));
         break;
     case ID_FX_LINE:
-        images[28].draw(x, dy - 11, Z_EFFECTS,
-                        extra_data.empty() ? 0.0 : string_to_int(extra_data) / images[28].width(),
-                        1, alpha(255 - m_phase), Gosu::BM_ADD);
+        if (extra_data.empty()) {
+            return;
+        }
+        effect_image(28).draw(x, dy - 11, Z_EFFECTS,
+                              1.0 * string_to_int(extra_data) / effect_image(28).width(), 1,
+                              alpha(255 - m_phase), Gosu::BM_ADD);
         break;
     case ID_FX_BLOCKER_PARTS:
-        images[29].draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, //
-                            1, 1, alpha(255 - m_phase), Gosu::BM_ADD);
+        effect_image(29).draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, //
+                                  1, 1, alpha(255 - m_phase), Gosu::BM_ADD);
         break;
     case ID_FX_BREAK:
         // Unlike DelphiX, Gosu does not have BM_SUBTRACT...but regular blending should be fine.
-        images[30].draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(m_phase));
+        effect_image(30).draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(m_phase));
         break;
     case ID_FX_BREAK_2:
-        images[31].draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(m_phase));
+        effect_image(31).draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(m_phase));
         break;
     case ID_FX_BREAKING_PARTS:
-        images[32].draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - m_phase));
+        effect_image(32).draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - m_phase));
         break;
     case ID_FX_BLOOD:
-        images[33].draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(250 - m_phase));
+        effect_image(33).draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(250 - m_phase));
         break;
     case ID_FX_FIRE:
-        images[34].draw(x, dy, Z_EFFECTS, 1, 1, alpha(m_phase));
+        effect_image(34).draw(x, dy, Z_EFFECTS, 1, 1, alpha(m_phase));
         break;
     case ID_FX_FLYING_HOSTAGE:
-        images[35].draw(x - 11, dy - 11, Z_EFFECTS);
+        effect_image(35).draw(x - 11, dy - 11, Z_EFFECTS);
         break;
     case ID_FX_FLYING_CHAIN:
-        images[36].draw_rot(x, dy, Z_EFFECTS, x * 10 % 360, 0.5, 0.5, 1, 1, alpha(255 - m_phase));
+        effect_image(36).draw_rot(x, dy, Z_EFFECTS, x * 10 % 360, 0.5, 0.5, 1, 1,
+                                  alpha(255 - m_phase));
         break;
     case ID_FX_FLYING_BLOB:
-        images[37].draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - m_phase));
+        effect_image(37).draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - m_phase));
         break;
     case ID_FX_WATER_BUBBLE:
-        images[46].draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(100 + rand(29)));
+        effect_image(46).draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(100 + rand(29)));
         break;
     case ID_FX_WATER:
-        images[47].draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - m_phase));
+        effect_image(47).draw_rot(x, dy, Z_EFFECTS, x * 10, 0.5, 0.5, 1, 1, alpha(255 - m_phase));
         break;
     case ID_FX_SPARKLE:
-        images[48].draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(255 - m_phase), Gosu::BM_ADD);
+        effect_image(48).draw(x - 11, dy - 11, Z_EFFECTS, 1, 1, alpha(255 - m_phase), Gosu::BM_ADD);
         break;
     case ID_FX_TEXT:
     case ID_FX_SLOW_TEXT:

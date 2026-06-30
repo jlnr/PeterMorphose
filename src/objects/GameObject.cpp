@@ -223,13 +223,6 @@ void GameObject::check_tile()
 
 void GameObject::draw()
 {
-    static const std::vector<Gosu::Image> images
-        = Gosu::load_tiles("assets/Stuff.png", -16, -3, Gosu::IF_RETRO);
-    const int index = (pmid - ID_OTHER_OBJECTS_MIN);
-    if (!between(index, 0, images.size() - 1)) {
-        return;
-    }
-
     Gosu::Color color = Gosu::Color::WHITE;
     Gosu::BlendMode mode = Gosu::BM_DEFAULT;
     if (pmid == ID_FIREWALL_1 || pmid == ID_FIREWALL_2 || pmid == ID_FIRE) {
@@ -241,7 +234,7 @@ void GameObject::draw()
     else if (pmid == ID_HELP_ARROW) {
         color = Gosu::Color::WHITE.with_alpha(127 + (game.frame / 8 % 2) * 64);
     }
-    images[index].draw(x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode);
+    object_image(pmid).draw(x - 11, y - 11 - game.view_pos, 0, 1, 1, color, mode);
 
     if (pmid == ID_HOSTAGE) {
         const std::string name = extra_data.length() > 2 ? extra_data.substr(2) : "Carolin";
