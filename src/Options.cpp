@@ -1,19 +1,42 @@
-#include "Hiscore.hpp"
+#include "Options.hpp"
+#include <Gosu/Audio.hpp>
 #include <Gosu/Directories.hpp>
 #include "helpers/IniFile.hpp"
 #include "helpers/String.hpp"
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
 
-// Path of the settings file that stores the highscores. Creates the file if it does not yet exist.
+// Path of the settings file that stores options and highscores.
 static std::string ini_path()
 {
-    const std::string path = Gosu::user_settings_path("jlnr", "PeterMorphose", "PeterM.ini");
-    if (!std::ofstream(path, std::ios::app)) {
-        throw std::runtime_error("Unable to write to: " + path);
+    return Gosu::user_settings_path("jlnr", "PeterMorphose", "PeterM.ini");
+}
+
+static IniFile& settings_ini()
+{
+    static IniFile ini = [path = ini_path()] {
+        // This tests for write permissions, but also makes sure the file exists so we can open it.
+        if (!std::ofstream(path, std::ios::app)) {
+            throw std::runtime_error("Unable to write to: " + path);
+        }
+        return IniFile(std::ifstream(path));
+    }();
+    return ini;
+}
+
+// Writes the INI back to disk atomically (to a temp file, then rename it into place) to avoid data
+// loss, especially if (when!) we implement Steam Cloud sync later.
+static void write_ini()
+{
+    const std::string path = ini_path();
+    const std::string temp_path = path + ".tmp";
+    {
+        std::ofstream temp(temp_path, std::ios::binary | std::ios::trunc);
+        settings_ini().write(temp);
     }
-    return path;
+    std::filesystem::rename(temp_path, path);
 }
 
 static std::string level_key(const std::string& level_filename)
@@ -51,8 +74,7 @@ std::optional<int> demuesli(const std::string& encoded)
 
 std::optional<int> load_hiscore(const std::string& level_filename)
 {
-    IniFile ini(std::ifstream(ini_path(), std::ios::binary));
-    return ini.binary("Hiscore", level_key(level_filename)).and_then(demuesli);
+    return settings_ini().binary("Hiscore", level_key(level_filename)).and_then(demuesli);
 }
 
 void save_hiscore(const std::string& level_filename, int score)
@@ -61,25 +83,53 @@ void save_hiscore(const std::string& level_filename, int score)
     if (key.empty()) {
         return;
     }
-    const std::string path = ini_path();
-    IniFile ini(std::ifstream(path, std::ios::binary));
-    const std::optional<int> previous = ini.binary("Hiscore", key).and_then(demuesli);
+    const std::optional<int> previous = settings_ini().binary("Hiscore", key).and_then(demuesli);
     if (score > previous) {
-        ini.set_binary("Hiscore", key, muesli(score));
-        // Write the new file next to the real one and atomically rename it into place to avoid
-        // data loss, especially if (when!) we implement Steam Cloud sync later.
-        const std::string temp_path = path + ".tmp";
-        {
-            std::ofstream temp(temp_path, std::ios::binary | std::ios::trunc);
-            ini.write(temp);
-        }
-        std::filesystem::rename(temp_path, path);
+        settings_ini().set_binary("Hiscore", key, muesli(score));
+        write_ini();
     }
+}
+
+int music_volume()
+{
+    return settings_ini().integer("Options", "MusicVolume").value_or(100);
+}
+
+void set_music_volume(int volume)
+{
+    settings_ini().set_integer("Options", "MusicVolume", volume);
+    write_ini();
+
+    if (Gosu::Song* current = Gosu::Song::current_song()) {
+        current->set_volume(volume / 100.0);
+    }
+}
+
+int sound_volume()
+{
+    return settings_ini().integer("Options", "SoundVolume").value_or(100);
+}
+
+void set_sound_volume(int volume)
+{
+    settings_ini().set_integer("Options", "SoundVolume", volume);
+    write_ini();
+}
+
+bool minimap_enabled()
+{
+    return settings_ini().integer("Options", "ShowStatus") == 1;
+}
+
+void set_minimap_enabled(bool enabled)
+{
+    settings_ini().set_integer("Options", "ShowStatus", enabled ? 1 : 0);
+    write_ini();
 }
 
 #include <doctest.h>
 
-TEST_CASE("Hiscore")
+TEST_CASE("Options")
 {
     SUBCASE("Muesli obfuscation roundtrip")
     {

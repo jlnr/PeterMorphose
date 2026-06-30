@@ -16,7 +16,9 @@ public:
     void button_down(Gosu::Button id) override;
 
 private:
+    enum Item : int;
+
     const Gosu::Image m_title_image;
     const std::vector<Gosu::Image> m_buttons;
-    int m_selected_index = 0;
+    int m_selected_item = 0;
 };
