@@ -18,8 +18,8 @@ void TitleState::update()
 void TitleState::draw()
 {
     m_title_image.draw(0, 0);
-    draw_bmp_text("Version: 2026.06.     https://www.petermorphose.de/", //
-                  WINDOW_WIDTH / 2, 440, 255, Gosu::AL_CENTER);
+    draw_bmp_text("Version: 26.06.     https://www.petermorphose.de/", //
+                  WINDOW_WIDTH / 2.0, 440, 255, Gosu::AL_CENTER);
 }
 
 void TitleState::button_down(Gosu::Button id)

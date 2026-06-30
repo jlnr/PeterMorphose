@@ -685,7 +685,7 @@ void LivingObject::use_tile()
         if (pmid <= ID_PLAYER_MAX) {
             game.map[x / TILE_SIZE, foot_row] = TILE_MORPH_EMPTY;
             play_sound("Morph");
-            pmid = PMID(ID_PLAYER_FIGHTER + foot_tile - TILE_MORPH_FIGHTER);
+            pmid = PMID(ID_PLAYER_FIGHTER + (foot_tile - TILE_MORPH_FIGHTER));
             if (pmid != ID_PLAYER) {
                 game.time_left = ObjectDef::get(pmid).life;
             }
