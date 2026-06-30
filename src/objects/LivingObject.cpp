@@ -3,6 +3,7 @@
 #include "Map.hpp"
 #include "ObjectDef.hpp"
 #include "helpers/Audio.hpp"
+#include "helpers/Graphics.hpp"
 #include "helpers/InputAction.hpp"
 #include "helpers/String.hpp"
 #include "states/GameState.hpp"
@@ -29,13 +30,10 @@ void LivingObject::draw()
     if (between(pmid, ID_PLAYER, ID_PLAYER_BOMBER)) {
         // Draw wings while the fly power-up is active.
         if (game.fly_time_left > 0) {
-            // Wings live in effects.bmp, which is loaded here again, not shared with EffectObject.
-            static const std::vector<Gosu::Image> effects_images
-                = Gosu::load_tiles("media/Effects.png", -7, -7);
             Gosu::Color wings_color
                 = Gosu::Color::WHITE.with_alpha(std::min(game.fly_time_left * 2 + 16, 255));
-            const Gosu::Image& left = effects_images[38 + (game.frame / 2) % 4];
-            const Gosu::Image& right = effects_images[42 + (game.frame / 2) % 4];
+            const Gosu::Image& left = effect_image(38 + (game.frame / 2) % 4);
+            const Gosu::Image& right = effect_image(42 + (game.frame / 2) % 4);
             if (direction == DIR_LEFT) {
                 left.draw(x - 18, y - 12 - game.view_pos, 0, 0.75, 1, wings_color, Gosu::BM_ADD);
                 right.draw(x, y - 12 - game.view_pos, 0, 1.00, 1, wings_color, Gosu::BM_ADD);
@@ -46,16 +44,13 @@ void LivingObject::draw()
             }
         }
 
-        static const std::vector<Gosu::Image> player_images
-            = Gosu::load_tiles("media/Player.png", -ACT_NUM, -10, Gosu::IF_RETRO);
-        const int row = direction + (pmid - ID_PLAYER) * 2;
-        const Gosu::Image& image = player_images[ACT_NUM * row + action];
         // Be translucent if we are invulnerable from recent damage (except as Feuerpeter).
         Gosu::Color color = Gosu::Color::WHITE;
         if (game.inv_time_left > 0 && pmid != ID_PLAYER_BERSERKER) {
             color.alpha = 160;
         }
-        image.draw(x - 11, y - 11 - game.view_pos, 0, 1, 1, color);
+
+        player_image(pmid, direction, action).draw(x - 11, y - 11 - game.view_pos, 0, 1, 1, color);
     }
     else if (between(pmid, ID_ENEMY, ID_ENEMY_MAX)) {
         // The archer always magically faces the player.
@@ -63,11 +58,7 @@ void LivingObject::draw()
             direction = (x > game.player().x ? DIR_LEFT : DIR_RIGHT);
         }
 
-        static const std::vector<Gosu::Image> enemy_images
-            = Gosu::load_tiles("media/Enemies.png", -ACT_NUM, -10, Gosu::IF_RETRO);
-        const int row = direction + (pmid - ID_ENEMY) * 2;
-        const Gosu::Image& image = enemy_images[ACT_NUM * row + action];
-        image.draw(x - 11, y - 11 - game.view_pos);
+        enemy_image(pmid, direction, action).draw(x - 11, y - 11 - game.view_pos);
     }
 }
 

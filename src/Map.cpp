@@ -1,5 +1,6 @@
 #include "Map.hpp"
 #include "Constants.hpp"
+#include "helpers/Graphics.hpp"
 #include "helpers/IniFile.hpp"
 #include "helpers/String.hpp"
 #include <fstream>
@@ -32,11 +33,13 @@ Map::Map(const IniFile& ini)
     m_level_top = ini.integer("Map", "LevelTop").value_or(0) * TILE_SIZE;
     m_level_bottom = std::min(1024, lava_pos / TILE_SIZE);
 
-    m_tile_images = Gosu::load_tiles("media/Tiles.png", TILE_SIZE, TILE_SIZE, Gosu::IF_RETRO);
-    for (int index = 0; index < m_tile_images.size(); ++index) {
+    for (int index = 0; index < 256; ++index) {
         // A level may replace the image of any tile through its [Tiles] section.
         if (std::optional<std::string> tile = ini.string("Tiles", byte_to_hex(index))) {
-            m_tile_images[index] = decode_tile(*tile);
+            m_tile_images.push_back(decode_tile(*tile));
+        }
+        else {
+            m_tile_images.push_back(tile_image(TileID(index)));
         }
     }
 }
@@ -156,8 +159,7 @@ Gosu::Image Map::decode_tile(const std::string& data)
 {
     // The override encodes a TILE_SIZE x TILE_SIZE image as "RRGGBB" hex pixels.
     if (data.length() != TILE_SIZE * TILE_SIZE * 6) {
-        throw std::invalid_argument("Invalid custom tile length: "
-                                    + std::to_string(data.length()));
+        throw std::invalid_argument("Invalid custom tile length: " + std::to_string(data.length()));
     }
 
     Gosu::Bitmap bitmap(TILE_SIZE, TILE_SIZE); // still fully transparent
@@ -275,7 +277,8 @@ TEST_CASE("Map")
     SUBCASE("overridden tiles don't crash")
     {
         std::ifstream file("levels/jr_Die_zwei_Baeume.pml");
-        REQUIRE_MESSAGE(file.good(), "Could not open the level we use for testing overridden tiles");
+        REQUIRE_MESSAGE(file.good(),
+                        "Could not open the level we use for testing overridden tiles");
 
         // Constructing the Map builds the overridden tile images for the indices listed in the
         // [Tiles] section (0E, 0F, 32, 33, ...); this exercises Map::decode_tile end to end.
