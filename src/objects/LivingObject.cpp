@@ -31,7 +31,7 @@ void LivingObject::draw()
         if (game.fly_time_left > 0) {
             // Wings live in effects.bmp, which is loaded here again, not shared with EffectObject.
             static const std::vector<Gosu::Image> effects_images
-                = Gosu::load_tiles("media/Effects.png", -7, -7);
+                = Gosu::load_tiles("assets/Effects.png", -7, -7);
             Gosu::Color wings_color
                 = Gosu::Color::WHITE.with_alpha(std::min(game.fly_time_left * 2 + 16, 255));
             const Gosu::Image& left = effects_images[38 + (game.frame / 2) % 4];
@@ -47,7 +47,7 @@ void LivingObject::draw()
         }
 
         static const std::vector<Gosu::Image> player_images
-            = Gosu::load_tiles("media/Player.png", -ACT_NUM, -10, Gosu::IF_RETRO);
+            = Gosu::load_tiles("assets/Player.png", -ACT_NUM, -10, Gosu::IF_RETRO);
         const int row = direction + (pmid - ID_PLAYER) * 2;
         const Gosu::Image& image = player_images[ACT_NUM * row + action];
         // Be translucent if we are invulnerable from recent damage (except as Feuerpeter).
@@ -64,7 +64,7 @@ void LivingObject::draw()
         }
 
         static const std::vector<Gosu::Image> enemy_images
-            = Gosu::load_tiles("media/Enemies.png", -ACT_NUM, -10, Gosu::IF_RETRO);
+            = Gosu::load_tiles("assets/Enemies.png", -ACT_NUM, -10, Gosu::IF_RETRO);
         const int row = direction + (pmid - ID_ENEMY) * 2;
         const Gosu::Image& image = enemy_images[ACT_NUM * row + action];
         image.draw(x - 11, y - 11 - game.view_pos);
