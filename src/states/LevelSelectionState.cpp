@@ -8,7 +8,7 @@
 static constexpr int LEVELS_ON_SCREEN = 4;
 
 LevelSelectionState::LevelSelectionState()
-    : m_title_image("media/TitleDark.png"),
+    : m_title_image("assets/TitleDark.png"),
       m_levels(LevelInfo::list_levels())
 {
 }

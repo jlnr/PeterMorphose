@@ -14,7 +14,7 @@ void play_song(const std::string& name)
 {
     static std::map<std::string, Gosu::Song> songs;
     if (!songs.contains(name)) {
-        songs.emplace(name, "media/" + name + ".ogg");
+        songs.emplace(name, "assets/" + name + ".ogg");
     }
     songs.at(name).play(true);
 }
@@ -25,12 +25,12 @@ void play_sound(const std::string& name, double volume, double speed)
     std::vector<Gosu::Sample>& variants = sounds[name];
     if (variants.empty()) {
         // The first variant is the plain name, the rest are numbered (Door, Door2, Door3, ...).
-        const std::string plain_filename = "media/" + name + ".wav";
+        const std::string plain_filename = "assets/" + name + ".wav";
         if (std::filesystem::exists(plain_filename)) {
             variants.push_back(Gosu::Sample(plain_filename));
         }
         for (int i = 2;; ++i) {
-            const std::string variant_filename = "media/" + name + std::to_string(i) + ".wav";
+            const std::string variant_filename = "assets/" + name + std::to_string(i) + ".wav";
             if (!std::filesystem::exists(variant_filename)) {
                 break;
             }

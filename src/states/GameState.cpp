@@ -287,7 +287,7 @@ void GameState::draw()
         FROZEN_FILL
     };
     static const std::vector<Gosu::Image> lava_tiles
-        = Gosu::load_tiles("media/Danger.png", -2, -2, Gosu::IF_RETRO);
+        = Gosu::load_tiles("assets/Danger.png", -2, -2, Gosu::IF_RETRO);
     const bool lava_active = map.lava_time_left == 0;
     const int scroll = map.lava_frame + (lava_active ? frame / 2 % 2 : 0);
     for (int x = -1; x <= 4; ++x) {
@@ -310,7 +310,7 @@ void GameState::draw()
     }
 
     static const std::vector<Gosu::Image> dialogs
-        = Gosu::load_tiles("media/Dialogs.png", -1, -3, Gosu::IF_RETRO);
+        = Gosu::load_tiles("assets/Dialogs.png", -1, -3, Gosu::IF_RETRO);
     if (m_result != Result::PLAYING) {
         m_frame_fading_box++;
         if (m_frame_fading_box == 33) {
@@ -337,7 +337,7 @@ void GameState::draw()
 void GameState::draw_status_bar()
 {
     static const std::vector<Gosu::Image> gui
-        = Gosu::load_tiles("media/GUI.png", -4, -11, Gosu::IF_RETRO);
+        = Gosu::load_tiles("assets/GUI.png", -4, -11, Gosu::IF_RETRO);
     const double tile_w = gui.front().width();
     const double tile_h = gui.front().height();
 

@@ -10,7 +10,7 @@
 const ObjectDef& ObjectDef::get(PMID pmid)
 {
     static const std::vector<ObjectDef> all = [] {
-        const IniFile ini(std::ifstream("objects.ini"));
+        const IniFile ini(std::ifstream("assets/objects.ini"));
         std::vector<ObjectDef> defs;
         for (int id = 0; id <= ID_MAX; ++id) {
             const std::string id_string = byte_to_hex(id);

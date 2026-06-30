@@ -16,7 +16,7 @@ void draw_bmp_text(std::string string, double x, double y, Gosu::Color::Channel 
                    Gosu::Alignment alignment)
 {
     static const std::vector<Gosu::Image> images
-        = Gosu::load_tiles("media/Font.png", LETTER_WIDTH, LINE_HEIGHT, Gosu::IF_RETRO);
+        = Gosu::load_tiles("assets/Font.png", LETTER_WIDTH, LINE_HEIGHT, Gosu::IF_RETRO);
 
     const Gosu::Color color = Gosu::Color::WHITE.with_alpha(alpha);
 

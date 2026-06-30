@@ -224,7 +224,7 @@ void GameObject::check_tile()
 void GameObject::draw()
 {
     static const std::vector<Gosu::Image> images
-        = Gosu::load_tiles("media/Stuff.png", -16, -3, Gosu::IF_RETRO);
+        = Gosu::load_tiles("assets/Stuff.png", -16, -3, Gosu::IF_RETRO);
     const int index = (pmid - ID_OTHER_OBJECTS_MIN);
     if (!between(index, 0, images.size() - 1)) {
         return;
