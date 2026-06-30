@@ -12,7 +12,6 @@
 #include "objects/ObjectDef.hpp"
 #include "states/WonInfoState.hpp"
 #include <algorithm>
-#include <cmath>
 #include <memory>
 #include <optional>
 
@@ -573,7 +572,7 @@ void GameState::explosion(int x, int y, int radius, bool do_score)
                 }
             }
             else if (tile == TILE_BIG_BLOCKER_3) {
-                tile = 0;
+                tile = TILE_EMPTY;
                 emit_sound(y, "Break");
                 cast_objects(ID_FX_BREAKING_PARTS, 20, 0, 3, 3,
                              Rect(tile_x * TILE_SIZE, tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE));

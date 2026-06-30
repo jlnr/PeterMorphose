@@ -51,8 +51,10 @@ enum Direction
     DIR_DOWN = 3,
 };
 
-enum TileID : std::uint8_t
+enum Tile : std::uint8_t
 {
+    TILE_EMPTY = 0,
+    TILE_FIRST_SOLID = 0x70,
     // Special map tiles (solid, first row)
     TILE_ROCKET_UP = 0xC0,
     TILE_ROCKET_UP_LEFT = 0xC1,
@@ -88,6 +90,7 @@ enum TileID : std::uint8_t
     TILE_BRIDGE_2 = 0xDD,
     TILE_BRIDGE_3 = 0xDE,
     TILE_BRIDGE_4 = 0xDF,
+    TILE_LAST_SOLID = 0xDF,
     // Background, first row
     TILE_AIR_ROCKET_UP = 0xE0,
     TILE_AIR_ROCKET_UP_LEFT = 0xE1,

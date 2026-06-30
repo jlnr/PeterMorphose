@@ -6,8 +6,6 @@
 
 class IniFile;
 
-using Tile = std::uint8_t;
-
 class Map
 {
 public:

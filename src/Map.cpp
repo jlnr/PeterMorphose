@@ -3,20 +3,17 @@
 #include "helpers/IniFile.hpp"
 #include "helpers/String.hpp"
 #include <fstream>
-#include <iomanip>
 #include <sstream>
 #include <stdexcept>
 
 Map::Map(const IniFile& ini)
 {
     for (int y = 0; y < TILES_Y; ++y) {
-        std::string row
-            = ini.string("Map", std::to_string(y)).value_or(std::string(TILES_X * 2, '0'));
+        std::string row = ini.string("Map", std::to_string(y)).value_or("");
+        row.resize(TILES_X * 2, '0');
 
         for (int x = 0; x < TILES_X; ++x) {
-            if (x * 2 + 1 < row.length()) {
-                m_tiles[y * TILES_X + x] = hex_chars_to_int(row, x * 2, 2);
-            }
+            m_tiles[y * TILES_X + x] = Tile(hex_chars_to_int(row, x * 2, 2));
         }
     }
 
@@ -44,7 +41,7 @@ Map::Map(const IniFile& ini)
 Tile Map::operator[](int x, int y) const
 {
     if (x < 0 || x >= TILES_X || y < 0 || y >= TILES_Y) {
-        return 0x70;
+        return TILE_FIRST_SOLID;
     }
     return m_tiles[y * TILES_X + x];
 }
@@ -57,7 +54,7 @@ Tile& Map::operator[](int x, int y)
     // value on every call, so reads still observe 0x70.
     static Tile out_of_bounds;
     if (x < 0 || x >= TILES_X || y < 0 || y >= TILES_Y) {
-        out_of_bounds = 0x70;
+        out_of_bounds = TILE_FIRST_SOLID;
         return out_of_bounds;
     }
     return m_tiles[y * TILES_X + x];
@@ -71,7 +68,7 @@ bool Map::is_solid(int x, int y) const
     int tile_x = x / TILE_SIZE;
     int tile_y = y / TILE_SIZE;
     int tile = (*this)[tile_x, tile_y];
-    return tile >= 0x70 && tile < 0xE0;
+    return tile >= TILE_FIRST_SOLID && tile <= TILE_LAST_SOLID;
 }
 
 bool Map::do_stairs_end(int x, int y) const
@@ -156,8 +153,7 @@ Gosu::Image Map::decode_tile(const std::string& data)
 {
     // The override encodes a TILE_SIZE x TILE_SIZE image as "RRGGBB" hex pixels.
     if (data.length() != TILE_SIZE * TILE_SIZE * 6) {
-        throw std::invalid_argument("Invalid custom tile length: "
-                                    + std::to_string(data.length()));
+        throw std::invalid_argument("Invalid custom tile length: " + std::to_string(data.length()));
     }
 
     Gosu::Bitmap bitmap(TILE_SIZE, TILE_SIZE); // still fully transparent
@@ -209,11 +205,11 @@ TEST_CASE("Map")
 
     SUBCASE("operator[] assignment")
     {
-        map[5, 5] = 0xAB;
+        map[5, 5] = Tile(0xAB);
         CHECK(map[5, 5] == 0xAB);
 
         // Assigning out of bounds is harmless and does not persist.
-        map[-1, 0] = 0xFF;
+        map[-1, 0] = Tile(0xFF);
         CHECK(map[-1, 0] == 0x70);
     }
 
@@ -231,8 +227,8 @@ TEST_CASE("Map")
         CHECK(map.is_solid(0 * TILE_SIZE, 0 * TILE_SIZE) == false); // 0x00
         CHECK(map.is_solid(0 * TILE_SIZE, 1 * TILE_SIZE) == true); // 0x70
 
-        map[5, 5] = 0xDF;
-        map[6, 5] = 0xE0;
+        map[5, 5] = Tile(0xDF);
+        map[6, 5] = Tile(0xE0);
         CHECK(map.is_solid(5 * TILE_SIZE, 5 * TILE_SIZE) == true); // 0xDF (bridge) is solid
         CHECK(map.is_solid(6 * TILE_SIZE, 5 * TILE_SIZE) == false); // 0xE0 (air rocket up) is not
 
@@ -275,7 +271,8 @@ TEST_CASE("Map")
     SUBCASE("overridden tiles don't crash")
     {
         std::ifstream file("levels/jr_Die_zwei_Baeume.pml");
-        REQUIRE_MESSAGE(file.good(), "Could not open the level we use for testing overridden tiles");
+        REQUIRE_MESSAGE(file.good(),
+                        "Could not open the level we use for testing overridden tiles");
 
         // Constructing the Map builds the overridden tile images for the indices listed in the
         // [Tiles] section (0E, 0F, 32, 33, ...); this exercises Map::decode_tile end to end.
