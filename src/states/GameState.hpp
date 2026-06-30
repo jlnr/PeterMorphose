@@ -80,6 +80,7 @@ private:
     };
 
     void draw_status_bar();
+    void draw_minimap();
 
     std::string m_level_filename;
 

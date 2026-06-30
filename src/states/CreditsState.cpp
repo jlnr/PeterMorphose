@@ -11,7 +11,7 @@ CreditsState::CreditsState()
 
 void CreditsState::update()
 {
-    play_song("menu");
+    play_song("Menu");
 }
 
 void CreditsState::draw()

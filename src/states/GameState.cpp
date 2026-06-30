@@ -1,5 +1,6 @@
 #include "GameState.hpp"
 #include "Constants.hpp"
+#include "Options.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/IniFile.hpp"
@@ -71,7 +72,7 @@ GameState::GameState(const IniFile& ini, std::string level_filename)
 
 void GameState::update()
 {
-    play_song("game");
+    play_song("Ritter");
 
     // Win/loss detection.
     if (m_result == Result::PLAYING && (m_player->action == ACT_DEAD || m_player->marked)) {
@@ -305,6 +306,10 @@ void GameState::draw()
 
     draw_status_bar();
 
+    if (minimap_enabled()) {
+        draw_minimap();
+    }
+
     if (m_result == Result::PLAYING && m_message_opacity > 0) {
         draw_bmp_text(m_message_text, WINDOW_WIDTH / 2, 230, m_message_opacity, Gosu::AL_CENTER);
     }
@@ -409,6 +414,32 @@ void GameState::draw_status_bar()
         // Spacing
         blank_line(9);
     });
+}
+
+void GameState::draw_minimap()
+{
+    // Ported from Delphi's OptShowStatus: Show the relative positions of player and lava.
+    const int level_top = map.level_top() / 24;
+    const int level_bottom = std::min(TILES_Y, map.lava_pos / 24);
+    if (level_bottom <= level_top) {
+        return;
+    }
+
+    const auto bar_y = [&](int pixel_y) {
+        return 38 + (pixel_y / 24 - level_top) / (level_bottom - level_top) * 400;
+    };
+
+    Gosu::draw_rect(2, 38, 8, 404, Gosu::Color(0x40808080), Z_UI);
+    if (!player().marked) {
+        const Gosu::Color position = Gosu::Color(0xc0000080);
+        Gosu::draw_rect(0, 38 + bar_y(player().y), 12, 4, position, Z_UI);
+    }
+    if (map.lava_pos < TILES_Y * 24) {
+        const Gosu::Color lava = (map.lava_time_left == 0)
+            ? Gosu::Color(0x80ffff00) // rising (yellow)
+            : Gosu::Color(0x8000ffff); // frozen (aqua)
+        Gosu::draw_rect(0, bar_y(map.lava_pos), 12, 4, lava, Z_UI);
+    }
 }
 
 void GameState::button_down(Gosu::Button id)

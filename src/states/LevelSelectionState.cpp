@@ -1,6 +1,6 @@
 #include "LevelSelectionState.hpp"
 #include "GameState.hpp"
-#include "Hiscore.hpp"
+#include "Options.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/InputAction.hpp"
@@ -15,7 +15,7 @@ LevelSelectionState::LevelSelectionState()
 
 void LevelSelectionState::update()
 {
-    play_song("menu");
+    play_song("Menu");
 
     // We just returned from playing a level: re-read its highscore so a new record shows at once.
     if (m_reload_hiscore) {

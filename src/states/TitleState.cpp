@@ -10,7 +10,7 @@ TitleState::TitleState()
 
 void TitleState::update()
 {
-    play_song("menu");
+    play_song("Menu");
 }
 
 void TitleState::draw()

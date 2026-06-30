@@ -1,5 +1,5 @@
 #include "LevelInfo.hpp"
-#include "Hiscore.hpp"
+#include "Options.hpp"
 #include "helpers/Graphics.hpp"
 #include <algorithm>
 #include <filesystem>

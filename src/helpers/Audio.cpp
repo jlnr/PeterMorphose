@@ -1,6 +1,7 @@
 #include "Audio.hpp"
 #include "Constants.hpp"
 #include "Gosu/Audio.hpp"
+#include "Options.hpp"
 #include <filesystem>
 #include <map>
 #include <stdexcept>
@@ -16,7 +17,9 @@ void play_song(const std::string& name)
     if (!songs.contains(name)) {
         songs.emplace(name, "media/" + name + ".ogg");
     }
-    songs.at(name).play(true);
+    Gosu::Song& song = songs.at(name);
+    song.set_volume(music_volume() / 100.0);
+    song.play(true);
 }
 
 void play_sound(const std::string& name, double volume, double speed)
@@ -40,5 +43,5 @@ void play_sound(const std::string& name, double volume, double speed)
             throw std::runtime_error("Could not find sound file: " + name);
         }
     }
-    std::ignore = variants.at(rand(variants.size())).play(volume, speed);
+    std::ignore = variants.at(rand(variants.size())).play(volume * sound_volume() / 100.0, speed);
 }

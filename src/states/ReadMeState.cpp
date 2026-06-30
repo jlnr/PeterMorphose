@@ -28,7 +28,7 @@ ReadMeState::ReadMeState()
 
 void ReadMeState::update()
 {
-    play_song("menu");
+    play_song("Menu");
 }
 
 void ReadMeState::draw()
