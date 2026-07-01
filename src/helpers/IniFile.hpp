@@ -28,6 +28,7 @@ public:
 
     /// Sets a raw (Latin-1) value, creating the section and key if necessary.
     void set_binary(const std::string& section, const std::string& name, const std::string& value);
+    void set_integer(const std::string& section, const std::string& name, int value);
 
 private:
     /// Values are stored internally in their original encoding (binary or Latin-1).

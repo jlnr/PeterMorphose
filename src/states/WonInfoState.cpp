@@ -1,6 +1,6 @@
 #include "WonInfoState.hpp"
 #include "Constants.hpp"
-#include "Hiscore.hpp"
+#include "Options.hpp"
 #include "Map.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/Graphics.hpp"
@@ -51,7 +51,7 @@ WonInfoState::WonInfoState(const std::string& level_filename, GameState& game)
 
 void WonInfoState::update()
 {
-    play_song("menu");
+    play_song("Menu");
 }
 
 void WonInfoState::draw()

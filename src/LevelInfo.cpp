@@ -1,6 +1,6 @@
 #include "LevelInfo.hpp"
 #include "Constants.hpp"
-#include "Hiscore.hpp"
+#include "Options.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/String.hpp"
 #include <algorithm>

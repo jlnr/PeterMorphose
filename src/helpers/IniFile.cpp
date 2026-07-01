@@ -78,6 +78,11 @@ void IniFile::set_binary(const std::string& section, const std::string& name,
     m_sections[section].insert_or_assign(name, value);
 }
 
+void IniFile::set_integer(const std::string& section, const std::string& name, int value)
+{
+    m_sections[section].insert_or_assign(name, std::to_string(value));
+}
+
 #include <doctest.h>
 #include <sstream>
 
