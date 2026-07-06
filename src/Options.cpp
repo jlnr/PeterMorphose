@@ -90,6 +90,40 @@ void save_hiscore(const std::string& level_filename, int score)
     }
 }
 
+static Language find_default_language()
+{
+    // See if the user explicitly prefers a language we offer...
+    for (const std::string& locale : Gosu::user_languages()) {
+        if (locale.starts_with("de")) {
+            return Language::German;
+        }
+        if (locale.starts_with("en")) {
+            return Language::English;
+        }
+    }
+    // ...otherwise default to English:
+    return Language::English;
+}
+
+Language language()
+{
+    const std::string code = settings_ini().binary("Options", "Language").value_or("");
+    if (code == "de") {
+        return Language::German;
+    }
+    if (code == "en") {
+        return Language::English;
+    }
+    static const Language default_language = find_default_language();
+    return default_language;
+}
+
+void set_language(Language language)
+{
+    settings_ini().set_binary("Options", "Language", language == Language::German ? "de" : "en");
+    write_ini();
+}
+
 int music_volume()
 {
     return settings_ini().integer("Options", "MusicVolume").value_or(100);

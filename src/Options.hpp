@@ -16,6 +16,17 @@ std::optional<int> load_hiscore(const std::string& level_filename);
 /// Stores the score as the level's new highscore if it is higher than the previous one.
 void save_hiscore(const std::string& level_filename, int score);
 
+enum class Language
+{
+    German,
+    English
+};
+
+/// The UI language, persisted as [Options] Language=de or Language=en..
+/// Initially tries to match the system language.
+Language language();
+void set_language(Language language);
+
 /// Volume settings, as a percentage from 0 to 100, persisted in the [Options] section.
 int music_volume();
 void set_music_volume(int volume);

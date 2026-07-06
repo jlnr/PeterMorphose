@@ -1,4 +1,5 @@
 #include "Graphics.hpp"
+#include "helpers/I18n.hpp"
 #include "String.hpp"
 #include <vector>
 
@@ -8,6 +9,7 @@ static constexpr int LINE_HEIGHT = 16;
 
 int bmp_text_width(std::string string)
 {
+    translate(string);
     utf8_to_latin1(string);
     return string.size() * LETTER_SPACING;
 }
@@ -20,6 +22,7 @@ void draw_bmp_text(std::string string, double x, double y, Gosu::Color::Channel 
 
     const Gosu::Color color = Gosu::Color::WHITE.with_alpha(alpha);
 
+    translate(string);
     utf8_to_latin1(string);
     if (alignment == Gosu::Alignment::AL_RIGHT) {
         x -= string.length() * LETTER_SPACING;

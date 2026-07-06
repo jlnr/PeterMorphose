@@ -9,6 +9,7 @@
 
 enum OptionsState::Item : int
 {
+    LANGUAGE,
     MUSIC,
     SOUND,
     MINIMAP,
@@ -44,19 +45,24 @@ void OptionsState::draw()
     Gosu::draw_rect(0, (m_selected_item + 1) * 70 - 1, WINDOW_WIDTH, 18, //
                     Gosu::Color(0xff964800), Z_LAVA, Gosu::BM_ADD);
 
-    draw_bmp_text("Musik", 20, 70);
-    draw_slider(70, music_volume());
-    draw_bmp_text("Lautstärke der Hintergrundmusik.", 20, 70 + 20, 180);
+    draw_bmp_text("Sprache / Language", 20, 70);
+    draw_bmp_text(language() == Language::German ? "Deutsch" : "English", //
+                  WINDOW_WIDTH - 20, 70, 255, Gosu::AL_RIGHT);
+    draw_bmp_text("Sprache aller Menüs und Texte.", 20, 70 + 20, 180);
 
-    draw_bmp_text("Andere Geräusche", 20, 140);
-    draw_slider(140, sound_volume());
-    draw_bmp_text("Lautstärke aller übrigen Geräusche.", 20, 140 + 20, 180);
+    draw_bmp_text("Musik", 20, 140);
+    draw_slider(140, music_volume());
+    draw_bmp_text("Lautstärke der Hintergrundmusik.", 20, 140 + 20, 180);
 
-    draw_bmp_text("Positionsanzeige im Spiel", 20, 210);
+    draw_bmp_text("Andere Geräusche", 20, 210);
+    draw_slider(210, sound_volume());
+    draw_bmp_text("Lautstärke aller übrigen Geräusche.", 20, 210 + 20, 180);
+
+    draw_bmp_text("Positionsanzeige im Spiel", 20, 280);
     draw_bmp_text(minimap_enabled() ? "<ein>" : "<aus>", //
-                  WINDOW_WIDTH - 20, 210, 255, Gosu::AL_RIGHT);
+                  WINDOW_WIDTH - 20, 280, 255, Gosu::AL_RIGHT);
     draw_bmp_text("Blendet im Spiel links eine Leiste zur besseren Orientierung ein.", //
-                  20, 210 + 20, 180);
+                  20, 280 + 20, 180);
 
     draw_bmp_text("Pfeiltasten wählen aus und ändern. Escape kehrt zum Hauptmenü zurück.",
                   WINDOW_WIDTH / 2, 440, 180, Gosu::AL_CENTER);
@@ -74,6 +80,9 @@ void OptionsState::button_down(Gosu::Button id)
         const bool right = is_mapped_to(InputAction::Right, id);
         const int delta = right ? +VOLUME_STEP : -VOLUME_STEP;
         switch (m_selected_item) {
+        case LANGUAGE:
+            set_language(right ? Language::English : Language::German); // left = German, right = English
+            break;
         case MUSIC:
             set_music_volume(std::clamp(music_volume() + delta, 0, 100));
             break;
