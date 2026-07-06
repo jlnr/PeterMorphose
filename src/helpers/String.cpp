@@ -42,7 +42,7 @@ std::string byte_to_hex(std::uint8_t byte)
     return { hex[byte / 16 % 16], hex[byte % 16] };
 }
 
-void latin1_to_utf8(std::string& str)
+void cp1252_to_utf8(std::string& str)
 {
     for (std::size_t i = 0; i < str.length(); ++i) {
         const auto byte = static_cast<std::uint8_t>(str[i]);
@@ -60,7 +60,7 @@ void latin1_to_utf8(std::string& str)
     }
 }
 
-void utf8_to_latin1(std::string& str)
+void utf8_to_cp1252(std::string& str)
 {
     for (std::size_t i = 0; i < str.length(); ++i) {
         const auto byte = static_cast<std::uint8_t>(str[i]);
@@ -69,8 +69,15 @@ void utf8_to_latin1(std::string& str)
             str.replace(i, 4, "?");
         }
         else if (byte >= 0xE0) {
-            // All three-byte UTF-8 sequences are out of range -> turn into ?.
-            str.replace(i, 3, "?");
+            if (str.compare(i, 3, "\xE2\x80\xA2") == 0) {
+                // Keep the bullet at 0x95, where this game's Windows-1252 font has its glyph.
+                // This allows the game to use UTF-8 in its .cpp source files.
+                str.replace(i, 3, 1, '\x95');
+            }
+            else {
+                // All other three-byte UTF-8 sequences are out of range -> turn into ?.
+                str.replace(i, 3, "?");
+            }
         }
         else if (byte >= 0xC0) {
             if (i == str.length() - 1) {
@@ -124,30 +131,30 @@ TEST_CASE("String")
         CHECK(byte_to_hex(251) == "FB");
     }
 
-    SUBCASE("latin1_to_utf8")
+    SUBCASE("cp1252_to_utf8")
     {
-        std::string s = "\xe4\xf6\xfc\xdf"; // äöüß in Latin-1
-        latin1_to_utf8(s);
+        std::string s = "\xe4\xf6\xfc\xdf"; // äöüß in CP1252 (as in Latin-1)
+        cp1252_to_utf8(s);
         CHECK(s == "äöüß");
 
         std::string ascii = "Peter Morphose 2001"; // plain ASCII survives unchanged
-        latin1_to_utf8(ascii);
+        cp1252_to_utf8(ascii);
         CHECK(ascii == "Peter Morphose 2001");
     }
 
-    SUBCASE("utf8_to_latin1")
+    SUBCASE("utf8_to_cp1252")
     {
-        std::string s = "äöüß"; // round-trips back to Latin-1
-        utf8_to_latin1(s);
+        std::string s = "äöüß"; // round-trips back to CP1252 (or Latin-1)
+        utf8_to_cp1252(s);
         CHECK(s == "\xe4\xf6\xfc\xdf");
 
         std::string ascii = "Peter Morphose 2001"; // plain ASCII survives unchanged
-        utf8_to_latin1(ascii);
+        utf8_to_cp1252(ascii);
         CHECK(ascii == "Peter Morphose 2001");
 
-        std::string euro = "€"; // not representable in Latin-1
-        utf8_to_latin1(euro);
-        CHECK(euro == "?");
+        std::string emoji = "😀"; // not representable in Latin-1
+        utf8_to_cp1252(emoji);
+        CHECK(emoji == "?");
     }
 
     SUBCASE("split")

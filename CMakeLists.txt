@@ -16,7 +16,9 @@ target_include_directories(PeterMorphose PRIVATE src)
 option(ENABLE_TESTING "Build unit tests" ON)
 if (ENABLE_TESTING)
     enable_testing()
-    add_test(NAME PeterMorphose COMMAND PeterMorphose)
+    # Run from the project root so that tests can load assets/ and levels/ from relative paths.
+    # Pass --exit so that the game does not launch after the test run.
+    add_test(NAME PeterMorphose COMMAND PeterMorphose --exit WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 else ()
     add_definitions("-DDOCTEST_CONFIG_DISABLE")
 endif ()

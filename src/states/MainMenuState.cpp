@@ -1,5 +1,6 @@
 #include "MainMenuState.hpp"
 #include "Constants.hpp"
+#include "Options.hpp"
 #include "CreditsState.hpp"
 #include "LevelSelectionState.hpp"
 #include "OptionsState.hpp"
@@ -21,7 +22,8 @@ enum MainMenuState::Item : int
 
 MainMenuState::MainMenuState()
     : m_title_image("assets/TitleDark.png"),
-      m_buttons(Gosu::load_tiles("assets/Buttons.png", 400, 64, Gosu::IF_RETRO))
+      m_buttons_de(Gosu::load_tiles("assets/Buttons.png", 400, 64, Gosu::IF_RETRO)),
+      m_buttons_en(Gosu::load_tiles("assets/Buttons@en.png", 400, 64, Gosu::IF_RETRO))
 {
 }
 
@@ -34,8 +36,10 @@ void MainMenuState::draw()
 {
     m_title_image.draw(0, 0);
 
+    const std::vector<Gosu::Image>& buttons
+        = language() == Language::English ? m_buttons_en : m_buttons_de;
     for (int i = 0; i < ITEM_COUNT; ++i) {
-        m_buttons[i * 2 + (m_selected_item == i)].draw(120, 20 + i * 70, Z_UI); // Spielen
+        buttons[i * 2 + (m_selected_item == i)].draw(120, 20 + i * 70, Z_UI);
     }
 
     draw_bmp_text("Wähle mit den Pfeiltasten aus, was du tun willst und drücke Enter.",

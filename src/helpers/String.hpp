@@ -21,14 +21,14 @@ int hex_chars_to_int(std::string_view str, std::size_t offset, std::size_t lengt
 // Converts a value between 0 and 255 (inclusive) to a two-digit upper-case hex string.
 std::string byte_to_hex(std::uint8_t byte);
 
-/// Converts a string from ISO Latin-1 to UTF-8 in place. This is a quick & dirty conversion based
+/// Converts a string from CP1252 to UTF-8 in place. This is a quick & dirty conversion based
 /// on the fact that the first 256 Unicode code points are roughly equivalent to the Windows
 /// codepage that this game used back in 2001.
-void latin1_to_utf8(std::string& str);
+void cp1252_to_utf8(std::string& str);
 
-/// Converts a string from UTF-8 to ISO Latin-1 in place, the inverse of latin1_to_utf8.
+/// Converts a string from UTF-8 to CP1252 in place, the inverse of cp1252_to_utf8.
 /// Code points beyond 255 become a question mark.
-void utf8_to_latin1(std::string& str);
+void utf8_to_cp1252(std::string& str);
 
 /// Splits a string into the parts separated by the given delimiter.
 /// The result always has one more element than the number of delimiters.

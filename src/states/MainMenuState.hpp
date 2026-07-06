@@ -1,7 +1,7 @@
 #pragma once
 
-#include "State.hpp"
 #include <Gosu/Gosu.hpp>
+#include "State.hpp"
 #include <vector>
 
 /// A port of the original State_MainMenu: play a level, read the manual, show credits, or quit.
@@ -19,6 +19,7 @@ private:
     enum Item : int;
 
     const Gosu::Image m_title_image;
-    const std::vector<Gosu::Image> m_buttons;
+    const std::vector<Gosu::Image> m_buttons_de;
+    const std::vector<Gosu::Image> m_buttons_en;
     int m_selected_item = 0;
 };

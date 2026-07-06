@@ -1,0 +1,7 @@
+root = true
+
+# These data files date back to the Delphi version and are Latin-1 encoded. Opening and saving
+# them as UTF-8 silently turns every umlaut into U+FFFD and breaks the game/tests.
+[{assets/*.ini,levels/*.pml}]
+charset = latin1
+end_of_line = crlf
