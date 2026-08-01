@@ -2,6 +2,7 @@
 #include "Constants.hpp"
 #include "Options.hpp"
 #include "helpers/Graphics.hpp"
+#include "helpers/I18n.hpp"
 #include "helpers/String.hpp"
 #include <algorithm>
 #include <filesystem>
@@ -17,9 +18,14 @@ LevelInfo::LevelInfo(const std::string& filename)
     description = ini_file.string("Info", "Desc").value_or("");
     author = ini_file.string("Info", "Author").value_or("");
 
-    goal = ini_file.string("Map", "StarsGoal").value_or("100") + " Sterne einsammeln";
-    if (goal == "0 Sterne einsammeln") {
-        goal = "Durchkommen";
+    // The goal is composed from translated() parts, like t() in the Ruby version. The English
+    // parts are worded so that they work in the same order as the German original.
+    goal = ini_file.string("Map", "StarsGoal").value_or("100");
+    if (goal == "0") {
+        goal = t("Durchkommen");
+    }
+    else {
+        goal += " " + t("Sterne einsammeln");
     }
 
     int hostages_count = 0;
@@ -39,10 +45,14 @@ LevelInfo::LevelInfo(const std::string& filename)
     }
 
     if (hostages_count == 1) {
-        goal += " und " + hostage_name.value_or("Carolin") + " retten";
+        goal += " " + t("und") + " " + hostage_name.value_or("Carolin");
+        if (const std::string rescue = t("retten"); !rescue.empty()) {
+            goal += " " + rescue; // "retten" trails the name in German, but is empty in English
+        }
     }
     else if (hostages_count > 1) {
-        goal += " und " + std::to_string(hostages_count) + " Gefangene retten";
+        goal += " " + t("und") + " " + std::to_string(hostages_count) + " "
+            + t("Gefangene retten");
     }
 
     hiscore = load_hiscore(filename);
@@ -92,7 +102,9 @@ TEST_CASE("LevelInfo")
         CHECK(it != levels.end());
         if (it != levels.end()) {
             CHECK(it->title == "Gravialistan");
-            CHECK(it->goal == "100 Sterne einsammeln und Tanja retten");
+            // The goal is language-dependent; accept the German and the English composition.
+            CHECK((it->goal == "100 Sterne einsammeln und Tanja retten"
+                   || it->goal == "100 stars to collect & need to rescue Tanja"));
         }
     }
 }

@@ -2,6 +2,7 @@
 #include "Constants.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/Graphics.hpp"
+#include "helpers/I18n.hpp"
 #include "helpers/InputAction.hpp"
 #include <string>
 
@@ -45,7 +46,7 @@ void ReadMeState::draw()
         draw_bmp_text("Pfeiltasten links/rechts:   Laufen", 20, 220);
         draw_bmp_text("Pfeiltaste rauf/Button 1:   Springen", 20, 240);
         draw_bmp_text("Leertaste/Button 2:         Spezialaktion des aktuellen Peters", 20, 260);
-        draw_bmp_text("Pfeiltaste runter/Button 3: Treppen und Bodenplatten benutzen", 20, 280);
+        draw_bmp_text("Pfeiltaste runter/Button 3: Treppen, Platten, Hebel benutzen", 20, 280);
         draw_bmp_text("Enter/Entfernen/Button 4:   Wieder zum normalen Peter werden", 20, 300);
         draw_bmp_text("P:                          Pause an/aus", 20, 320);
         draw_bmp_text("Escape:                     Wieder zum Hauptmenü", 20, 340);
@@ -53,10 +54,9 @@ void ReadMeState::draw()
 
     case 1:
         draw_bmp_text("Weitere Tipps zur Steuerung:", 20, 20);
-        draw_bmp_text("• Nur der normale Peter kann Hebel umlegen (Spezialaktion). Wenn du", 20,
-                      60);
-        draw_bmp_text("  ein Spezialpeter bist und einen Hebel umlegen willst, musst du", 20, 80);
-        draw_bmp_text("  dich erst zurückverwandeln (Enter/B4).", 20, 100);
+        draw_bmp_text("• Hebel legst du um, indem du dich davor stellst und die", 20, 60);
+        draw_bmp_text("  Pfeiltaste runter drückst, so wie du auch Treppen benutzt.", 20, 80);
+        draw_bmp_text("  Das funktioniert mit jedem Peter.", 20, 100);
         draw_bmp_text("• Im Sprung kannst du die Flugrichtung ein wenig mit Links/Rechts", 20, 120);
         draw_bmp_text("  beeinflussen.", 20, 140);
         draw_bmp_text("• Wenn du getroffen wirst, bist du für etwa eine Sekunde transparent", 20,
@@ -81,8 +81,8 @@ void ReadMeState::draw()
     case 2:
         draw_bmp_text("Die 5 verschiedenen Peter:", 20, 20);
         stretch_draw(player_image(ID_PLAYER, DIR_RIGHT, ACT_STAND), 20, 50);
-        draw_bmp_text("Das ist der normale Peter. Er ist wendig und kann Hebel", 80, 60);
-        draw_bmp_text("umlegen (Leertaste/B2).", 80, 80);
+        draw_bmp_text("Das ist der normale Peter. Er ist wendig, hat aber keine", 80, 60);
+        draw_bmp_text("Spezialaktion (Leertaste/B2).", 80, 80);
         stretch_draw(player_image(ID_PLAYER_FIGHTER, DIR_LEFT, ACT_ACTION_3), 20, 100);
         draw_bmp_text("Ritterpeter ist stabiler und träger als Peter. Er kann dafür", 80, 110);
         draw_bmp_text("mit dem Schwert zuschlagen (Leertaste/B2).", 80, 130);
@@ -152,8 +152,8 @@ void ReadMeState::draw()
         draw_bmp_text("Weitere wichtige Objekte:", 20, 20);
         stretch_draw(object_image(ID_LEVER), 25, 40);
         stretch_draw(object_image(ID_LEVER_RIGHT), 25, 90);
-        draw_bmp_text("Hebel und Schalter kann nur der normale Peter umlegen", 80, 60);
-        draw_bmp_text("(Leertaste). Sie verändern normalerweise etwas an der", 80, 80);
+        draw_bmp_text("Hebel und Schalter kann jeder Peter mit der Pfeiltaste", 80, 60);
+        draw_bmp_text("runter umlegen. Sie verändern normalerweise etwas an der", 80, 80);
         draw_bmp_text("Spielwelt (Spezialteil erscheint, Mauer verschwindet,", 80, 100);
         draw_bmp_text("Hilfsobjekte werden erschaffen...).", 80, 120);
         stretch_draw(object_image(ID_SLOW_DOWN), 25, 145);
@@ -222,8 +222,9 @@ void ReadMeState::draw()
     }
 
     // Common footer with the page number, on every page.
-    draw_bmp_text("Mit den Pfeiltasten kannst du in der Hilfe blättern. (Seite "
-                      + std::to_string(m_page + 1) + " von " + std::to_string(PAGE_COUNT) + ")",
+    draw_bmp_text(t("Mit den Pfeiltasten kannst du in der Hilfe blättern.") + " ("
+                      + t("Seite") + " " + std::to_string(m_page + 1) + " "
+                      + t("von") + " " + std::to_string(PAGE_COUNT) + ")",
                   14, 424, 200);
     draw_bmp_text("Auf Escape kommst du zum Hauptmenü zurück.", 131, 446, 200);
 }

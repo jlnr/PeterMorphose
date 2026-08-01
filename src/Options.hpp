@@ -6,7 +6,7 @@
 /// Options and highscore persistence, ported from the Delphi PeterM.ini handling.
 
 /// Obfuscates a non-negative integer into the binary Müsli string used in the hiscore file.
-/// The result is not valid UTF-8! It can be treated as Latin-1.
+/// The result is not valid UTF-8! It can be treated as CP1252.
 std::string muesli(int value);
 /// Decodes a binary Müsli string back into an integer. Returns std::nullopt if it is invalid.
 std::optional<int> demuesli(const std::string& encoded);

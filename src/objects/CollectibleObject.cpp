@@ -2,6 +2,7 @@
 #include "Map.hpp"
 #include "ObjectDef.hpp"
 #include "helpers/Audio.hpp"
+#include "helpers/I18n.hpp"
 #include "objects/LivingObject.hpp"
 #include "states/GameState.hpp"
 
@@ -103,7 +104,7 @@ void CollectibleObject::update()
             game.score += 2;
             game.stars += 1;
             if (game.stars < game.stars_goal) {
-                game.player().emit_text(std::to_string(game.stars) + " von "
+                game.player().emit_text(std::to_string(game.stars) + " " + t("von") + " "
                                         + std::to_string(game.stars_goal));
             }
             else if (game.stars == game.stars_goal) {

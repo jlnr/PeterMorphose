@@ -23,7 +23,7 @@ IniFile::IniFile(std::istream&& input)
         else if (std::regex_match(line, match, entry_regex)) {
             std::string key = match[1];
             std::string value = match[2];
-            // Values are kept in their original Latin-1 encoding; string() converts on access.
+            // Values are kept in their original CP1252 encoding; string() converts on access.
             m_sections[current_section].insert_or_assign(std::move(key), std::move(value));
         }
     }
@@ -47,7 +47,7 @@ std::optional<std::string> IniFile::string(const std::string& section,
 {
     std::optional<std::string> value = binary(section, name);
     if (value) {
-        latin1_to_utf8(*value);
+        cp1252_to_utf8(*value);
     }
     return value;
 }
@@ -130,7 +130,7 @@ TEST_CASE("IniFile")
         CHECK(ini.integer("Map", "StarsGoal") == 50);
     }
 
-    SUBCASE("binary() keeps raw Latin-1, and set()/write() round-trip high bytes")
+    SUBCASE("binary() keeps raw CP1252, and set()/write() round-trip high bytes")
     {
         std::istringstream empty;
 

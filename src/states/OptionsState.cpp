@@ -81,7 +81,8 @@ void OptionsState::button_down(Gosu::Button id)
         const int delta = right ? +VOLUME_STEP : -VOLUME_STEP;
         switch (m_selected_item) {
         case LANGUAGE:
-            set_language(right ? Language::English : Language::German); // left = German, right = English
+            // Both arrow keys cycle through the (two) languages.
+            set_language(language() == Language::German ? Language::English : Language::German);
             break;
         case MUSIC:
             set_music_volume(std::clamp(music_volume() + delta, 0, 100));

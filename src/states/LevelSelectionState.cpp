@@ -2,6 +2,7 @@
 #include "GameState.hpp"
 #include "Options.hpp"
 #include "helpers/Audio.hpp"
+#include "helpers/I18n.hpp"
 #include "helpers/Graphics.hpp"
 #include "helpers/InputAction.hpp"
 
@@ -31,9 +32,12 @@ void LevelSelectionState::draw_level_info(const LevelInfo& info, int y, bool act
     }
 
     Gosu::draw_rect(0, y, 631, 1, Gosu::Color(0xff003000), Z_UI);
+    // Translate the title and suffix separately - the hiscore varies too much for the composed
+    // string to ever match a translation.
     const std::string title = info.hiscore.has_value()
-        ? info.title + " (" + std::to_string(*info.hiscore) + " Punkte)"
-        : info.title + " (noch nicht geschafft)";
+        ? t(info.title) + " (" + std::to_string(*info.hiscore) + " "
+            + t("Punkte") + ")"
+        : t(info.title) + " (" + t("noch nicht geschafft") + ")";
     draw_bmp_text(title, 5, y + 7, 255);
     draw_bmp_text(info.difficulty, 626, y + 7, 255, Gosu::AL_RIGHT);
     draw_bmp_text(info.description, 5, y + 30, 192);

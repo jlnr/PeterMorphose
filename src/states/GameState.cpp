@@ -3,6 +3,7 @@
 #include "Options.hpp"
 #include "helpers/Audio.hpp"
 #include "helpers/Graphics.hpp"
+#include "helpers/I18n.hpp"
 #include "helpers/IniFile.hpp"
 #include "helpers/InputAction.hpp"
 #include "helpers/String.hpp"
@@ -335,7 +336,8 @@ void GameState::draw()
         dialogs[2].draw(200, 120, Z_UI, 1, 1, Gosu::Color::WHITE, Gosu::BM_ADD);
     }
 
-    draw_bmp_text("Punkte: " + std::to_string(score), WINDOW_WIDTH / 2, 25, 160, Gosu::AL_CENTER);
+    draw_bmp_text(t("Punkte:") + " " + std::to_string(score), WINDOW_WIDTH / 2, 25, 160,
+                  Gosu::AL_CENTER);
 }
 
 void GameState::draw_status_bar()
